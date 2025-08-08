@@ -1,31 +1,25 @@
-name: Deploy to InfinityFree
+name: Mise à jour du site
 
-# Déclenchement du workflow
 on:
   push:
     branches:
-      - main  # On déploie uniquement quand on push sur "main"
+      - main  # Branche qui déclenche le déploiement
 
 jobs:
   ftp-deploy:
-    runs-on: ubuntu-latest  # Machine virtuelle Linux pour exécuter le job
+    name: Déploiement FTP sur InfinityFree
+    runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Récupérer le code source depuis GitHub
-      - name: Checkout code
+      - name: Récupérer le code
         uses: actions/checkout@v3
 
-      # 2️⃣ Envoyer les fichiers modifiés via FTP
-      - name: FTP Deploy to InfinityFree
-        uses: SamKirkland/FTP-Deploy-Action@v4
+      - name: Déployer via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_HOST }}       # hôte FTP (ex: ftpupload.net)
-          username: ${{ secrets.FTP_USER }}     # utilisateur FTP
-          password: ${{ secrets.FTP_PASS }}     # mot de passe FTP
-          server-dir: ${{ secrets.FTP_DIR }}    # dossier cible sur InfinityFree (ex: /htdocs/)
-          protocol: ftp                         # Protocole FTP
-          exclude: |                            # Fichiers/dossiers à ignorer
-            **/.git*
-            **/.github/**
-            **/node_modules/**
-            **/vendor/**
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          server-dir: /htdocs/   # Dossier racine de ton site sur InfinityFree
+          protocol: ftp
+          timeout: 600
