@@ -1,0 +1,55 @@
+# Sécurité pour le dossier public
+Options -Indexes
+
+# Headers de sécurité pour les pages HTML
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Protection contre les attaques par inclusion de fichiers
+<FilesMatch "\.(php|php3|php4|php5|phtml)$">
+    Require all denied
+</FilesMatch>
+
+# Autoriser seulement les fichiers HTML, CSS, JS et images
+<FilesMatch "\.(html|css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$">
+    Require all granted
+</FilesMatch>
+
+# Bloquer l'accès aux fichiers sensibles
+<Files "*.json">
+    Require all denied
+</Files>
+
+<Files "*.xml">
+    Require all denied
+</Files>
+
+<Files "*.txt">
+    Require all denied
+</Files>
+
+# Cache pour les ressources statiques
+<IfModule mod_expires.c>
+    ExpiresActive on
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType font/woff "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 month"
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+</IfModule> 
