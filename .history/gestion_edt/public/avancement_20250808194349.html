@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Avancement edt</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    /* ... Styles de base et de navigation (identiques à avant) ... */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif; }
+    body { background-color: #f5f7fa; padding-top: 80px; }
+    nav { position: fixed; top: 0; left: 0; width: 100%; height: 60px; padding: 10px 20px; background:#fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); display: flex; align-items: center; z-index: 700; justify-content: space-between; }
+    nav a { text-decoration: none; color: #333; padding: 8px 16px; border-radius: 8px; transition: background-color 0.3s, color 0.3s; font-weight: 400; }
+    nav a:hover { background-color: #f0f4ff; color: #1d4ed8; font-weight: 600; }
+    nav a.active { background-color: #e0eaff; color: #1d4ed8; font-weight: 600; }
+
+    /* AJOUTEZ CE BLOC CSS DANS VOS PAGES */
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Espace entre les liens et le bouton de profil */
+}
+
+/* Conteneur principal pour le menu de profil */
+.profile-menu-container {
+    position: relative; /* Très important pour positionner le menu déroulant */
+}
+
+/* Le bouton circulaire avec les initiales */
+.profile-button {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: #e0eaff; /* Couleur similaire à un lien actif */
+    color: #1d4ed8;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.profile-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Le menu déroulant, caché par défaut */
+.profile-dropdown {
+    display: none; /* Caché par défaut */
+    position: absolute;
+    top: calc(100% + 8px); /* Juste en dessous du bouton avec un petit espace */
+    right: 0;
+    width: 250px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+    z-index: 1010; /* Doit être au-dessus du reste */
+    overflow: hidden;
+}
+
+/* Classe pour afficher le menu */
+.profile-dropdown.show {
+    display: block;
+}
+
+/* En-tête du menu avec le nom et l'email */
+.dropdown-header {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+.dropdown-header strong {
+    display: block;
+    font-size: 16px;
+    color: #333;
+}
+.dropdown-header small {
+    font-size: 13px;
+    color: #6c757d;
+}
+
+/* Séparateur */
+.dropdown-divider {
+    margin: 0;
+    border: none;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Lien de déconnexion */
+.dropdown-logout-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #d9534f;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+.dropdown-logout-link:hover {
+    background-color: #fcecec;
+}
+.dropdown-logout-link i {
+    width: 16px;
+    text-align: center;
+}
+    
+    /* STYLES SPÉCIFIQUES À LA PAGE */
+    .main-content { padding: 15px; }
+    .page-title { text-align: center; font-size: 2rem; color: #2c3e50; margin-bottom: 5px; }
+    .info-banner { text-align: center; color: #7f8c8d; font-size: 1.1rem; margin-bottom: 15px; background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .info-banner a { color: #3498db; font-weight: bold; text-decoration: none; }
+    .info-banner .file-info { font-weight: bold; color: #2ecc71; }
+    
+    /* NOUVEAU : Style pour le sélecteur de vue */
+    .view-switcher {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+        gap: 10px;
+    }
+    .view-switcher-btn {
+        padding: 10px 20px;
+        font-size: 1rem;
+        font-weight: 600;
+        border: 2px solid #bdc3c7;
+        background-color: #fff;
+        color: #34495e;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .view-switcher-btn:hover {
+        background-color: #ecf0f1;
+        border-color: #3498db;
+    }
+    .view-switcher-btn.active {
+        background-color: #3498db;
+        color: white;
+        border-color: #3498db;
+    }
+
+    .chart-container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        width: 100%;
+        height: 600px;
+    }
+
+    #moduleFilterContainer {
+            background-color: #fff;
+            padding: 10px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #moduleFilterContainer label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        #groupFilter {
+            padding: 8px 12px;
+            border: 1px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            min-width: 200px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+            align-items: stretch; /* Aligne les cartes sur la même hauteur */
+        }
+        
+        .stat-card {
+            background: #ffffff;
+            padding: 22px;
+            border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Aligne le contenu en haut */
+            min-height: 160px;
+        }
+
+        .stat-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .stat-card .icon { font-size: 1.2rem; }
+        .stat-card .icon.formateurs { color: #e83e8c; }
+        .stat-card .icon.groupes { color: #fd6b6b; }
+        .stat-card .label { font-size: 1rem; color: #6c757d; font-weight: 500; }
+        .stat-card .value { font-size: 2.8rem; font-weight: 600; color: #212529; }
+        
+        /* Structure de la carte du graphique */
+        .doughnut-card {
+            padding: 22px;
+            align-items: center;
+        }
+        .doughnut-chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 180px;
+            margin: 0 auto 15px auto; /* Marge en bas pour espacer de la légende */
+        }
+        .doughnut-wrapper {
+            width: 100%;
+            padding-top: 100%;
+            position: relative;
+            border-radius: 50%;
+            background: #3498db;
+        }
+        #affectationDoughnutChart {
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            width: calc(100% - 20px) !important;
+            height: calc(100% - 20px) !important;
+        }
+        .doughnut-center-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+        }
+        .doughnut-center-text .percent { font-size: 2.2rem; font-weight: bold; color: #2c3e50; }
+        .doughnut-center-text .title { font-size: 0.9rem; color: #6c757d; }
+
+        /* === NOUVEAU : STYLE POUR LA LÉGENDE HTML === */
+        .doughnut-legend {
+            width: 100%;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px; /* Espace entre les lignes de la légende */
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Pousse la valeur à droite */
+            font-size: 0.9rem;
+        }
+        .legend-item-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #6c757d;
+        }
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .legend-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+
+        .controls-container { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .view-switcher { display: flex; justify-content: center; gap: 10px; }
+        .view-switcher-btn { padding: 10px 20px; font-size: 1rem; font-weight: 600; border: 2px solid #bdc3c7; background-color: #fff; color: #34495e; border-radius: 25px; cursor: pointer; transition: all 0.3s ease; }
+        .view-switcher-btn:hover { background-color: #ecf0f1; border-color: #3498db; }
+        .view-switcher-btn.active { background-color: #3498db; color: white; border-color: #3498db; }
+        #moduleFilterContainer { background-color: #fff; padding: 10px 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); display: flex; align-items: center; gap: 10px; }
+        #moduleFilterContainer label { font-weight: 600; color: #2c3e50; }
+        #groupFilter { padding: 8px 12px; border: 1px solid #bdc3c7; border-radius: 8px; font-size: 0.95rem; min-width: 200px; }
+        .chart-container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; height: 600px; }
+
+    /* Styles pour la Fenêtre Modale (inchangés) */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: none; align-items: center; justify-content: center; z-index: 1050; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: white; padding: 25px 30px; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); animation: slide-down 0.3s ease-out; }
+    @keyframes slide-down { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 20px; }
+    .modal-title { font-size: 1.6rem; color: #2c3e50; }
+    .modal-close { background: none; border: none; font-size: 2rem; line-height: 1; cursor: pointer; color: #888; transition: color 0.2s; }
+    .modal-close:hover { color: #333; }
+    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 25px; }
+    .detail-item { background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #3498db; }
+    .detail-item.total { border-color: #2c3e50; font-weight: bold;}
+    .detail-item.realise { border-color: #2ecc71; }
+    .detail-item .label { display: block; font-size: 0.9rem; color: #7f8c8d; margin-bottom: 4px; }
+    .detail-item .value { font-size: 1.3rem; font-weight: 600; color: #34495e; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <nav>
+        <img src="assets/images/logo_edt.png" style="height: 80px; width: auto;" id="logo" alt="Logo">
+        <div class="nav-links"> <!-- J'ai ajouté une classe pour mieux cibler les liens -->
+            <a href="emploi.html" id="nav-emploi">Emploi globale</a>
+            <a href="edition.html" id="nav-edition">Edition</a>
+            <a href="avancement.html" id="nav-avancement">Avancement</a>
+    
+            <!-- NOUVEAU MENU PROFIL -->
+            <div class="profile-menu-container">
+                <button id="profile-button" class="profile-button">
+                    <span id="profile-initials">--</span>
+                </button>
+                <div id="profile-dropdown" class="profile-dropdown">
+                    <div class="dropdown-header">
+                        <strong id="dropdown-user-name">Chargement...</strong>
+                        <small id="dropdown-user-email">...</small>
+                    </div>
+                    <hr class="dropdown-divider">
+                    <a href="../api/auth/logout.php" class="dropdown-logout-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Déconnexion</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <main class="main-content">
+      <p class="info-banner" id="infoBanner" style="display: none;"></p>
+      
+      <div class="stats-container">
+        <!-- Carte 1 : Formateurs -->
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="icon formateurs"><i class="fas fa-chalkboard-teacher"></i></span>
+                <span class="label">Formateurs</span>
+            </div>
+            <div id="stats-formateurs" class="value">0</div>
+        </div>
+
+        <!-- Carte 2 : Groupes -->
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="icon groupes"><i class="fas fa-users"></i></span>
+                <span class="label">Groupes</span>
+            </div>
+            <div id="stats-groupes" class="value">0</div>
+        </div>
+
+        <div class="stat-card doughnut-card">
+          <div class="doughnut-chart-container">
+              <div class="doughnut-wrapper">
+                   <canvas id="affectationDoughnutChart"></canvas>
+              </div>
+              <div class="doughnut-center-text">
+                   <div id="doughnut-percent" class="percent">0%</div>
+                   <div class="title">Affectation</div>
+              </div>
+          </div>
+          <!-- NOUVELLE LÉGENDE HTML -->
+          <div class="doughnut-legend">
+              <div class="legend-item">
+                  <div class="legend-item-label">
+                      <span class="legend-color" style="background-color: #2ecc71;"></span>
+                      <span>Modules Affectés</span>
+                  </div>
+                  <span class="legend-value" id="legend-affectes-value">0</span>
+              </div>
+              <div class="legend-item">
+                  <div class="legend-item-label">
+                      <span class="legend-color" style="background-color: #e9ecef;"></span>
+                      <span>Non Affectés</span>
+                  </div>
+                  <span class="legend-value" id="legend-non-affectes-value">0</span>
+              </div>
+               <div class="legend-item">
+                  <div class="legend-item-label">
+                      <span class="legend-color" style="background-color: #3498db;"></span>
+                      <span>Total Instances</span>
+                  </div>
+                  <span class="legend-value" id="legend-instances-value">0</span>
+              </div>
+          </div>
+      </div>
+    </div>
+
+
+      <div class="controls-container">
+        <div class="view-switcher">
+            <button id="viewByFormateurBtn" class="view-switcher-btn active">Par Formateur</button>
+            <button id="viewByGroupeBtn" class="view-switcher-btn">Par Groupe</button>
+            <button id="viewByModuleBtn" class="view-switcher-btn">Par Module</button>
+        </div>
+
+        <!-- NOUVEAU : Filtre qui n'apparaîtra que pour la vue "Par Module" -->
+        <div id="moduleFilterContainer" class="hidden">
+            <label for="groupFilter">Filtrer par Groupe :</label>
+            <select id="groupFilter"></select>
+        </div>
+    </div>
+
+      <div class="chart-container">
+        <canvas id="globalAvancementChart"></canvas>
+      </div>
+    </main>
+    
+    <!-- Fenêtre Modale (inchangée) -->
+    <div class="modal-overlay" id="detailsModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="modalTitle">Détails</h2>
+          <button class="modal-close" id="modalCloseBtn">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="details-grid" id="modalDetailsGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let dataByFormateur = {};
+    let dataByGroupe = {};
+    let dataByModule = {};
+    let currentView = 'formateur'; // Vue par défaut
+    let globalChart = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Gérer le changement de vue
+      document.getElementById('viewByFormateurBtn').addEventListener('click', () => switchView('formateur'));
+      document.getElementById('viewByGroupeBtn').addEventListener('click', () => switchView('groupe'));
+      document.getElementById('viewByModuleBtn').addEventListener('click', () => switchView('module'));
+
+      document.getElementById('groupFilter').addEventListener('change', renderCurrentView);
+
+      checkSessionAndLoad();
+      
+      const modal = document.getElementById('detailsModal');
+      document.getElementById('modalCloseBtn').addEventListener('click', () => modal.classList.remove('active'));
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('active');
+      });
+    });
+
+    function switchView(view) {
+            if (view === currentView) return;
+            currentView = view;
+            
+            // Mettre à jour le style des boutons
+            document.getElementById('viewByFormateurBtn').classList.toggle('active', view === 'formateur');
+            document.getElementById('viewByGroupeBtn').classList.toggle('active', view === 'groupe');
+            document.getElementById('viewByModuleBtn').classList.toggle('active', view === 'module');
+
+            // NOUVEAU : Afficher ou cacher le filtre de groupe
+            document.getElementById('moduleFilterContainer').classList.toggle('hidden', view !== 'module');
+            
+            renderCurrentView();
+        }
+
+        function loadAndDisplayData() {
+    const infoBanner = document.getElementById('infoBanner');
+
+    fetch('../api/data/get_avancement_data.php')
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Succès ! On utilise les données de l'API
+                infoBanner.innerHTML = `Données du fichier : <span class="file-info">${result.fileName}</span>.`;
+                const rows = result.data;
+                
+                // ---- Votre logique existante reste INCHANGÉE ----
+                calculateAndDisplayCardStats(rows);
+                displayAffectationDoughnut(rows);
+                dataByFormateur = processAvancementDataByFormateur(rows);
+                dataByGroupe = processAvancementDataByGroupe(rows);
+                dataByModule = processAvancementDataByModule(rows);
+                populateGroupFilter();
+                renderCurrentView();
+                // ---------------------------------------------
+            } else {
+                // L'API a répondu qu'il n'y avait pas de données
+                infoBanner.innerHTML = `Aucune donnée d'avancement. Chargez un fichier sur la page <a href="emploi.html">d'accueil</a>.`;
+            }
+        })
+        .catch(error => {
+            console.error("Erreur de chargement des données d'avancement:", error);
+            infoBanner.innerHTML = `Erreur de communication avec le serveur.`;
+        });
+}
+
+        function calculateAndDisplayCardStats(rows) {
+            const formateurs = new Set();
+            const groupes = new Set();
+            
+            const COL_FORMATEUR_P = 20;
+            const COL_FORMATEUR_S = 22;
+            const COL_GROUPE = 8;
+
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!Array.isArray(row)) continue;
+
+                const formateurP = getFormattedName(row[COL_FORMATEUR_P]);
+                const formateurS = getFormattedName(row[COL_FORMATEUR_S]);
+                if (formateurP) formateurs.add(formateurP);
+                if (formateurS) formateurs.add(formateurS);
+                
+                const groupeName = row[COL_GROUPE];
+                if (groupeName) groupes.add(groupeName);
+            }
+
+            document.getElementById('stats-formateurs').textContent = formateurs.size;
+            document.getElementById('stats-groupes').textContent = groupes.size;
+        }
+
+    function renderCurrentView() {
+            let dataToDisplay;
+            if (currentView === 'formateur') {
+                dataToDisplay = dataByFormateur;
+            } else if (currentView === 'groupe') {
+                dataToDisplay = dataByGroupe;
+            } else { // Cas 'module'
+                const selectedGroup = document.getElementById('groupFilter').value;
+                const filteredData = {};
+                // On parcourt tous les modules
+                for (const moduleCode in dataByModule) {
+                    // Pour chaque module, on récupère les données du groupe sélectionné
+                    const moduleDataForGroup = dataByModule[moduleCode][selectedGroup];
+                    if (moduleDataForGroup) {
+                        filteredData[moduleCode] = moduleDataForGroup;
+                    }
+                }
+                dataToDisplay = filteredData;
+            }
+            displayChart(dataToDisplay, currentView);
+        }
+
+        function populateGroupFilter() {
+            const filterSelect = document.getElementById('groupFilter');
+            filterSelect.innerHTML = '<option value="tous_les_groupes">Tous les groupes</option>'; // Option par défaut
+
+            const groupes = Object.keys(dataByGroupe).sort();
+            groupes.forEach(groupe => {
+                const option = document.createElement('option');
+                option.value = groupe;
+                option.textContent = groupe;
+                filterSelect.appendChild(option);
+            });
+        }
+
+    // NOUVELLE fonction de traitement par GROUPE
+    function processAvancementDataByGroupe(rows) {
+        const data = {};
+        const COL_GROUPE = 8; // La colonne I pour les groupes
+        const COL_MH_AFFECTEE_P = 35, COL_MH_AFFECTEE_S = 36, COL_MH_AFFECTEE_G = 37, 
+              COL_MH_REALISEE_P = 38, COL_MH_REALISEE_S = 39, COL_MH_REALISEE_G = 40;
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const groupName = row[COL_GROUPE];
+
+            if (!groupName || !Array.isArray(row) || row.length <= COL_MH_REALISEE_G) continue;
+            
+            if (!data[groupName]) {
+                data[groupName] = { affecteP: 0, affecteS: 0, affecteG: 0, realiseP: 0, realiseS: 0, realiseG: 0 };
+            }
+
+            const parseHour = (value) => parseFloat(String(value).replace(',', '.')) || 0;
+            const entry = data[groupName];
+            entry.affecteP += parseHour(row[COL_MH_AFFECTEE_P]);
+            entry.affecteS += parseHour(row[COL_MH_AFFECTEE_S]);
+            entry.affecteG += parseHour(row[COL_MH_AFFECTEE_G]);
+            entry.realiseP += parseHour(row[COL_MH_REALISEE_P]);
+            entry.realiseS += parseHour(row[COL_MH_REALISEE_S]);
+            entry.realiseG += parseHour(row[COL_MH_REALISEE_G]);
+        }
+        return data;
+    }
+
+    function getFormattedName(name) {
+        if (!name) return '';
+        const words = name.trim().toUpperCase().split(/\s+/).filter(word => word.length > 0);
+        return words.join(' ');
+    }
+    
+    // Fonction d'affichage de graphique GÉNÉRALISÉE
+    function displayChart(data, type) {
+            const ctx = document.getElementById('globalAvancementChart').getContext('2d');
+            if (globalChart) {
+                globalChart.destroy();
+            }
+            
+            const sortedKeys = Object.keys(data).sort();
+            const labels = sortedKeys;
+            const datasets = [
+                {
+                    type: 'bar',
+                    label: 'MH Affectée Globale',
+                    data: sortedKeys.map(key => data[key].affecteG),
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    yAxisID: 'y_hours', // Axe des heures
+                },
+                {
+                    type: 'bar',
+                    label: 'MH Réalisée',
+                    data: sortedKeys.map(key => data[key].realiseG),
+                    backgroundColor: 'rgba(144, 238, 144, 0.8)',
+                    yAxisID: 'y_hours', // Axe des heures
+                }
+            ];
+
+            // Remplacer la ligne "Statutaire" par la nouvelle ligne "Taux d'Avancement"
+            if (type === 'formateur') {
+                datasets.push({ // push pour la mettre au-dessus des barres
+                    type: 'line',
+                    label: "Taux d'Avancement (%)",
+                    data: sortedKeys.map(key => data[key].tauxAvancement),
+                    borderColor: '#9b59b6', // Une couleur violette pour bien la distinguer
+                    backgroundColor: 'rgba(155, 89, 182, 0.2)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#8e44ad',
+                    pointRadius: 4,
+                    tension: 0.2,
+                    fill: true,
+                    yAxisID: 'y_percent', // NOUVEAU : On assigne cette ligne au nouvel axe des pourcentages
+                });
+            }
+
+            // --- NOUVELLE CONFIGURATION DES OPTIONS AVEC DEUX AXES Y ---
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: { ticks: { autoSkip: false, maxRotation: 90, minRotation: 70 } },
+                    // Axe Y principal (à gauche) pour les heures
+                    y_hours: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Heures'
+                        }
+                    },
+                    // Axe Y secondaire (à droite) pour les pourcentages
+                    y_percent: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        min: 0,
+                        max: 100, // L'axe ira de 0 à 100%
+                        title: {
+                            display: true,
+                            text: "Taux d'Avancement (%)"
+                        },
+                        // On cache la grille de cet axe pour ne pas surcharger le visuel
+                        grid: {
+                            drawOnChartArea: false, 
+                        },
+                        ticks: {
+                            // Ajoute le symbole '%' à la fin des labels de l'axe
+                            callback: function(value) {
+                                return value + '%'
+                            }
+                        }
+                    }
+                },
+                plugins: { 
+                    legend: { position: 'top' },
+                    // Infobulle personnalisée pour afficher "heures" ou "%" selon la série
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    // Si le label contient un "%", on ajoute le symbole
+                                    if (context.dataset.label.includes('%')) {
+                                        label += context.parsed.y.toFixed(1) + '%';
+                                    } else {
+                                        label += context.parsed.y + ' heures';
+                                    }
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                onClick: (event, elements) => { /* ... (logique de clic inchangée) ... */ }
+            };
+
+            // Pour la vue formateur, on s'assure que l'axe des pourcentages est bien affiché
+            if (type !== 'formateur') {
+                chartOptions.scales.y_percent.display = false;
+            }
+
+            globalChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: labels, datasets: datasets },
+                options: chartOptions
+            });
+        }
+
+    function showDetailsModal(title, data) {
+        document.getElementById('modalTitle').textContent = title;
+        const grid = document.getElementById('modalDetailsGrid');
+        const format = (num) => (num || 0).toFixed(1);
+        grid.innerHTML = `
+            <div class="detail-item"><span class="label">MH Affectée Présentiel</span><span class="value">${format(data.affecteP)}</span></div>
+            <div class="detail-item realise"><span class="label">MH Réalisée Présentiel</span><span class="value">${format(data.realiseP)}</span></div>
+            <div class="detail-item"><span class="label">MH Affectée Synchrone</span><span class="value">${format(data.affecteS)}</span></div>
+            <div class="detail-item realise"><span class="label">MH Réalisée Synchrone</span><span class="value">${format(data.realiseS)}</span></div>
+            <div class="detail-item total"><span class="label">TOTAL AFFECTÉ</span><span class="value">${format(data.affecteG)}</span></div>
+            <div class="detail-item total realise"><span class="label">TOTAL RÉALISÉ</span><span class="value">${format(data.realiseG)}</span></div>
+        `;
+        document.getElementById('detailsModal').classList.add('active');
+    }
+    
+    // Il faut ré-insérer la fonction processAvancementDataByFormateur ici
+    function processAvancementDataByFormateur(rows) {
+            const data = {};
+            const COL_FORMATEUR_P = 20, COL_FORMATEUR_S = 22, COL_MH_AFFECTEE_P = 35,
+                  COL_MH_AFFECTEE_S = 36, COL_MH_AFFECTEE_G = 37, COL_MH_REALISEE_P = 38,
+                  COL_MH_REALISEE_S = 39, COL_MH_REALISEE_G = 40;
+
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!Array.isArray(row) || row.length <= COL_MH_REALISEE_G) continue;
+                
+                const formateursOnRow = new Set([getFormattedName(row[COL_FORMATEUR_P]), getFormattedName(row[COL_FORMATEUR_S])].filter(Boolean));
+                formateursOnRow.forEach(formateurName => {
+                    if (!data[formateurName]) {
+                        data[formateurName] = { affecteP: 0, affecteS: 0, affecteG: 0, realiseP: 0, realiseS: 0, realiseG: 0 };
+                    }
+                    const parseHour = (value) => parseFloat(String(value).replace(',', '.')) || 0;
+                    const entry = data[formateurName];
+                    entry.affecteP += parseHour(row[COL_MH_AFFECTEE_P]);
+                    entry.affecteS += parseHour(row[COL_MH_AFFECTEE_S]);
+                    entry.affecteG += parseHour(row[COL_MH_AFFECTEE_G]);
+                    entry.realiseP += parseHour(row[COL_MH_REALISEE_P]);
+                    entry.realiseS += parseHour(row[COL_MH_REALISEE_S]);
+                    entry.realiseG += parseHour(row[COL_MH_REALISEE_G]);
+                });
+            }
+
+            // NOUVEAU : Après l'agrégation, on calcule le taux d'avancement pour chaque formateur
+            for (const formateurName in data) {
+                const entry = data[formateurName];
+                // Calcul : (réalisé / affecté) * 100. Gère le cas de la division par zéro.
+                entry.tauxAvancement = entry.affecteG > 0 ? (entry.realiseG / entry.affecteG) * 100 : 0;
+            }
+
+            return data;
+        }
+
+    function displayChart(data, type) {
+            const ctx = document.getElementById('globalAvancementChart').getContext('2d');
+            if (globalChart) {
+                globalChart.destroy();
+            }
+            
+            const sortedKeys = Object.keys(data).sort();
+            const labels = sortedKeys;
+            const datasets = [
+                {
+                    type: 'bar',
+                    label: 'MH Affectée Globale',
+                    data: sortedKeys.map(key => data[key].affecteG),
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                },
+                {
+                    type: 'bar',
+                    label: 'MH Réalisée',
+                    data: sortedKeys.map(key => data[key].realiseG),
+                    backgroundColor: 'rgba(144, 238, 144, 0.8)',
+                }
+            ];
+
+            if (type === 'formateur') {
+                datasets.unshift({
+                    type: 'line',
+                    label: 'MH Statutaire',
+                    data: sortedKeys.map(key => data[key].statutaire || 910),
+                    borderColor: '#e67e22',
+                    borderWidth: 2, pointRadius: 0, fill: false, tension: 0.1
+                });
+            }
+
+            globalChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: labels, datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { ticks: { autoSkip: false, maxRotation: 90, minRotation: 70 } },
+                        y: { beginAtZero: true, title: { display: true, text: 'Heures' } }
+                    },
+                    plugins: { legend: { position: 'top' } },
+                    onClick: (event, elements) => {
+                        // La modale affichera les détails globaux pour les modules/groupes pour l'instant
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const keyName = labels[index];
+                            let title = `Détails pour ${keyName}`;
+                            if (type === 'groupe') title = `Détails pour le groupe ${keyName}`;
+                            if (type === 'module') title = `Détails pour le module ${keyName}`;
+                            showDetailsModal(title, data[keyName]);
+                        }
+                    }
+                }
+            });
+        }
+
+        function processAvancementDataByModule(rows) {
+            const data = {};
+            const COL_MODULE = 16;  // Colonne Q
+            const COL_GROUPE = 8;   // Colonne I
+            const COL_MH_AFFECTEE_G = 37;
+            const COL_MH_REALISEE_G = 40;
+            // Ajoutez les autres colonnes si vous voulez les détails dans la modale
+            
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const moduleCode = row[COL_MODULE];
+                const groupName = row[COL_GROUPE];
+
+                if (!moduleCode || !groupName || !Array.isArray(row) || row.length <= COL_MH_REALISEE_G) continue;
+                
+                const parseHour = (value) => parseFloat(String(value).replace(',', '.')) || 0;
+                
+                // Initialisation de l'entrée pour le module s'il n'existe pas
+                if (!data[moduleCode]) {
+                    data[moduleCode] = {
+                        'tous_les_groupes': { affecteG: 0, realiseG: 0 /* autres champs à 0 */ }
+                    };
+                }
+                // Initialisation pour le groupe spécifique au sein du module
+                if (!data[moduleCode][groupName]) {
+                    data[moduleCode][groupName] = { affecteG: 0, realiseG: 0 /* autres champs à 0 */ };
+                }
+
+                // Ajout des heures à l'agrégat "tous les groupes"
+                data[moduleCode]['tous_les_groupes'].affecteG += parseHour(row[COL_MH_AFFECTEE_G]);
+                data[moduleCode]['tous_les_groupes'].realiseG += parseHour(row[COL_MH_REALISEE_G]);
+
+                // Ajout des heures au groupe spécifique
+                data[moduleCode][groupName].affecteG += parseHour(row[COL_MH_AFFECTEE_G]);
+                data[moduleCode][groupName].realiseG += parseHour(row[COL_MH_REALISEE_G]);
+            }
+            return data;
+        }
+
+        function displayAffectationDoughnut(rows) {
+    // =======================================================
+    // ÉTAPE 1 : Calcul de toutes les métriques nécessaires
+    // =======================================================
+
+    let modulesAffectesCount = 0;
+    const groupModuleMap = {}; // Pour calculer les instances de modules uniques par groupe
+
+    // Définition des indices de colonnes pour la lisibilité
+    const COL_FORMATEUR_P = 20; // Colonne U
+    const COL_GROUPE = 8;       // Colonne I
+    const COL_MODULE = 16;      // Colonne Q
+    const totalLines = rows.length > 1 ? rows.length - 1 : 0; // Nombre total de lignes d'enseignement possibles
+
+    // On parcourt les lignes du fichier (en commençant à 1 pour sauter l'en-tête)
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!Array.isArray(row)) continue;
+
+        // Calcul 1 : Nombre de modules affectés (colonne U non vide)
+        if (row[COL_FORMATEUR_P] && String(row[COL_FORMATEUR_P]).trim() !== '') {
+            modulesAffectesCount++;
+        }
+
+        // Calcul 2 : Nombre total d'instances de modules
+        const groupeName = row[COL_GROUPE];
+        const moduleCode = row[COL_MODULE];
+        if (groupeName && moduleCode) {
+            // Initialise un Set pour le groupe s'il n'existe pas
+            if (!groupModuleMap[groupeName]) {
+                groupModuleMap[groupeName] = new Set();
+            }
+            // Ajoute le module au Set (gère automatiquement les doublons pour ce groupe)
+            groupModuleMap[groupeName].add(moduleCode);
+        }
+    }
+
+    // Finalisation des calculs
+    let totalModuleInstances = 0;
+    for (const groupe in groupModuleMap) {
+        totalModuleInstances += groupModuleMap[groupe].size;
+    }
+    const modulesNonAffectes = totalLines - modulesAffectesCount;
+    const tauxAffectation = totalLines > 0 ? (modulesAffectesCount / totalLines * 100) : 0;
+    const tauxFormatted = tauxAffectation.toFixed(0) + '%'; // Format "XX%" pour l'affichage
+
+    // =======================================================
+    // ÉTAPE 2 : Mise à jour de l'interface HTML (texte central et légende)
+    // =======================================================
+
+    document.getElementById('doughnut-percent').textContent = tauxFormatted;
+    document.getElementById('legend-affectes-value').textContent = modulesAffectesCount;
+    document.getElementById('legend-non-affectes-value').textContent = modulesNonAffectes;
+    document.getElementById('legend-instances-value').textContent = totalModuleInstances;
+
+    // =======================================================
+    // ÉTAPE 3 : Configuration et rendu du graphique Chart.js
+    // =======================================================
+
+    const ctx = document.getElementById('affectationDoughnutChart').getContext('2d');
+    
+    // Détruire un graphique existant pour éviter les superpositions et les fuites de mémoire
+    if (window.affectationChart instanceof Chart) {
+        window.affectationChart.destroy();
+    }
+
+    // Création de la nouvelle instance du graphique
+    window.affectationChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            // Ces labels ne sont pas affichés mais sont utiles pour le débogage
+            labels: ['Modules Affectés', 'Modules non Affectés'],
+            datasets: [{
+                // Seules les données pour l'anneau intérieur sont nécessaires
+                data: [modulesAffectesCount, modulesNonAffectes],
+                backgroundColor: [
+                    '#2ecc71',  // Vert pour les modules affectés
+                    '#e9ecef'   // Gris clair pour le reste
+                ],
+                borderColor: 'rgba(0,0,0,0)', // Pas de bordure visible
+                cutout: '80%' // Crée un anneau fin, laissant de la place au centre
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            // On désactive toutes les interactions par défaut de Chart.js
+            // car notre légende est maintenant gérée en HTML.
+            plugins: {
+                legend: {
+                    display: false // Cache la légende générée par Chart.js
+                },
+                tooltip: {
+                    enabled: false // Désactive les infobulles au survol
+                }
+            }
+        }
+    });
+}
+async function checkSessionAndLoad() {
+        try {
+            const response = await fetch('../api/auth/verify_session.php');
+            const result = await response.json();
+
+            if (!result.success) {
+                window.location.href = 'login.html'; // Redirection si non connecté
+                return;
+            }
+
+            // Si la session est valide, on charge les données de CETTE page
+            loadAndDisplayData(); 
+
+        } catch (error) {
+            window.location.href = 'login.html';
+        }
+    }
+
+
+    /**
+ * Crée les initiales à partir d'un nom complet.
+ * @param {string} name - Le nom complet (ex: "Nour Mery")
+ * @returns {string} Les initiales (ex: "NM")
+ */
+function getInitials(name) {
+    if (!name) return '--';
+    const words = name.trim().split(' ');
+    if (words.length === 1) {
+        return words[0].substring(0, 2).toUpperCase();
+    }
+    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
+
+/**
+ * Met à jour l'interface utilisateur avec les informations du directeur.
+ * @param {object} userData - L'objet contenant { nom: '...', email: '...' }
+ */
+function populateUserInfo(userData) {
+    if (!userData) return;
+    
+    document.getElementById('profile-initials').textContent = getInitials(userData.nom);
+    document.getElementById('dropdown-user-name').textContent = userData.nom;
+    document.getElementById('dropdown-user-email').textContent = userData.email;
+}
+
+/**
+ * Met en place les écouteurs pour le menu de profil.
+ */
+function setupProfileMenu() {
+    const profileButton = document.getElementById('profile-button');
+    const profileDropdown = document.getElementById('profile-dropdown');
+
+    if (profileButton) {
+        profileButton.addEventListener('click', (event) => {
+            event.stopPropagation(); // Empêche le clic de se propager à la fenêtre
+            profileDropdown.classList.toggle('show');
+        });
+    }
+
+    // Fermer le menu si on clique n'importe où ailleurs sur la page
+    window.addEventListener('click', (event) => {
+        if (profileDropdown.classList.contains('show') && !profileButton.contains(event.target)) {
+            profileDropdown.classList.remove('show');
+        }
+    });
+}
+
+// MODIFIEZ checkSessionAndLoad pour qu'elle ressemble à ça
+async function checkSessionAndLoad() {
+    try {
+        const response = await fetch('../api/auth/verify_session.php');
+        const result = await response.json();
+
+        if (!result.success) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // --- NOUVELLES LIGNES ---
+        populateUserInfo(result.userData); // On peuple le menu avec les données reçues
+        setupProfileMenu(); // On active la logique de clic du menu
+        // -------------------------
+
+        // On charge le contenu spécifique à la page
+        if (typeof loadInitialData === 'function') {
+            loadInitialData(); // Pour emploi.html
+        } else if (typeof loadAndDisplayData === 'function') {
+            loadAndDisplayData(); // Pour avancement.html
+        } else if (typeof loadData === 'function') {
+            loadData(); // Pour edition.html
+        }
+        
+    } catch (error) {
+        console.error('Session check failed:', error);
+        window.location.href = 'login.html';
+    }
+}
+  </script>
+</body>
+</html>

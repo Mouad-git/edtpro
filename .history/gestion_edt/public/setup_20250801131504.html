@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Initiale - Calendrier Intuitif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    
+    <!-- NOUVEAU : FullCalendar au lieu de Flatpickr -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales/fr.js'></script>
+
+    <style>
+        /* Styles généraux (inchangés) */
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .stepper-container { position: relative; padding: 0 3rem; }
+        .progress-line { position: absolute; top: 20px; left: 60px; right: 60px; height: 4px; background: #e5e7eb; z-index: 1; }
+        .progress-line-filled { position: absolute; top: 0; left: 0; height: 100%; background: #3b82f6; width: 0%; transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1); }
+        .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; z-index: 2; }
+        .progress-circle { width: 40px; height: 40px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #6b7280; transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .progress-circle.active { background: #3b82f6; color: white; transform: scale(1.15); box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2); }
+        .progress-circle.completed { background: #3b82f6; color: white; }
+        .progress-circle.completed::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; }
+        .progress-circle.success { background: #16a34a; color: white; transform: scale(1.15); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.2); }
+        .progress-circle.success::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; }
+        .progress-label { margin-top: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; text-align: center; transition: all 0.4s ease; }
+        .progress-label.active { color: #3b82f6; font-weight: 700; }
+        .progress-label.completed { color: #1f2937; font-weight: 600; }
+        .tags-container { margin-top: 1rem; padding: 0.5rem; min-height: 80px; background-color: #f9fafb; border-radius: 0.375rem; border: 1px solid #e5e7eb; display: flex; flex-wrap: wrap; gap: 0.5rem; align-content: flex-start; }
+        .tag { display: inline-flex; align-items: center; background-color: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; animation: popIn 0.3s ease-out; }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .tag button { margin-left: 8px; background: none; border: none; cursor: pointer; color: #6366f1; font-size: 1rem; line-height: 1; }
+        .btn { transition: all 0.3s ease; transform: translateY(0); box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08); }
+        .btn:active { transform: translateY(1px); }
+
+        /* NOUVEAU : Styles pour l'interface Calendrier */
+        #calendar-container { position: relative; z-index: 1; }
+        #calendar { --fc-border-color: #e5e7eb; --fc-event-border-color: #3b82f6; --fc-event-bg-color: #3b82f6; --fc-event-text-color: white; font-size: 14px; }
+        .fc .fc-toolbar-title { font-size: 1.25em; font-weight: 700; }
+        .fc-event-holiday { background-color: #ef4444 !important; border-color: #dc2626 !important; }
+        .fc-event-vacation { background-color: #8b5cf6 !important; border-color: #7c3aed !important; }
+        .fc-event-main { cursor: pointer; }
+        .calendar-legend { display: flex; gap: 1rem; justify-content: center; margin-bottom: 1.5rem; padding-top: 0.5rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
+        .legend-color-box { width: 15px; height: 15px; border-radius: 3px; }
+
+        /* NOUVEAU : Styles pour la fenêtre modale */
+        #vacation-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+        #vacation-modal-overlay.visible { opacity: 1; pointer-events: auto; }
+        #vacation-modal { background: white; padding: 2rem; border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; transform: scale(0.95); transition: transform 0.3s ease; }
+        #vacation-modal-overlay.visible #vacation-modal { transform: scale(1); }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-4xl bg-white p-6 md:p-8 rounded-xl shadow-lg">
+        
+        <!-- Barre de progression (inchangée) -->
+        <div class="w-full mb-12 stepper-container">
+            <div class="progress-line"><div class="progress-line-filled" id="progress-line-filled"></div></div>
+            <div class="flex items-start justify-between">
+                <div id="progress-step-1" class="stepper-item"><div id="progress-circle-1" class="progress-circle">1</div><div id="progress-label-1" class="progress-label">Fichier</div></div>
+                <div id="progress-step-2" class="stepper-item"><div id="progress-circle-2" class="progress-circle">2</div><div id="progress-label-2" class="progress-label">Formateurs</div></div>
+                <div id="progress-step-3" class="stepper-item"><div id="progress-circle-3" class="progress-circle">3</div><div id="progress-label-3" class="progress-label">Calendrier</div></div>
+                <div id="progress-step-4" class="stepper-item"><div id="progress-circle-4" class="progress-circle">4</div><div id="progress-label-4" class="progress-label">Espaces</div></div>
+            </div>
+        </div>
+        
+        <!-- Étape 1 : Fichier (inchangée) -->
+        <div id="step1" class="step">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Étape 1 : Importez votre fichier de base</h2>
+            <p class="mb-6 text-gray-600 text-center">Veuillez sélectionner le fichier Excel "AvancementProgramme" fourni. Le système extraira automatiquement la liste de vos formateurs.</p>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 hover:bg-gray-100 hover:border-blue-500 transition-all duration-300">
+                <input type="file" id="excelFile" class="hidden" accept=".xlsx, .xls">
+                <label for="excelFile" class="cursor-pointer"><i class="fas fa-cloud-upload-alt text-5xl text-blue-500 mb-4 inline-block"></i><p class="text-lg font-semibold text-gray-700">Cliquez pour choisir un fichier</p><p id="fileName" class="text-sm text-gray-500 mt-2 font-medium"></p></label>
+            </div>
+            <div id="step1-feedback" class="text-red-500 mt-4 text-center font-semibold"></div>
+            <button id="step1NextBtn" class="w-full bg-blue-600 text-white p-3 rounded-lg mt-6 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold transition-all duration-300 btn" disabled>Suivant <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <!-- Étape 2 : Formateurs (inchangée) -->
+        <div id="step2" class="step">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Étape 2 : Vérifiez les informations des formateurs</h2>
+            <p class="mb-6 text-gray-600 text-center">Les e-mails et matricules ont été générés automatiquement. Veuillez les vérifier et les corriger si nécessaire.</p>
+            <div class="overflow-y-auto max-h-[50vh] border rounded-lg shadow-inner">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 sticky top-0"><tr><th class="p-3 font-semibold">Nom du Formateur</th><th class="p-3 font-semibold w-48">Masse Horaire Stat.</th><th class="p-3 font-semibold w-48">Matricule</th><th class="p-3 font-semibold">E-mail</th></tr></thead>
+                    <tbody id="formateurs-table-body" class="divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button id="step2PrevBtn" class="w-1/3 bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 font-bold transition-all duration-300 btn">Précédent</button>
+                <button id="step2NextBtn" class="w-2/3 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 font-bold flex items-center justify-center gap-2 transition-all duration-300 btn">Suivant <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+        
+        <!-- Étape 3 : Calendrier (ENTIÈREMENT REFAITE) -->
+        <div id="step3" class="step">
+            <h2 class="text-2xl font-bold mb-2 text-center text-gray-800">Étape 3 : Configurez le calendrier de l'année</h2>
+            <p class="mb-4 text-gray-600 text-center">Les jours fériés sont chargés automatiquement. Pour ajouter des vacances, cliquez et glissez sur une période. Pour supprimer, cliquez sur un événement.</p>
+            
+            <div class="calendar-legend">
+                <div class="legend-item"><div class="legend-color-box" style="background-color: #ef4444;"></div><span>Jour férié</span></div>
+                <div class="legend-item"><div class="legend-color-box" style="background-color: #8b5cf6;"></div><span>Vacances</span></div>
+            </div>
+
+            <div id="calendar-container" class="border rounded-lg p-4 shadow-inner bg-gray-50">
+                <div id="calendar"></div>
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button id="step3PrevBtn" class="w-1/3 bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 font-bold btn">Précédent</button>
+                <button id="step3NextBtn" class="w-2/3 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 font-bold btn">Suivant <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+        
+        <!-- Étape 4 : Espaces (inchangée) -->
+        <div id="step4" class="step">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Étape 4 : Listez vos espaces de travail</h2>
+            <p class="mb-6 text-gray-600 text-center">Ajoutez vos salles, amphis, laboratoires, etc. N'oubliez pas d'inclure "TEAMS" pour les cours à distance.</p>
+            <div class="relative"><div class="flex gap-2 mb-4"><input type="text" id="espace-input" class="flex-grow p-3 border border-gray-300 rounded-md shadow-inner" placeholder="Salle A101"><button id="ajouter-espace" class="bg-blue-600 text-white px-4 rounded-md hover:bg-blue-700 transition-colors btn"><i class="fas fa-plus mr-1"></i> Ajouter</button></div></div>
+            <div class="mt-4"><p class="text-sm text-gray-500 mb-2">Salles communes: <span id="common-spaces" class="inline-flex gap-2 ml-2"><button class="text-blue-600 hover:text-blue-800 text-sm" data-space="Salle A101">Salle A101</button><button class="text-blue-600 hover:text-blue-800 text-sm" data-space="Amphi B">Amphi B</button><button class="text-blue-600 hover:text-blue-800 text-sm" data-space="Labo Info">Labo Info</button><button class="text-blue-600 hover:text-blue-800 text-sm" data-space="TEAMS">TEAMS</button></span></p></div>
+            <div id="espaces-container" class="tags-container mt-4 min-h-[100px]"></div>
+            <div id="step4-feedback" class="text-red-500 mt-4 text-center font-semibold"></div>
+            <div class="flex gap-4 mt-6">
+                <button id="step4PrevBtn" class="w-1/3 bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 font-bold btn">Précédent</button>
+                <button id="finishSetupBtn" class="w-2/3 bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 font-bold flex items-center justify-center gap-2 transition-all duration-300 btn">Terminer et Sauvegarder <i class="fas fa-check"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOUVEAU : Fenêtre modale pour nommer les vacances -->
+    <div id="vacation-modal-overlay">
+        <div id="vacation-modal">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">Nommer la période de vacances</h3>
+            <p id="vacation-dates-label" class="mb-4 text-gray-600"></p>
+            <input type="text" id="vacation-name-input" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Ex: Vacances de Printemps">
+            <div id="modal-feedback" class="text-red-500 text-sm mt-2 h-4"></div>
+            <div class="flex justify-end gap-3 mt-4">
+                <button id="cancel-vacation-btn" class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300 font-bold btn">Annuler</button>
+                <button id="save-vacation-btn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-bold btn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', initializeSetupPage);
+        
+        // La fonction `initializeSetupPage` est maintenant fortement modifiée pour FullCalendar.
+        function initializeSetupPage() {
+            const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3'), document.getElementById('step4')];
+            const fileInput = document.getElementById('excelFile');
+            const fileNameLabel = document.getElementById('fileName');
+            const formateursTableBody = document.getElementById('formateurs-table-body');
+            const feedbacks = {
+                step1: document.getElementById('step1-feedback'),
+                step4: document.getElementById('step4-feedback'),
+                modal: document.getElementById('modal-feedback')
+            };
+            let rawExcelData = null;
+
+            const nextButtons = { 1: document.getElementById('step1NextBtn'), 2: document.getElementById('step2NextBtn'), 3: document.getElementById('step3NextBtn') };
+            const prevButtons = { 2: document.getElementById('step2PrevBtn'), 3: document.getElementById('step3PrevBtn'), 4: document.getElementById('step4PrevBtn') };
+            const progressLineFilled = document.getElementById('progress-line-filled');
+            
+            // --- NOUVELLES VARIABLES POUR LE CALENDRIER ---
+            let calendar;
+            let isCalendarInitialized = false;
+            let tempSelectionInfo = null; // Stocke temporairement les dates sélectionnées
+            const vacationModalOverlay = document.getElementById('vacation-modal-overlay');
+
+            function goToStep(stepNumber) {
+                steps.forEach((step, index) => step.classList.toggle('active', (index + 1) === stepNumber));
+                updateProgress(stepNumber);
+
+                // NOUVEAU : Initialiser ou rendre le calendrier uniquement quand l'étape 3 est visible
+                if (stepNumber === 3) {
+                    // Utiliser un timeout pour s'assurer que l'élément est visible avant le rendu
+                    setTimeout(() => {
+                        if (!isCalendarInitialized) {
+                            initializeCalendar();
+                            isCalendarInitialized = true;
+                        } else {
+                            calendar.render(); // Re-rendre le calendrier si on y retourne
+                        }
+                    }, 10); // Un petit délai suffit
+                }
+            }
+            
+            function updateProgress(currentStep) {
+                const totalSteps = steps.length;
+                const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+                progressLineFilled.style.width = `${progressPercentage}%`;
+                
+                for (let i = 1; i <= totalSteps; i++) {
+                    const circle = document.getElementById(`progress-circle-${i}`);
+                    const label = document.getElementById(`progress-label-${i}`);
+                    
+                    circle.classList.remove('active', 'completed', 'success');
+                    label.classList.remove('active', 'completed');
+                    circle.textContent = i;
+
+                    if (i < currentStep) {
+                        circle.classList.add('completed');
+                        label.classList.add('completed');
+                        circle.innerHTML = '';
+                    } else if (i === currentStep) {
+                        circle.classList.add('active');
+                        label.classList.add('active');
+                    }
+                }
+            }
+            
+            // --- NOUVEAU : LOGIQUE DE FULLCALENDAR ---
+            function initializeCalendar() {
+                const calendarEl = document.getElementById('calendar');
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    locale: 'fr',
+                    initialView: 'dayGridMonth',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,dayGridWeek'
+                    },
+                    selectable: true, // Permet de cliquer-glisser
+                    editable: false,  // On ne veut pas déplacer/redimensionner les événements
+                    select: (selectionInfo) => {
+                        // Ouvre la modale pour nommer la période de vacances
+                        tempSelectionInfo = selectionInfo;
+                        const start = selectionInfo.start;
+                        // L'API `select` rend la date de fin exclusive, on la rend inclusive
+                        const end = new Date(selectionInfo.end.valueOf() - 1); 
+                        
+                        const formatter = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' });
+                        document.getElementById('vacation-dates-label').textContent = `Du ${formatter.format(start)} au ${formatter.format(end)}`;
+                        
+                        vacationModalOverlay.classList.add('visible');
+                        document.getElementById('vacation-name-input').focus();
+                    },
+                    eventClick: (clickInfo) => {
+                        // Permet de supprimer un événement
+                        const eventTitle = clickInfo.event.title;
+                        if (confirm(`Voulez-vous vraiment supprimer l'événement "${eventTitle}" ?`)) {
+                            clickInfo.event.remove();
+                        }
+                    }
+                });
+                
+                // Charger les jours fériés et les ajouter au calendrier
+                loadHolidaysIntoCalendar();
+                calendar.render();
+            }
+
+            async function loadHolidaysIntoCalendar() {
+                try {
+                    const year = new Date().getFullYear();
+                    const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/MA`);
+                    if (!response.ok) throw new Error('API Nager indisponible');
+                    const holidays = await response.json();
+                    
+                    holidays.forEach(h => {
+                        calendar.addEvent({
+                            title: h.localName,
+                            start: h.date,
+                            allDay: true,
+                            classNames: ['fc-event-holiday'], // Classe CSS pour la couleur
+                            editable: false // Les jours fériés ne sont pas modifiables
+                        });
+                    });
+                } catch (error) {
+                    console.error("Erreur de chargement des jours fériés:", error);
+                    alert("Impossible de charger les jours fériés automatiquement.");
+                }
+            }
+
+            // --- NOUVEAU : LOGIQUE DE LA MODALE DES VACANCES ---
+            document.getElementById('save-vacation-btn').addEventListener('click', () => {
+                const nameInput = document.getElementById('vacation-name-input');
+                const vacationName = nameInput.value.trim();
+
+                if (!vacationName) {
+                    feedbacks.modal.textContent = "Le nom ne peut pas être vide.";
+                    return;
+                }
+
+                if (tempSelectionInfo) {
+                    calendar.addEvent({
+                        title: vacationName,
+                        start: tempSelectionInfo.startStr,
+                        end: tempSelectionInfo.endStr,
+                        allDay: true,
+                        classNames: ['fc-event-vacation']
+                    });
+                }
+                
+                closeVacationModal();
+            });
+            
+            document.getElementById('cancel-vacation-btn').addEventListener('click', closeVacationModal);
+            
+            function closeVacationModal() {
+                vacationModalOverlay.classList.remove('visible');
+                document.getElementById('vacation-name-input').value = '';
+                feedbacks.modal.textContent = '';
+                tempSelectionInfo = null;
+                calendar.unselect(); // Retire la sélection visuelle sur le calendrier
+            }
+
+
+            // --- LOGIQUE POUR L'ÉTAPE 4 (Espaces) ---
+            const espaceInput = document.getElementById('espace-input');
+            const ajouterEspaceBtn = document.getElementById('ajouter-espace');
+            const espacesContainer = document.getElementById('espaces-container');
+            const commonSpacesContainer = document.getElementById('common-spaces');
+            
+            function ajouterEspace(espace) {
+                espace = espace.trim();
+                if (!espace || Array.from(espacesContainer.querySelectorAll('.tag')).some(t => t.dataset.value === espace)) return;
+                
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.dataset.value = espace;
+                tag.innerHTML = `${espace} <button type="button"><i class="fas fa-times"></i></button>`;
+                tag.querySelector('button').onclick = () => tag.remove();
+                espacesContainer.appendChild(tag);
+                
+                espaceInput.value = '';
+            }
+            
+            ajouterEspaceBtn.addEventListener('click', () => ajouterEspace(espaceInput.value));
+            espaceInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); ajouterEspace(espaceInput.value); } });
+            commonSpacesContainer.querySelectorAll('button').forEach(btn => btn.addEventListener('click', (e) => ajouterEspace(e.target.dataset.space)));
+            
+            // --- NAVIGATION ET LOGIQUE DES ÉTAPES ---
+            nextButtons[1].addEventListener('click', () => handleStep1Next());
+            nextButtons[2].addEventListener('click', () => goToStep(3));
+            nextButtons[3].addEventListener('click', () => goToStep(4));
+            prevButtons[2].addEventListener('click', () => goToStep(1));
+            prevButtons[3].addEventListener('click', () => goToStep(2));
+            prevButtons[4].addEventListener('click', () => goToStep(3));
+
+            fileInput.addEventListener('change', function() { if (this.files.length > 0) { fileNameLabel.textContent = this.files[0].name; nextButtons[1].disabled = false; feedbacks.step1.textContent = ""; } });
+
+            function handleStep1Next() {
+                const formData = new FormData();
+                if (!fileInput.files[0]) { feedbacks.step1.textContent = "Veuillez sélectionner un fichier."; return; }
+                formData.append('excelFile', fileInput.files[0]);
+                nextButtons[1].innerHTML = 'Analyse... <i class="fas fa-spinner fa-spin"></i>'; nextButtons[1].disabled = true;
+
+                // Simuler une réponse réussie pour la démo
+                setTimeout(() => {
+                    const demoFormateurs = [
+                        { nom: 'Ahmed ALAOUI', masse_horaire: '120', matricule: 'A12345', email: 'ahmed.alaoui@example.com' },
+                        { nom: 'Fatima ZAHRA', masse_horaire: '90', matricule: 'F54321', email: 'fatima.zahra@example.com' }
+                    ];
+                    populateFormateursTable(demoFormateurs);
+                    goToStep(2);
+                    nextButtons[1].innerHTML = 'Suivant <i class="fas fa-arrow-right"></i>';
+                }, 1000);
+            }
+
+            function populateFormateursTable(formateurs) {
+                formateursTableBody.innerHTML = '';
+                formateurs.forEach(f => {
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-gray-50 transition-colors duration-200";
+                    row.innerHTML = `<td class="p-3 font-semibold text-gray-800 nom">${f.nom}</td><td class="p-3"><input type="number" class="w-full p-2 border rounded masse_horaire" value="${f.masse_horaire}"></td><td class="p-3"><input type="text" class="w-full p-2 border rounded bg-gray-100 matricule" value="${f.matricule}" readonly></td><td class="p-3"><input type="email" class="w-full p-2 border rounded email" value="${f.email}" placeholder="E-mail personnel si vacataire"></td>`;
+                    formateursTableBody.appendChild(row);
+                });
+            }
+
+            const finishSetupBtn = document.getElementById('finishSetupBtn');
+            finishSetupBtn.addEventListener('click', function() {
+                const formateursData = Array.from(formateursTableBody.querySelectorAll('tr')).map(r => ({ nom: r.querySelector('.nom').textContent, masse_horaire: r.querySelector('.masse_horaire').value, matricule: r.querySelector('.matricule').value, email: r.querySelector('.email').value }));
+                
+                // --- NOUVEAU : Récupération des données depuis FullCalendar ---
+                const allEvents = calendar.getEvents();
+                const holidays = [];
+                const vacations = [];
+                
+                allEvents.forEach(event => {
+                    const isHoliday = event.classNames.includes('fc-event-holiday');
+                    const isVacation = event.classNames.includes('fc-event-vacation');
+                    
+                    if (isHoliday) {
+                        holidays.push({
+                            name: event.title,
+                            date: event.start.toISOString().split('T')[0] // Format YYYY-MM-DD
+                        });
+                    } else if (isVacation) {
+                        const endDate = new Date(event.end.valueOf() - 1); // Rendre la date de fin inclusive
+                        vacations.push({
+                            name: event.title,
+                            dates: `${event.start.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`
+                        });
+                    }
+                });
+
+                const espaces = Array.from(espacesContainer.querySelectorAll('.tag')).map(t => t.dataset.value);
+                if (espaces.length === 0) { feedbacks.step4.textContent = "Veuillez ajouter au moins un espace."; return; }
+
+                const finalData = { excelData: rawExcelData, formateursData, holidays, vacations, espaces };
+                console.log("Données finales à envoyer :", finalData); // Pour débogage
+                
+                this.innerHTML = 'Sauvegarde... <i class="fas fa-spinner fa-spin"></i>'; this.disabled = true;
+
+                // Simulation d'un appel API réussi
+                setTimeout(() => {
+                    const circle4 = document.getElementById('progress-circle-4');
+                    const label4 = document.getElementById('progress-label-4');
+                    circle4.classList.remove('active');
+                    circle4.classList.add('success');
+                    label4.classList.add('completed');
+                    circle4.innerHTML = '';
+                    alert("Configuration sauvegardée avec succès !");
+                    // setTimeout(() => { window.location.href = 'admin.html'; }, 1200);
+                    this.innerHTML = 'Terminer et Sauvegarder <i class="fas fa-check"></i>';
+                    this.disabled = false;
+                }, 1500);
+            });
+            
+            // Initialiser à la première étape
+            goToStep(1);
+        }
+    </script>
+</body>
+</html>

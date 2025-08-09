@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- AJOUTÉ : On a besoin de Font Awesome pour les icônes d'œil -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <title>Inscription - Gestionnaire EDT</title>
+    <style>
+        .feedback-error { color: #ef4444; font-weight: 600; }
+        .feedback-success { color: #22c55e; font-weight: 600; }
+        .input-error-message { color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="h-screen flex items-center justify-center">
+        <div class="flex flex-col bg-white rounded-2xl shadow-xl m-6 md:flex-row md:space-y-0">
+            
+            <div class="flex flex-col justify-center p-8 md:p-14">
+                <div class="text-center">
+                    <img style="width: 200px; height: auto; display: block; margin: 0 auto 2rem auto;"
+                         src="assets/images/logo.png" 
+                         alt="Logo du site">
+                </div>
+                <span class="mb-3 text-4xl font-bold">Créer un Compte</span>
+                <span class="font-light text-gray-400 mb-8">
+                    Rejoignez-nous pour commencer à gérer vos emplois du temps.
+                </span>
+
+                <form id="registerForm">
+                    <div class="py-2">
+                        <span class="mb-2 text-md">Nom complet</span>
+                        <input type="text" class="w-full p-2 border border-gray-300 rounded-md" name="nom_complet" id="nom_complet" required />
+                    </div>
+                    
+                    <!-- ===== MODIFICATION MAJEURE : LISTES DÉROULANTES POUR L'ÉTABLISSEMENT ===== -->
+                    <div class="py-2">
+                        <span class="mb-2 text-md">Complexe de Formation</span>
+                        <select id="complexeSelect" class="w-full p-2 border border-gray-300 rounded-md bg-white">
+                            <option value="">-- Sélectionnez un complexe --</option>
+                        </select>
+                    </div>
+
+                    <div class="py-2">
+                        <span class="mb-2 text-md">Établissement (EFP)</span>
+                        <select id="etablissementSelect" class="w-full p-2 border border-gray-300 rounded-md bg-white" disabled>
+                            <option value="">-- Sélectionnez d'abord un complexe --</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Champ caché qui enverra la valeur finale au serveur. C'est l'astuce ! -->
+                    <input type="hidden" name="nom_etablissement" id="nom_etablissement" required>
+                    <!-- ======================================================================= -->
+                    
+                    <div class="py-2">
+                        <span class="mb-2 text-md">Email</span>
+                        <input type="email" class="w-full p-2 border border-gray-300 rounded-md" name="email" id="email" required autocomplete="email" />
+                    </div>
+
+                    <div class="py-2 relative">
+                        <span class="mb-2 text-md">Mot de passe</span>
+                        <input type="password" class="w-full p-2 border border-gray-300 rounded-md" name="mot_de_passe" id="mot_de_passe" required autocomplete="new-password" />
+                        
+                        <!-- SVG eye icon -->
+                        <svg id="togglePassword" xmlns="http://www.w3.org/2000/svg"
+                             class="absolute top-10 right-3 cursor-pointer w-5 h-5 text-gray-500"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                  d="M13.875 18.825A10.05 10.05 0 0112 19c-5.25 0-9.6-3.795-10.5-9a10.05 10.05 0 013.033-5.325m2.401-1.472a10.073 10.073 0 0110.15 1.46m1.551 1.457a10.05 10.05 0 011.365 3.88m.001.05c-.22 1.377-.796 2.665-1.666 3.733M15 12a3 3 0 11-6 0 3 3 0 016 0zM4.5 4.5l15 15" />
+                        </svg>
+                    </div>
+                    
+                    <div class="py-2 relative">
+                        <span class="mb-2 text-md">Confirmer le mot de passe</span>
+                        <input type="password" class="w-full p-2 border border-gray-300 rounded-md" name="confirm_mot_de_passe" id="confirm_mot_de_passe" required autocomplete="new-password" />
+                        <i class="fas fa-eye-slash absolute top-10 right-3 cursor-pointer text-gray-400" id="toggleConfirmPassword"></i>
+                        <div id="password-error" class="input-error-message"></div>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-black text-white p-2 rounded-lg my-6 hover:bg-white hover:text-black hover:border hover:border-gray-300 transition-all duration-300">
+                        Créer mon compte
+                    </button>
+                </form>
+
+                <div id="feedback" class="text-center"></div>
+                
+                <div class="text-center text-gray-400 mt-4">
+                    Déjà un compte ?
+                    <a href="login.html" class="font-bold text-black">Connectez-vous</a>
+                </div>
+            </div>
+            
+            <div class="relative hidden md:block">
+                 <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1854&auto=format&fit=crop" 
+                      alt="Image" 
+                      class="w-[400px] h-full hidden rounded-r-2xl md:block object-cover">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            
+            // --- NOUVELLE LOGIQUE DE CHARGEMENT AUTOMATIQUE ---
+            const complexeSelect = document.getElementById('complexeSelect');
+            const etablissementSelect = document.getElementById('etablissementSelect');
+            const hiddenEtablissementInput = document.getElementById('nom_etablissement');
+    
+            try {
+                // 1. On charge le fichier JSON
+                const response = await fetch('data/etablissements.json');
+                if (!response.ok) {
+                    throw new Error("Le fichier etablissements.json n'a pas pu être chargé.");
+                }
+                const etablissementsParComplexe = await response.json();
+    
+                // 2. On remplit la première liste déroulante (Complexes)
+                const complexes = Object.keys(etablissementsParComplexe).sort();
+                complexes.forEach(complexe => {
+                    const option = document.createElement('option');
+                    option.value = complexe;
+                    option.textContent = complexe;
+                    complexeSelect.appendChild(option);
+                });
+    
+                // 3. On écoute les changements sur la liste des complexes
+                complexeSelect.addEventListener('change', function() {
+                    const selectedComplexe = this.value;
+                    etablissementSelect.innerHTML = '<option value="">-- Sélectionnez un établissement --</option>';
+                    hiddenEtablissementInput.value = '';
+    
+                    if (selectedComplexe) {
+                        etablissementSelect.disabled = false;
+                        const etablissements = etablissementsParComplexe[selectedComplexe].sort();
+                        etablissements.forEach(etab => {
+                            const option = document.createElement('option');
+                            option.value = etab;
+                            option.textContent = etab;
+                            etablissementSelect.appendChild(option);
+                        });
+                    } else {
+                        etablissementSelect.disabled = true;
+                    }
+                });
+                
+                // 4. On met à jour le champ caché quand un établissement est choisi
+                etablissementSelect.addEventListener('change', function() {
+                    hiddenEtablissementInput.value = this.value;
+                });
+    
+            } catch (error) {
+                console.error("Erreur critique lors du chargement des établissements:", error);
+                // On peut afficher une erreur à l'utilisateur
+                complexeSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                complexeSelect.disabled = true;
+                etablissementSelect.disabled = true;
+            }
+            
+            // --- LE RESTE DE VOTRE CODE EST INCHANGÉ ---
+    
+            // Gestion de la visibilité du mot de passe
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('mot_de_passe');
+            const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+            const confirmPasswordInput = document.getElementById('confirm_mot_de_passe');
+    
+            function toggleVisibility(input, icon) {
+    const isHidden = input.getAttribute('type') === 'password';
+    input.setAttribute('type', isHidden ? 'text' : 'password');
+
+    // Remplacer le SVG selon l'état
+    icon.innerHTML = isHidden
+        ? `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7a9.99 9.99 0 01-1.44 2.738M15 12a3 3 0 11-6 0 3 3 0 016 0z" />`
+        : `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.25 0-9.6-3.795-10.5-9a10.05 10.05 0 013.033-5.325m2.401-1.472a10.073 10.073 0 0110.15 1.46m1.551 1.457a10.05 10.05 0 011.365 3.88m.001.05c-.22 1.377-.796 2.665-1.666 3.733M15 12a3 3 0 11-6 0 3 3 0 016 0zM4.5 4.5l15 15" />`;
+}
+
+            togglePassword.addEventListener('click', function () { toggleVisibility(passwordInput, this); });
+            toggleConfirmPassword.addEventListener('click', function () { toggleVisibility(confirmPasswordInput, this); });
+            
+            // Gestion de la soumission du formulaire
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const feedbackEl = document.getElementById('feedback');
+                const passwordErrorEl = document.getElementById('password-error');
+                feedbackEl.textContent = '';
+                passwordErrorEl.textContent = '';
+    
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+    
+                if (password !== confirmPassword) {
+                    passwordErrorEl.textContent = "Les mots de passe ne correspondent pas.";
+                    return;
+                }
+                if (password.length < 6) {
+                    passwordErrorEl.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
+                    return;
+                }
+    
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                delete data.confirm_mot_de_passe;
+    
+                fetch('../api/auth/register.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        feedbackEl.className = 'feedback-success';
+                        feedbackEl.textContent = "Compte créé avec succès ! Redirection...";
+                        setTimeout(() => { window.location.href = 'login.html'; }, 3000);
+                    } else {
+                        feedbackEl.className = 'feedback-error';
+                        feedbackEl.textContent = result.message || "Une erreur est survenue.";
+                    }
+                })
+                .catch(error => {
+                    feedbackEl.className = 'feedback-error';
+                    feedbackEl.textContent = "Erreur de communication avec le serveur.";
+                });
+            });
+        });
+    </script>
+</body>
+</html>

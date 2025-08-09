@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil & Paramètres</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #dbeafe;
+            --accent-color: #7c3aed;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        body {
+            background-color: #f8fafc;
+            color: var(--text-color);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        /* Navigation principale */
+        nav { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 70px; 
+            padding: 10px 30px; 
+            background: #fff; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); 
+            display: flex; 
+            align-items: center; 
+            z-index: 1000; 
+            justify-content: space-between; 
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .nav-links { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+        
+        .nav-links a { 
+            text-decoration: none; 
+            color: #4b5563; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            transition: all 0.3s; 
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .nav-links a:hover { 
+            color: var(--primary-color); 
+            background-color: var(--primary-light);
+        }
+        
+        .nav-links a.active { 
+            background-color: var(--primary-light); 
+            color: var(--primary-color); 
+            font-weight: 600; 
+        }
+        
+        /* Menu profil */
+        .profile-menu-container { 
+            position: relative; 
+            margin-left: 15px;
+        }
+        
+        .profile-button { 
+            width: 46px; 
+            height: 46px; 
+            border-radius: 50%; 
+            background-color: var(--primary-light); 
+            color: var(--primary-color); 
+            border: 2px solid #fff; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            font-size: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            transition: all 0.2s;
+        }
+        
+        .profile-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        }
+        
+        .profile-dropdown { 
+            display: none; 
+            position: absolute; 
+            top: calc(100% + 10px); 
+            right: 0; 
+            width: 280px; 
+            background-color: white; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+            z-index: 1010; 
+            overflow: hidden; 
+            border: 1px solid var(--border-color);
+        }
+        
+        .profile-dropdown.show { 
+            display: block; 
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .dropdown-profile-header { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .profile-pic { 
+            width: 54px; 
+            height: 54px; 
+            border-radius: 50%; 
+            background-color: #f3f4f6; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 24px; 
+            color: var(--primary-color); 
+            font-weight: bold;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        
+        .profile-info strong { 
+            display: block; 
+            font-size: 1.05rem; 
+            font-weight: 600; 
+            color: var(--text-color); 
+            margin-bottom: 3px;
+        }
+        
+        .profile-info small { 
+            font-size: 0.85rem; 
+            color: #64748b; 
+            font-weight: 500;
+        }
+        
+        .dropdown-menu-list { 
+            list-style: none; 
+            padding: 8px; 
+            margin: 0; 
+        }
+        
+        .dropdown-divider { 
+            margin: 0 12px; 
+            border: none; 
+            border-top: 1px solid var(--border-color); 
+        }
+        
+        .dropdown-link, .dropdown-logout-link { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 14px 16px; 
+            text-decoration: none; 
+            color: #334155; 
+            transition: background-color 0.2s; 
+            font-weight: 500; 
+            border-radius: 8px; 
+            font-size: 0.95rem;
+        }
+        
+        .dropdown-link .text { 
+            flex-grow: 1; 
+        }
+        
+        .dropdown-link .chevron { 
+            font-size: 12px; 
+            color: #94a3b8; 
+        }
+        
+        .dropdown-logout-link { 
+            color: #dc2626; 
+            margin: 8px 12px; 
+            width: calc(100% - 24px); 
+        }
+        
+        .dropdown-link:hover, .dropdown-logout-link:hover { 
+            background-color: #f1f5f9; 
+        }
+        
+        .dropdown-link i, .dropdown-logout-link i { 
+            width: 20px; 
+            text-align: center; 
+            color: #64748b; 
+            font-size: 1.1rem;
+        }
+        
+        .dropdown-link.active { 
+            background-color: var(--primary-light); 
+            color: var(--primary-color); 
+            font-weight: 600;
+        }
+        
+        .dropdown-link.active i {
+            color: var(--primary-color);
+        }
+        
+        /* Contenu principal */
+        .main-container {
+            padding-top: 90px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 25px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: #fff;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 25px 0;
+            height: fit-content;
+            border: 1px solid var(--border-color);
+        }
+        
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 20px;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .profile-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        
+        .profile-role {
+            color: #64748b;
+            font-weight: 500;
+            font-size: 0.95rem;
+            background-color: #f1f5f9;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .profile-company {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #475569;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .sidebar-nav {
+            padding: 0 15px;
+        }
+        
+        .sidebar-link { 
+            display: flex; 
+            align-items: center; 
+            gap: 14px; 
+            padding: 14px 18px; 
+            border-radius: 10px; 
+            font-weight: 500; 
+            color: #475569; 
+            transition: all 0.2s ease-in-out; 
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+            position: relative;
+        }
+        
+        .sidebar-link:hover { 
+            background-color: #f1f5f9; 
+            color: var(--primary-color); 
+        }
+        
+        .sidebar-link.active { 
+            background-color: var(--primary-light); 
+            color: var(--primary-color); 
+            font-weight: 600; 
+        }
+        
+        .sidebar-link.active:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: var(--primary-color);
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .sidebar-link i {
+            width: 24px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        
+        .sidebar-link.active i {
+            color: var(--primary-color);
+        }
+        
+        /* Contenu */
+        .content-panel { 
+            display: none; 
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        
+        .content-panel.active { 
+            display: block; 
+        }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        .panel-card {
+            background-color: #fff;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .panel-title {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .panel-title i {
+            color: var(--primary-color);
+            background-color: var(--primary-light);
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        /* Formulaires */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background-color: #f8fafc;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background-color: #fff;
+        }
+        
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .form-disabled {
+            background-color: #f1f5f9;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-weight: 500;
+            color: #334155;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .btn {
+            padding: 12px 26px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: #64748b;
+        }
+        
+        .btn-outline:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        
+        /* Feedback messages */
+        .feedback-message {
+            margin-top: 15px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feedback-success {
+            background-color: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .feedback-error {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        /* Table styles */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 20px 0;
+        }
+        
+        .data-table th {
+            background-color: #f1f5f9;
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #334155;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #fff;
+        }
+        
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .data-table input {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 100%;
+            background-color: #f8fafc;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                margin-bottom: 25px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            nav {
+                padding: 10px 15px;
+            }
+            
+            .nav-links a {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- BARRE DE NAVIGATION PRINCIPALE -->
+    <nav>
+        <img src="assets/images/logo_edt.png" style="height: 50px; width: auto;" alt="Logo">
+        <div class="nav-links">
+            <a href="admin.html">Emploi du temps</a>
+            <a href="edition.html">Édition</a>
+            <a href="avancement.html">Avancement</a>
+            <div class="profile-menu-container">
+                <button id="profile-button" class="profile-button"><span id="profile-initials">VD</span></button>
+                <div id="profile-dropdown" class="profile-dropdown">
+                    <div class="dropdown-profile-header">
+                        <div class="profile-pic"><span>VD</span></div>
+                        <div class="profile-info">
+                            <strong id="dropdown-user-name">Vũ Doãn Dũng</strong>
+                            <small id="dropdown-user-email">vudungit92@gmail.com</small>
+                        </div>
+                    </div>
+                    <ul class="dropdown-menu-list">
+                        <li>
+                            <a href="profile.html" class="dropdown-link active">
+                                <i class="fas fa-user-edit"></i>
+                                <span class="text">Mon Profil</span>
+                                <i class="fas fa-chevron-right chevron"></i>
+                            </a>
+                        </li>
+                    </ul>
+                    <hr class="dropdown-divider">
+                    <a href="../api/auth/logout.php" class="dropdown-logout-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="text">Déconnexion</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENEUR PRINCIPAL -->
+    <div class="main-container">
+        <div class="profile-grid">
+            <!-- SIDEBAR -->
+            <aside class="sidebar">
+                <div class="profile-header">
+                    <div class="profile-avatar">VD</div>
+                    <h2 class="profile-name">Vũ Doãn Dũng</h2>
+                    <div class="profile-role">UI Developer</div>
+                    <div class="profile-company">
+                        <i class="fas fa-building"></i>
+                        <span>OCC</span>
+                    </div>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <a href="#" class="sidebar-link active" data-target="panel-account">
+                        <i class="fas fa-user-cog"></i>
+                        <span>Mon Compte</span>
+                    </a>
+                    <a href="#" class="sidebar-link" data-target="panel-password">
+                        <i class="fas fa-lock"></i>
+                        <span>Mot de passe</span>
+                    </a>
+                    <a href="#" class="sidebar-link" data-target="panel-espaces">
+                        <i class="fas fa-building"></i>
+                        <span>Espaces</span>
+                    </a>
+                    <a href="#" class="sidebar-link" data-target="panel-calendar">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Calendrier</span>
+                    </a>
+                    <a href="#" class="sidebar-link" data-target="panel-formateurs">
+                        <i class="fas fa-users"></i>
+                        <span>Formateurs</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- CONTENU PRINCIPAL -->
+            <main>
+                <!-- PANNEAU: MON COMPTE -->
+                <div id="panel-account" class="content-panel active">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">
+                                <i class="fas fa-user-cog"></i>
+                                <span>Paramètres du Compte</span>
+                            </h2>
+                        </div>
+                        
+                        <form id="userInfoForm" class="form-grid">
+                            <div class="form-group">
+                                <label for="prenom" class="form-label">Prénom</label>
+                                <input type="text" id="prenom" name="prenom" class="form-input" value="Vũ Doãn">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="nom" class="form-label">Nom</label>
+                                <input type="text" id="nom" name="nom" class="form-input" value="Dũng">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" id="email" name="email" class="form-input" value="vudungit92@gmail.com">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="phone" class="form-label">Téléphone</label>
+                                <input type="tel" id="phone" name="phone" class="form-input" value="+91 9876543215">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="company" class="form-label">Société</label>
+                                <input type="text" id="company" name="company" class="form-input" value="OCC">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="designation" class="form-label">Poste</label>
+                                <input type="text" id="designation" name="designation" class="form-input" value="UI Developer">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea id="bio" name="bio" class="form-input form-textarea" placeholder="Décrivez-vous en quelques mots..."></textarea>
+                            </div>
+                            
+                            <div class="form-group md:col-span-2">
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-outline">Annuler</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i>
+                                        Mettre à jour
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="userInfoFeedback" class="feedback-message"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PANNEAU: MOT DE PASSE -->
+                <div id="panel-password" class="content-panel">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">
+                                <i class="fas fa-lock"></i>
+                                <span>Changer le Mot de Passe</span>
+                            </h2>
+                        </div>
+                        
+                        <form id="passwordForm" class="max-w-xl">
+                            <div class="form-group">
+                                <label for="current_password" class="form-label">Mot de passe actuel</label>
+                                <input type="password" id="current_password" name="current_password" class="form-input" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="new_password" class="form-label">Nouveau mot de passe</label>
+                                <input type="password" id="new_password" name="new_password" class="form-input" required>
+                                <p class="text-sm text-gray-500 mt-2">Minimum 8 caractères avec des lettres et chiffres</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="confirm_new_password" class="form-label">Confirmer le nouveau mot de passe</label>
+                                <input type="password" id="confirm_new_password" name="confirm_new_password" class="form-input" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-key"></i>
+                                        Mettre à jour
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="passwordFeedback" class="feedback-message"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PANNEAU: ESPACES -->
+                <div id="panel-espaces" class="content-panel">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">
+                                <i class="fas fa-building"></i>
+                                <span>Gestion des Espaces de Travail</span>
+                            </h2>
+                        </div>
+                        
+                        <form id="espacesForm">
+                            <div class="form-group">
+                                <label for="espaces" class="form-label">Liste des salles, amphis, etc. (un par ligne)</label>
+                                <textarea id="espaces" name="espaces" class="form-input form-textarea">Salle A1
+Salle A2
+Amphithéâtre B
+Laboratoire Informatique
+Salle de réunion principale</textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i>
+                                        Sauvegarder les Espaces
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="espacesFeedback" class="feedback-message"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PANNEAU: CALENDRIER -->
+                <div id="panel-calendar" class="content-panel">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>Calendrier Annuel</span>
+                            </h2>
+                        </div>
+                        
+                        <form id="calendarForm" class="form-grid">
+                            <div class="form-group">
+                                <label for="holidays" class="form-label">Jours fériés (un par ligne, format JJ/MM/AAAA)</label>
+                                <textarea id="holidays" name="holidays" class="form-input form-textarea" placeholder="01/01/2025
+01/05/2025">01/01/2025
+01/05/2025
+14/07/2025
+15/08/2025</textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="vacations" class="form-label">Périodes de vacances (une par ligne, format JJ/MM/AAAA-JJ/MM/AAAA)</label>
+                                <textarea id="vacations" name="vacations" class="form-input form-textarea" placeholder="22/12/2024-05/01/2025">22/12/2024-05/01/2025
+15/02/2025-02/03/2025
+12/04/2025-28/04/2025</textarea>
+                            </div>
+                            
+                            <div class="form-group md:col-span-2">
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i>
+                                        Sauvegarder le Calendrier
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="calendarFeedback" class="feedback-message md:col-span-2"></div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- PANNEAU: FORMATEURS -->
+                <div id="panel-formateurs" class="content-panel">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2 class="panel-title">
+                                <i class="fas fa-users"></i>
+                                <span>Liste des Formateurs</span>
+                            </h2>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-plus"></i>
+                                Ajouter un formateur
+                            </button>
+                        </div>
+                        
+                        <p class="text-sm text-gray-500 mb-6">Pour ajouter ou supprimer des formateurs, veuillez réimporter un fichier de base sur la page d'accueil de l'application.</p>
+                        
+                        <form id="formateursForm">
+                            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Matricule</th>
+                                            <th>Masse Horaire</th>
+                                            <th>Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="formateurs-table-body">
+                                        <tr>
+                                            <td>Martin Dupont</td>
+                                            <td>M001</td>
+                                            <td><input name="formateurs[M001][masse_horaire]" type="number" value="120"></td>
+                                            <td><input name="formateurs[M001][email]" type="email" value="martin.dupont@example.com"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sophie Laurent</td>
+                                            <td>S002</td>
+                                            <td><input name="formateurs[S002][masse_horaire]" type="number" value="180"></td>
+                                            <td><input name="formateurs[S002][email]" type="email" value="sophie.laurent@example.com"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Thomas Bernard</td>
+                                            <td>T003</td>
+                                            <td><input name="formateurs[T003][masse_horaire]" type="number" value="150"></td>
+                                            <td><input name="formateurs[T003][email]" type="email" value="thomas.bernard@example.com"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Émilie Petit</td>
+                                            <td>E004</td>
+                                            <td><input name="formateurs[E004][masse_horaire]" type="number" value="200"></td>
+                                            <td><input name="formateurs[E004][email]" type="email" value="emilie.petit@example.com"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i>
+                                        Sauvegarder les Modifications
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="formateursFeedback" class="feedback-message"></div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navigation entre les panneaux
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const contentPanels = document.querySelectorAll('.content-panel');
+            
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Supprimer la classe active de tous les liens
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // Ajouter la classe active au lien cliqué
+                    this.classList.add('active');
+                    
+                    // Masquer tous les panneaux
+                    contentPanels.forEach(panel => panel.classList.remove('active'));
+                    
+                    // Afficher le panneau cible
+                    const targetId = this.getAttribute('data-target');
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+            
+            // Menu déroulant du profil
+            const profileButton = document.getElementById('profile-button');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            
+            if (profileButton && profileDropdown) {
+                profileButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    profileDropdown.classList.toggle('show');
+                });
+                
+                // Fermer le menu déroulant en cliquant à l'extérieur
+                window.addEventListener('click', function(e) {
+                    if (!profileButton.contains(e.target) && !profileDropdown.contains(e.target)) {
+                        profileDropdown.classList.remove('show');
+                    }
+                });
+            }
+            
+            // Animation de feedback pour les formulaires
+            function showFeedback(elementId, message, isSuccess) {
+                const el = document.getElementById(elementId);
+                el.textContent = message;
+                el.className = isSuccess ? 'feedback-message feedback-success' : 'feedback-message feedback-error';
+                
+                setTimeout(() => {
+                    el.textContent = '';
+                    el.className = 'feedback-message';
+                }, 4000);
+            }
+            
+            // Simuler la soumission des formulaires
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formId = this.id;
+                    
+                    // Simuler un succès
+                    const successMessages = {
+                        'userInfoForm': 'Vos informations ont été mises à jour avec succès !',
+                        'passwordForm': 'Votre mot de passe a été changé avec succès.',
+                        'espacesForm': 'La liste des espaces a été sauvegardée.',
+                        'calendarForm': 'Le calendrier a été mis à jour.',
+                        'formateursForm': 'Les modifications des formateurs ont été enregistrées.'
+                    };
+                    
+                    showFeedback(formId + 'Feedback', successMessages[formId], true);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

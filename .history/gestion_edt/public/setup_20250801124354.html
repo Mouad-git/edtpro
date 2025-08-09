@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Initiale - Calendrier amélioré</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/fr.js"></script>
+    <style>
+        /* Styles globaux améliorés */
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e6eef7 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        .container {
+            box-shadow: 0 15px 50px -12px rgba(0, 0, 0, 0.15);
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        /* Amélioration de la ligne de progression */
+        .stepper-container {
+            position: relative;
+            padding: 0 3rem;
+            margin-bottom: 3rem;
+        }
+        
+        .progress-line {
+            position: absolute;
+            top: 20px;
+            left: 60px;
+            right: 60px;
+            height: 4px;
+            background: #e5e7eb;
+            z-index: 1;
+            border-radius: 2px;
+        }
+        
+        .progress-line-filled {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+            border-radius: 2px;
+        }
+        
+        .stepper-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+        
+        .progress-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #6b7280;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            font-size: 1rem;
+        }
+        
+        .progress-circle.active {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.2);
+        }
+        
+        .progress-circle.completed {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+        }
+        
+        .progress-circle.completed::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+        }
+        
+        .progress-circle.success {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.2);
+        }
+        
+        .progress-circle.success::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+        }
+        
+        .progress-label {
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            text-align: center;
+            transition: all 0.4s ease;
+            max-width: 100px;
+            line-height: 1.3;
+        }
+        
+        .progress-label.active {
+            color: #3b82f6;
+            font-weight: 700;
+        }
+        
+        .progress-label.completed {
+            color: #1f2937;
+            font-weight: 600;
+        }
+        
+        /* Nouveau design pour la section calendrier */
+        .calendar-section {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .calendar-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .calendar-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .calendar-weekday {
+            text-align: center;
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 0.875rem;
+            padding: 0.25rem 0;
+        }
+        
+        .calendar-day {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            font-weight: 500;
+        }
+        
+        .calendar-day:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .calendar-day.weekend {
+            color: #ef4444;
+            background-color: #fef2f2;
+        }
+        
+        .calendar-day.holiday {
+            color: white;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            font-weight: 600;
+        }
+        
+        .calendar-day.vacation {
+            color: white;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            font-weight: 600;
+        }
+        
+        .calendar-day.selected {
+            box-shadow: 0 0 0 2px #3b82f6 inset;
+        }
+        
+        .calendar-day.today {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+        
+        .holiday-indicator {
+            position: absolute;
+            bottom: 2px;
+            width: 4px;
+            height: 4px;
+            background: #ef4444;
+            border-radius: 50%;
+        }
+        
+        /* Amélioration des tags */
+        .tags-container {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            min-height: 100px;
+            background-color: #f9fafb;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-content: flex-start;
+        }
+        
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            animation: popIn 0.3s ease-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .holiday-tag {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+        
+        .vacation-tag {
+            background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+            color: #5b21b6;
+            border: 1px solid #c4b5fd;
+        }
+        
+        .tag button {
+            margin-left: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+            color: inherit;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .tag button:hover {
+            opacity: 1;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Boutons améliorés */
+        .btn {
+            transition: all 0.3s ease;
+            transform: translateY(0);
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            color: #4b5563;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: white;
+        }
+        
+        /* Animation pour les étapes */
+        .step { 
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .step.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Nouveau design pour les inputs */
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background-color: white;
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 0.75rem;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+        
+        .section-description {
+            text-align: center;
+            color: #4b5563;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="container w-full max-w-4xl bg-white p-6 md:p-8 rounded-xl">
+        <div class="w-full mb-8 stepper-container">
+            <div class="progress-line">
+                <div class="progress-line-filled" id="progress-line-filled"></div>
+            </div>
+            
+            <div class="flex items-start justify-between">
+                <div id="progress-step-1" class="stepper-item">
+                    <div id="progress-circle-1" class="progress-circle">1</div>
+                    <div id="progress-label-1" class="progress-label">Fichier</div>
+                </div>
+                <div id="progress-step-2" class="stepper-item">
+                     <div id="progress-circle-2" class="progress-circle">2</div>
+                    <div id="progress-label-2" class="progress-label">Formateurs</div>
+                </div>
+                <div id="progress-step-3" class="stepper-item">
+                     <div id="progress-circle-3" class="progress-circle">3</div>
+                    <div id="progress-label-3" class="progress-label">Calendrier</div>
+                </div>
+                <div id="progress-step-4" class="stepper-item">
+                     <div id="progress-circle-4" class="progress-circle">4</div>
+                    <div id="progress-label-4" class="progress-label">Espaces</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="step3" class="step active">
+            <h2 class="section-title">Étape 3 : Configuration du calendrier</h2>
+            <p class="section-description">Configurez les jours fériés et les périodes de vacances pour votre établissement. Visualisez votre calendrier en temps réel.</p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Calendrier visuel -->
+                <div class="calendar-section">
+                    <div class="calendar-header">
+                        <div class="calendar-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span id="current-month">Août 2025</span>
+                        </div>
+                        <div class="calendar-actions">
+                            <button id="prev-month" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button id="next-month" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="calendar-grid">
+                        <div class="calendar-weekday">Lun</div>
+                        <div class="calendar-weekday">Mar</div>
+                        <div class="calendar-weekday">Mer</div>
+                        <div class="calendar-weekday">Jeu</div>
+                        <div class="calendar-weekday">Ven</div>
+                        <div class="calendar-weekday weekend">Sam</div>
+                        <div class="calendar-weekday weekend">Dim</div>
+                        
+                        <!-- Les jours seront injectés par JavaScript -->
+                        <div id="calendar-days" class="col-span-7 grid grid-cols-7 gap-1"></div>
+                    </div>
+                    
+                    <div class="mt-4 flex justify-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded-full bg-blue-100 border border-blue-300"></div>
+                            <span class="text-sm">Aujourd'hui</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded-full bg-amber-100 border border-amber-300"></div>
+                            <span class="text-sm">Jours fériés</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded-full bg-violet-100 border border-violet-300"></div>
+                            <span class="text-sm">Vacances</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configuration des jours fériés et vacances -->
+                <div>
+                    <!-- Section Jours Fériés -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-star text-amber-500"></i>
+                            Jours fériés
+                        </h3>
+                        <p class="text-sm text-gray-600 mb-4">Les jours fériés pour le Maroc sont pré-chargés. Vous pouvez en ajouter ou en retirer.</p>
+                        
+                        <div class="input-group">
+                            <label for="holidays-picker">Ajouter un jour férié</label>
+                            <div class="relative">
+                                <i class="fas fa-calendar-day input-icon"></i>
+                                <input type="text" id="holidays-picker" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Sélectionnez une date">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Jours fériés sélectionnés</label>
+                            <div id="holidays-tags" class="tags-container"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Périodes de Vacances -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-umbrella-beach text-violet-500"></i>
+                            Périodes de vacances
+                        </h3>
+                        <p class="text-sm text-gray-600 mb-4">Saisissez un nom, sélectionnez une période et cliquez sur "Ajouter".</p>
+                        
+                        <div class="input-group">
+                            <label for="vacation-name-input">Nom de la période</label>
+                            <div class="relative">
+                                <i class="fas fa-tag input-icon"></i>
+                                <input type="text" id="vacation-name-input" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Vacances de Printemps">
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="vacations-picker">Période</label>
+                            <div class="relative">
+                                <i class="fas fa-calendar-week input-icon"></i>
+                                <input type="text" id="vacations-picker" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Sélectionnez une période">
+                            </div>
+                        </div>
+                        
+                        <button id="add-vacation-btn" class="w-full btn btn-primary p-3 rounded-lg mt-2 flex items-center justify-center gap-2">
+                            <i class="fas fa-plus"></i> Ajouter une période de vacances
+                        </button>
+                        
+                        <div id="vacation-feedback" class="text-red-500 text-sm mt-2"></div>
+                        
+                        <div class="mt-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Périodes ajoutées</label>
+                            <div id="vacations-tags" class="tags-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 mt-8">
+                <button id="step3PrevBtn" class="w-1/3 btn btn-secondary p-3 rounded-lg">Précédent</button>
+                <button id="step3NextBtn" class="w-2/3 btn btn-primary p-3 rounded-lg">Suivant <i class="fas fa-arrow-right ml-2"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialisation des pickers
+            const holidaysPicker = flatpickr("#holidays-picker", {
+                dateFormat: "d/m/Y",
+                locale: "fr"
+            });
+            
+            const vacationsPicker = flatpickr("#vacations-picker", {
+                mode: "range",
+                dateFormat: "d/m/Y",
+                locale: "fr"
+            });
+            
+            // Fonction pour ajouter un tag
+            function addTag(type, value, displayText) {
+                const container = document.getElementById(`${type}-tags`);
+                const tag = document.createElement('div');
+                
+                if (type === 'holidays') {
+                    tag.className = 'tag holiday-tag';
+                } else {
+                    tag.className = 'tag vacation-tag';
+                }
+                
+                tag.innerHTML = `${displayText} <button type="button"><i class="fas fa-times"></i></button>`;
+                container.appendChild(tag);
+                
+                tag.querySelector('button').addEventListener('click', function() {
+                    tag.remove();
+                });
+            }
+            
+            // Ajout de jours fériés par défaut (exemples)
+            const defaultHolidays = [
+                { date: '01/01/2025', name: 'Nouvel An' },
+                { date: '11/01/2025', name: 'Manifeste de l\'Indépendance' },
+                { date: '01/05/2025', name: 'Fête du Travail' },
+                { date: '30/07/2025', name: 'Fête du Trône' },
+                { date: '14/08/2025', name: 'Allégeance Oued Eddahab' },
+                { date: '20/08/2025', name: 'Révolution du Roi et du Peuple' },
+                { date: '21/08/2025', name: 'Fête de la Jeunesse' },
+                { date: '06/11/2025', name: 'Marche Verte' },
+                { date: '18/11/2025', name: 'Fête de l\'Indépendance' }
+            ];
+            
+            defaultHolidays.forEach(holiday => {
+                addTag('holidays', holiday.date, `${holiday.name} - ${holiday.date}`);
+            });
+            
+            // Ajout de vacances par défaut (exemples)
+            const defaultVacations = [
+                { name: 'Vacances d\'hiver', dates: '20/12/2024 - 05/01/2025' },
+                { name: 'Vacances de printemps', dates: '15/03/2025 - 30/03/2025' }
+            ];
+            
+            defaultVacations.forEach(vacation => {
+                addTag('vacations', vacation.dates, `${vacation.name} (${vacation.dates})`);
+            });
+            
+            // Gestion de l'ajout de jours fériés
+            document.getElementById('holidays-picker').addEventListener('change', function() {
+                const selectedDate = this.value;
+                if (selectedDate) {
+                    addTag('holidays', selectedDate, `Jour férié - ${selectedDate}`);
+                    this.value = '';
+                    updateCalendar();
+                }
+            });
+            
+            // Gestion de l'ajout de vacances
+            document.getElementById('add-vacation-btn').addEventListener('click', function() {
+                const nameInput = document.getElementById('vacation-name-input');
+                const vacationName = nameInput.value.trim();
+                const selectedDates = vacationsPicker.selectedDates;
+                const feedback = document.getElementById('vacation-feedback');
+                
+                feedback.textContent = '';
+                
+                if (!vacationName) {
+                    feedback.textContent = "Veuillez donner un nom à la période de vacances.";
+                    return;
+                }
+                
+                if (selectedDates.length !== 2) {
+                    feedback.textContent = "Veuillez sélectionner une période de début et de fin.";
+                    return;
+                }
+                
+                const startDate = vacationsPicker.formatDate(selectedDates[0], "d/m/Y");
+                const endDate = vacationsPicker.formatDate(selectedDates[1], "d/m/Y");
+                const dateRange = `${startDate} - ${endDate}`;
+                
+                addTag('vacations', dateRange, `${vacationName} (${dateRange})`);
+                nameInput.value = '';
+                vacationsPicker.clear();
+                updateCalendar();
+            });
+            
+            // Calendrier dynamique
+            const calendarDays = document.getElementById('calendar-days');
+            const currentMonthEl = document.getElementById('current-month');
+            const prevMonthBtn = document.getElementById('prev-month');
+            const nextMonthBtn = document.getElementById('next-month');
+            
+            let currentDate = new Date(2025, 7, 1); // Août 2025
+            
+            function updateCalendar() {
+                // Mise à jour de l'en-tête
+                currentMonthEl.textContent = currentDate.toLocaleDateString('fr-FR', { 
+                    month: 'long', 
+                    year: 'numeric' 
+                }).replace(/^\w/, c => c.toUpperCase());
+                
+                // Calcul des jours du mois
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                
+                // Récupération des jours fériés et vacances
+                const holidays = Array.from(document.querySelectorAll('#holidays-tags .tag'))
+                    .map(tag => tag.textContent.split(' - ')[1]);
+                
+                const vacations = Array.from(document.querySelectorAll('#vacations-tags .tag'))
+                    .map(tag => {
+                        const text = tag.textContent;
+                        const match = text.match(/\((\d{2}\/\d{2}\/\d{4}) - (\d{2}\/\d{2}\/\d{4})\)/);
+                        if (match) {
+                            return { start: match[1], end: match[2] };
+                        }
+                        return null;
+                    })
+                    .filter(v => v !== null);
+                
+                // Génération des jours
+                calendarDays.innerHTML = '';
+                
+                // Ajout des jours vides pour le premier jour
+                for (let i = 0; i < firstDay.getDay(); i++) {
+                    const emptyDay = document.createElement('div');
+                    emptyDay.className = 'calendar-day';
+                    calendarDays.appendChild(emptyDay);
+                }
+                
+                // Ajout des jours du mois
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'calendar-day';
+                    dayElement.textContent = day;
+                    
+                    // Vérifier si c'est aujourd'hui
+                    if (date.getTime() === today.getTime()) {
+                        dayElement.classList.add('today');
+                    }
+                    
+                    // Vérifier si c'est un week-end
+                    if (date.getDay() === 0 || date.getDay() === 6) {
+                        dayElement.classList.add('weekend');
+                    }
+                    
+                    // Vérifier les jours fériés
+                    const formattedDate = `${String(day).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}/${year}`;
+                    if (holidays.includes(formattedDate)) {
+                        dayElement.classList.add('holiday');
+                    }
+                    
+                    // Vérifier les vacances
+                    for (const vacation of vacations) {
+                        const startParts = vacation.start.split('/');
+                        const endParts = vacation.end.split('/');
+                        
+                        const startDate = new Date(
+                            parseInt(startParts[2]), 
+                            parseInt(startParts[1]) - 1, 
+                            parseInt(startParts[0])
+                        );
+                        
+                        const endDate = new Date(
+                            parseInt(endParts[2]), 
+                            parseInt(endParts[1]) - 1, 
+                            parseInt(endParts[0])
+                        );
+                        
+                        if (date >= startDate && date <= endDate) {
+                            dayElement.classList.add('vacation');
+                            break;
+                        }
+                    }
+                    
+                    calendarDays.appendChild(dayElement);
+                }
+            }
+            
+            // Navigation dans le calendrier
+            prevMonthBtn.addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                updateCalendar();
+            });
+            
+            nextMonthBtn.addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                updateCalendar();
+            });
+            
+            // Initialisation du calendrier
+            updateCalendar();
+            
+            // Navigation entre les étapes (simulée)
+            document.getElementById('step3PrevBtn').addEventListener('click', function() {
+                alert("Navigation vers l'étape précédente");
+            });
+            
+            document.getElementById('step3NextBtn').addEventListener('click', function() {
+                alert("Navigation vers l'étape suivante");
+            });
+        });
+    </script>
+</body>
+</html>

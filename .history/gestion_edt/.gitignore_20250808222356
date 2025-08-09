@@ -1,0 +1,56 @@
+# Configuration et environnement
+.env
+.env.local
+config/database.php
+
+# Logs et cache
+logs/
+*.log
+cache/
+tmp/
+
+# Dossiers de tests et documentation dans vendor
+vendor/*/tests/
+vendor/*/test/
+vendor/*/examples/
+vendor/*/samples/
+vendor/*/docs/
+
+# Fichiers de documentation dans vendor
+vendor/*/README.md
+vendor/*/CHANGELOG.md
+vendor/*/CONTRIBUTING.md
+vendor/*/LICENSE*
+vendor/*/license.md
+vendor/*/COMMITMENT
+
+# Fichiers de build et développement
+vendor/*/buildPhar.php
+vendor/*/phpdoc.dist.xml
+vendor/*/infection.json.dist
+vendor/*/phpunit.xml.dist
+
+# Composer
+composer.lock
+vendor/composer/installed.php
+vendor/composer/installed.json
+
+# Fichiers temporaires
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Scripts d'optimisation (pour développement local)
+optimize_vendor.php
+deploy.sh
+
+# IDE et éditeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Système
+desktop.ini
+$RECYCLE.BIN/ 

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil & Paramètres</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        /* ============ STYLE FINAL INSPIRÉ DE L'IMAGE ============ */
+        
+        :root {
+            --main-blue: #0d6efd;
+            --light-grey-bg: #f8f9fa;
+            --border-color: #dee2e6;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+        }
+        
+        body {
+            background-color: var(--light-grey-bg);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            padding-top: 60px; /* Espace pour la barre de navigation fixe */
+        }
+    
+        /* -- Barre de Navigation Supérieure -- */
+        nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px; padding: 0 24px;
+            background:#fff; box-shadow: none; border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; z-index: 700; justify-content: space-between;
+        }
+        .nav-links {
+            display: flex; align-items: center; gap: 24px;
+            position: absolute; left: 50%; transform: translateX(-50%);
+        }
+        nav a { text-decoration: none; color: var(--text-secondary); padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 15px; transition: color 0.2s; }
+        nav a:hover { color: var(--text-primary); }
+        
+        /* -- Bouton de profil (Navbar) -- */
+        .profile-button {
+            display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;
+            border-radius: 50%; background-color: #e0eaff; color: #1d4ed8;
+            font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+        }
+        .profile-dropdown { /* Le style du dropdown reste le même */
+            display: none; position: absolute; top: calc(100% + 12px); right: 0; width: 280px;
+            background-color: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 1010; overflow: hidden;
+        }
+        .profile-dropdown.show { display: block; }
+        
+        /* -- Barre Latérale Fixe -- */
+        .sidebar {
+            position: fixed; top: 60px; left: 0; width: 260px; height: calc(100vh - 60px);
+            background: white; border-right: 1px solid var(--border-color);
+            padding: 24px; z-index: 600;
+        }
+        .profile-header { text-align: center; padding: 24px 0; border-bottom: none; margin-bottom: 24px; }
+        
+        .profile-avatar {
+            width: 90px; height: 90px; border-radius: 50%;
+            background-color: #eef2ff; color: #4338ca;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; font-weight: 600; margin: 0 auto;
+        }
+        
+        .sidebar-links { padding: 0; }
+        .sidebar-link { display: block; padding: 12px 16px; border-radius: 8px; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: all 0.2s ease; cursor: pointer; margin-bottom: 8px; font-size: 15px; }
+        .sidebar-link:hover { background-color: #f1f3f5; color: var(--text-primary); }
+        .sidebar-link.active { background-color: var(--main-blue); color: white; }
+        
+        /* -- Contenu Principal -- */
+        .content {
+            margin-left: 260px; padding: 32px; width: calc(100% - 260px);
+        }
+        
+        .panel { background: white; border-radius: 12px; border: 1px solid var(--border-color); display: none; margin-bottom: 24px; }
+        .panel.active { display: block; }
+        .panel-header { padding: 24px; border-bottom: 1px solid var(--border-color); }
+        .panel-header h2 { font-size: 20px; font-weight: 600; color: var(--text-primary); }
+        
+        .panel-body { padding: 24px; }
+        .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; row-gap: 32px; }
+        .form-group { margin-bottom: 0; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-secondary); font-size: 14px; }
+        
+        .form-control { width: 100%; padding: 12px 14px; border: 1px solid #ced4da; border-radius: 8px; font-size: 15px; transition: all 0.2s; }
+        .form-control:focus { outline: none; border-color: #86b7fe; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15); }
+        
+        .form-info { padding: 12px 14px; background-color: #e9ecef; border-radius: 8px; font-size: 15px; color: var(--text-primary); min-height: 47px; }
+        
+        .form-footer { display: flex; justify-content: flex-start; gap: 12px; padding: 24px; border-top: 1px solid var(--border-color); margin-top: 24px; }
+        .btn { padding: 10px 24px; font-size: 15px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
+        .btn-primary { background-color: var(--main-blue); color: white; }
+        .btn-primary:hover { background-color: #0b5ed7; }
+        .btn-secondary { background-color: white; color: var(--text-secondary); border-color: #ced4da; }
+        .btn-secondary:hover { background-color: #f8f9fa; }
+        
+        .feedback-message { padding: 0 24px 16px 24px; font-weight: 500; font-size: 14px; height: 1.25rem; }
+        .feedback-success { color: #198754; }
+        .feedback-error { color: #dc3545; }
+        
+        /* Autres styles pour Calendrier, Formateurs etc. */
+        .info-box { background-color: #eef2ff; border-left: 4px solid var(--main-blue); border-radius: 8px; padding: 16px; margin-bottom: 20px; color: #0a58ca; font-size: 14px; }
+        .table-container { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; }
+        .table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .table th { background-color: var(--light-grey-bg); padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; }
+        .table td { padding: 12px 16px; border-top: 1px solid var(--border-color); font-size: 14px; }
+        .table tbody tr:hover { background-color: #f1f3f5; }
+        .table .form-control { padding: 8px 12px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <img src="assets/images/logo_edtpro.png" style="height: 80px; width: auto;" id="logo" alt="Logo">
+        <div class="nav-links">
+            <a href="admin.html" id="nav-admin">Emploi globale</a>
+            <a href="edition.html" id="nav-edition">Edition</a>
+            <a href="avancement.html" id="nav-avancement">Avancement</a>
+            <div class="profile-menu-container" id="profile-menu-container">
+                <button id="profile-button" class="profile-button">
+                    <span id="profile-initials">--</span>
+                </button>
+                <div id="profile-dropdown" class="profile-dropdown">
+                     <div class="dropdown-profile-header">
+                        <div class="profile-pic"><i class="fas fa-user"></i></div>
+                        <div class="profile-info">
+                            <strong id="dropdown-user-name">Chargement...</strong>
+                            <small id="dropdown-user-email">...</small>
+                        </div>
+                    </div>
+                    <ul class="dropdown-menu-list">
+                        <li>
+                            <a href="profile.html" class="dropdown-link">
+                                Mon Profil
+                            </a>
+                        </li>
+                    </ul>
+                    <hr class="dropdown-divider">
+                    <a href="../api/auth/logout.php" class="dropdown-link logout">
+                        Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="sidebar">
+        <div class="profile-header">
+            <!-- L'avatar est maintenant seul, sans le nom en dessous -->
+            <div class="profile-avatar" id="profile-page-initials">--</div>
+        </div>
+        
+        <div class="sidebar-links">
+            <a class="sidebar-link active" data-target="panel-account">Profil</a>
+            <a class="sidebar-link" data-target="panel-password">Mot de passe</a>
+            <a class="sidebar-link" data-target="panel-espaces">Espaces</a>
+            <a class="sidebar-link" data-target="panel-calendar">Calendrier Annuel</a>
+            <a class="sidebar-link" data-target="panel-formateurs">Formateurs</a>
+        </div>
+    </aside>
+    
+    <main class="content">
+        <!-- Tous les panneaux restent inchangés -->
+        <div id="panel-account" class="panel active">
+            <div class="panel-header"><h2>Paramètres du Compte</h2></div>
+            <form id="userInfoForm">
+                <div class="panel-body"><div class="form-grid"><div class="form-group"><label for="nom_complet">Nom & Prénom</label><input type="text" id="nom_complet" name="nom_complet" class="form-control"></div><div class="form-group"><label for="email">Email</label><input type="email" id="email" name="email" class="form-control"></div><div class="form-group"><label>Établissement</label><div class="form-info" id="etablissement_name"></div></div><div class="form-group"><label>Complexe</label><div class="form-info" id="complexe_name"></div></div></div></div>
+                <div id="userInfoFeedback" class="feedback-message"></div>
+                <div class="form-footer"><button type="submit" class="btn btn-primary">Mettre à jour</button><button type="reset" class="btn btn-secondary">Annuler</button></div>
+            </form>
+        </div>
+        <div id="panel-password" class="panel"><div class="panel-header"><h2>Changer le Mot de Passe</h2></div><form id="passwordForm"><div class="panel-body"><div class="form-group full-width"><label for="new_password">Nouveau mot de passe</label><input type="password" id="new_password" name="new_password" class="form-control" required></div><div class="form-group full-width"><label for="confirm_new_password">Confirmer le nouveau mot de passe</label><input type="password" id="confirm_new_password" name="confirm_new_password" class="form-control" required></div></div><div id="passwordFeedback" class="feedback-message"></div><div class="form-footer"><button type="submit" class="btn btn-primary">Changer le mot de passe</button></div></form></div>
+        <div id="panel-espaces" class="panel"><div class="panel-header"><h2>Gestion des Espaces de Travail</h2></div><form id="espacesForm"><div class="panel-body"><div class="form-group full-width"><label for="espaces">Liste des salles, amphis, etc. (un par ligne)</label><textarea id="espaces" name="espaces" rows="12" class="form-control"></textarea></div></div><div id="espacesFeedback" class="feedback-message"></div><div class="form-footer"><button type="submit" class="btn btn-primary">Sauvegarder les Espaces</button></div></form></div>
+        <div id="panel-calendar" class="panel"><div class="panel-header"><h2>Calendrier Annuel</h2></div><form id="calendarForm"><div class="panel-body"><div class="form-grid"><div class="form-group"><label for="holidays">Jours fériés (un par ligne, format JJ/MM/AAAA)</label><textarea id="holidays" name="holidays" rows="8" class="form-control"></textarea></div><div class="form-group"><label for="vacations">Périodes de vacances (une par ligne, format JJ/MM/AAAA-JJ/MM/AAAA)</label><textarea id="vacations" name="vacations" rows="8" class="form-control"></textarea></div></div></div><div id="calendarFeedback" class="feedback-message"></div><div class="form-footer"><button type="submit" class="btn btn-primary">Sauvegarder le Calendrier</button></div></form></div>
+        <div id="panel-formateurs" class="panel"><div class="panel-header"><h2>Liste des Formateurs</h2></div><form id="formateursForm"><div class="panel-body"><div class="info-box">Pour ajouter ou supprimer des formateurs, vous devez réimporter un fichier de base via le processus de configuration initiale.</div><div class="table-container"><table class="table"><thead><tr><th>Nom</th><th>Matricule</th><th>Masse Horaire</th><th>Email</th></tr></thead><tbody id="formateurs-table-body"></tbody></table></div></div><div id="formateursFeedback" class="feedback-message"></div><div class="form-footer"><button type="submit" class="btn btn-primary">Sauvegarder les Modifications</button></div></form></div>
+    </main>
+
+    <script>
+        // LE SCRIPT EST INCHANGÉ ET RESTE ENTIÈREMENT FONCTIONNEL
+        document.addEventListener('DOMContentLoaded', checkSessionAndLoad);
+
+        async function checkSessionAndLoad() {
+            try {
+                const response = await fetch('../api/auth/verify_session.php');
+                const result = await response.json();
+                if (!result.success) { 
+                    window.location.href = 'login.html'; 
+                    return; 
+                }
+                
+                populateUserInfo(result.userData);
+                setupProfileMenu();
+                loadPageData();
+                setupTabNavigation();
+                setupFormSubmissions();
+            } catch (error) { 
+                console.error('Erreur:', error);
+                window.location.href = 'login.html'; 
+            }
+        }
+
+        function getInitials(name) {
+            if (!name || typeof name !== 'string') return '--';
+            const words = name.trim().split(' ');
+            if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+            return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+        }
+
+        function populateUserInfo(userData) {
+            if (!userData) return;
+            
+            // Barre de navigation
+            const initialsEl = document.getElementById('profile-initials');
+            if(initialsEl) initialsEl.textContent = getInitials(userData.nom);
+            
+            // Menu dropdown
+            const nameEl = document.getElementById('dropdown-user-name');
+            const emailEl = document.getElementById('dropdown-user-email');
+            if (nameEl) nameEl.textContent = userData.nom;
+            if (emailEl) emailEl.textContent = userData.email;
+            
+            // Page de profil
+            const pageInitials = document.getElementById('profile-page-initials');
+            const pageName = document.getElementById('profile-page-name');
+            const etablissement = document.getElementById('profile-page-etablissement');
+            
+            if (pageInitials) pageInitials.textContent = getInitials(userData.nom_complet);
+            if (pageName) pageName.textContent = userData.nom_complet;
+            if (etablissement) etablissement.textContent = userData.nom_etablissement;
+        }
+
+        function setupProfileMenu() {
+            const profileButton = document.getElementById('profile-button');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            
+            if (profileButton && profileDropdown) {
+                profileButton.addEventListener('click', (e) => { 
+                    e.stopPropagation(); 
+                    profileDropdown.classList.toggle('show'); 
+                });
+            }
+            
+            window.addEventListener('click', () => { 
+                if (profileDropdown && profileDropdown.classList.contains('show')) {
+                    profileDropdown.classList.remove('show'); 
+                }
+            });
+        }
+
+        function loadPageData() {
+            fetch('../api/profile/get_profile_data.php')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const data = result.data;
+                        
+                        document.getElementById('nom_complet').value = data.user.nom_complet || '';
+                        document.getElementById('email').value = data.user.email || '';
+                        document.getElementById('etablissement_name').textContent = data.user.nom_etablissement || '';
+                        document.getElementById('complexe_name').textContent = data.user.complexe || '';
+                        document.getElementById('espaces').value = (data.espaces || []).join('\n') || '';
+                        document.getElementById('holidays').value = data.calendar.holidays || '';
+                        document.getElementById('vacations').value = data.calendar.vacations || '';
+                        
+                        const formateursTbody = document.getElementById('formateurs-table-body');
+                        formateursTbody.innerHTML = '';
+                        
+                        (data.formateurs || []).forEach(f => {
+                            const row = `
+                                <tr>
+                                    <td>${f.nom || ''}</td><td>${f.matricule || ''}</td>
+                                    <td><input name="formateurs[${f.matricule}][masse_horaire]" type="number" class="form-control" value="${f.masse_horaire || ''}"></td>
+                                    <td><input name="formateurs[${f.matricule}][email]" type="email" class="form-control" value="${f.email || ''}"></td>
+                                    <input type="hidden" name="formateurs[${f.matricule}][nom]" value="${f.nom || ''}"><input type="hidden" name="formateurs[${f.matricule}][matricule]" value="${f.matricule || ''}">
+                                </tr>`;
+                            formateursTbody.innerHTML += row;
+                        });
+                    } else {
+                        alert("Erreur: Impossible de charger les données du profil.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des données:', error);
+                    alert("Une erreur s'est produite lors du chargement des données du profil.");
+                });
+        }
+
+        function setupTabNavigation() {
+            const tabLinks = document.querySelectorAll('.sidebar-link');
+            const contentPanels = document.querySelectorAll('.panel');
+            
+            tabLinks.forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    tabLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    const targetId = link.dataset.target;
+                    contentPanels.forEach(panel => panel.classList.remove('active'));
+                    const targetPanel = document.getElementById(targetId);
+                    if (targetPanel) {
+                        targetPanel.classList.add('active');
+                    }
+                });
+            });
+        }
+
+        function showFeedback(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            el.textContent = message;
+            el.className = isSuccess ? 'feedback-message feedback-success' : 'feedback-message feedback-error';
+            setTimeout(() => { el.textContent = ''; }, 4000);
+        }
+
+        function setupFormSubmissions() {
+            document.getElementById('userInfoForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const data = { nom_complet: document.getElementById('nom_complet').value, email: document.getElementById('email').value };
+                fetch('../api/profile/update_user_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                .then(res => res.json())
+                .then(result => {
+                    showFeedback('userInfoFeedback', result.message, result.success);
+                    if (result.success) {
+                        populateUserInfo({ nom: data.nom_complet, email: data.email, nom_complet: data.nom_complet, nom_etablissement: document.getElementById('profile-page-etablissement').textContent });
+                    }
+                });
+            });
+            
+            document.getElementById('passwordForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const newPassword = document.getElementById('new_password').value;
+                const confirmPassword = document.getElementById('confirm_new_password').value;
+                if (newPassword !== confirmPassword) {
+                    showFeedback('passwordFeedback', 'Les mots de passe ne correspondent pas.', false);
+                    return;
+                }
+                const data = { new_password: newPassword, confirm_new_password: confirmPassword };
+                fetch('../api/profile/update_password.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                .then(res => res.json())
+                .then(result => {
+                    showFeedback('passwordFeedback', result.message, result.success);
+                    if (result.success) this.reset();
+                });
+            });
+            
+            document.getElementById('espacesForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const data = { espaces: document.getElementById('espaces').value.split('\n').map(s => s.trim()).filter(s => s.length > 0) };
+                fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                .then(res => res.json())
+                .then(result => showFeedback('espacesFeedback', result.message, result.success));
+            });
+            
+            document.getElementById('calendarForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const data = { holidays: document.getElementById('holidays').value, vacations: document.getElementById('vacations').value };
+                fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                .then(res => res.json())
+                .then(result => showFeedback('calendarFeedback', result.message, result.success));
+            });
+            
+            document.getElementById('formateursForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const formateursMap = {};
+                for (let [key, value] of formData.entries()) {
+                    const match = key.match(/formateurs\[(.+?)]\[(.+?)]/);
+                    if (match) {
+                        const matricule = match[1]; 
+                        const property = match[2];
+                        if (!formateursMap[matricule]) formateursMap[matricule] = {};
+                        formateursMap[matricule][property] = value;
+                    }
+                }
+                const data = { formateurs: Object.values(formateursMap) };
+                fetch('../api/profile/update_formateurs.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                .then(res => res.json())
+                .then(result => showFeedback('formateursFeedback', result.message, result.success));
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Initiale - Ligne de progression améliorée</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Assurez-vous d'utiliser la version 6 de FontAwesome comme dans votre code original -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
+<!-- FullCalendar JS -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales/fr.js'></script>
+    <style>
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Amélioration majeure de la ligne de progression */
+        .stepper-container {
+            position: relative;
+            padding: 0 3rem;
+        }
+        .progress-line {
+            position: absolute;
+            top: 20px;
+            left: 60px;
+            right: 60px;
+            height: 4px;
+            background: #e5e7eb;
+            z-index: 1;
+        }
+        .progress-line-filled {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: #3b82f6; /* blue-500 */
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+        
+        .stepper-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+        .progress-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #6b7280;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .progress-circle.active {
+            background: #3b82f6;
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2);
+        }
+        .progress-circle.completed {
+            background: #3b82f6;
+            color: white;
+        }
+        /* Affiche l'icône de validation sur les étapes complétées */
+        .progress-circle.completed::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free'; /* Correction: correspond à la version 6 importée */
+            font-weight: 900;
+        }
+        /* NOUVELLE CLASSE POUR LE SUCCÈS FINAL */
+        .progress-circle.success {
+            background: #16a34a; /* green-600 */
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.2);
+        }
+        .progress-circle.success::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+        }
+
+        .progress-label {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+        .progress-label.active {
+            color: #3b82f6;
+            font-weight: 700;
+        }
+        .progress-label.completed {
+            color: #1f2937; /* text-gray-800 */
+            font-weight: 600;
+        }
+
+        .date-input-container { position: relative; }
+        .date-input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+        input.date-picker { padding-left: 36px !important; }
+        .tags-container { margin-top: 1rem; padding: 0.5rem; min-height: 80px; background-color: #f9fafb; border-radius: 0.375rem; border: 1px solid #e5e7eb; display: flex; flex-wrap: wrap; gap: 0.5rem; align-content: flex-start; }
+        .tag { display: inline-flex; align-items: center; background-color: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; animation: popIn 0.3s ease-out; }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .tag button { margin-left: 8px; background: none; border: none; cursor: pointer; color: #6366f1; font-size: 1rem; line-height: 1; }
+        
+        .suggestion-item { padding: 8px 12px; cursor: pointer; transition: all 0.2s; }
+        .suggestion-item:hover { background-color: #f3f4f6; transform: translateX(5px); }
+        #suggestions-container { position: absolute; width: 100%; background: white; border: 1px solid #e5e7eb; border-radius: 0.375rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); max-height: 200px; overflow-y: auto; z-index: 20; }
+        
+        .btn { transition: all 0.3s ease; transform: translateY(0); box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08); }
+        .btn:active { transform: translateY(1px); }
+
+        /* Style pour la nouvelle interface calendrier */
+#calendar-container {
+    position: relative;
+    z-index: 1; /* Assure que le calendrier est bien positionné */
+}
+#calendar {
+    font-size: 14px; /* Améliore la lisibilité */
+}
+/* Personnalisation des couleurs des événements */
+.fc-event-holiday {
+    background-color: #ef4444 !important; /* red-500 */
+    border-color: #dc2626 !important; /* red-600 */
+}
+.fc-event-vacation {
+    background-color: #8b5cf6 !important; /* violet-500 */
+    border-color: #7c3aed !important; /* violet-600 */
+}
+.fc-event-main {
+    cursor: pointer; /* Indique qu'on peut cliquer sur les événements */
+}
+
+/* Style pour la légende */
+.calendar-legend {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    padding-top: 0.5rem;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+.legend-color-box {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+}
+
+/* Style pour la fenêtre modale de saisie du nom des vacances */
+#vacation-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+#vacation-modal-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+#vacation-modal {
+    background: white;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 400px;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+#vacation-modal-overlay.visible #vacation-modal {
+    transform: scale(1);
+}
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-4xl bg-white p-6 md:p-8 rounded-xl shadow-lg">
+        
+        <div class="w-full mb-12 stepper-container">
+            <div class="progress-line">
+                <div class="progress-line-filled" id="progress-line-filled"></div>
+            </div>
+            
+            <div class="flex items-start justify-between">
+                <div id="progress-step-1" class="stepper-item">
+                    <div id="progress-circle-1" class="progress-circle">1</div>
+                    <div id="progress-label-1" class="progress-label">Fichier</div>
+                </div>
+                <div id="progress-step-2" class="stepper-item">
+                     <div id="progress-circle-2" class="progress-circle">2</div>
+                    <div id="progress-label-2" class="progress-label">Formateurs</div>
+                </div>
+                <div id="progress-step-3" class="stepper-item">
+                     <div id="progress-circle-3" class="progress-circle">3</div>
+                    <div id="progress-label-3" class="progress-label">Calendrier</div>
+                </div>
+                <div id="progress-step-4" class="stepper-item">
+                     <div id="progress-circle-4" class="progress-circle">4</div>
+                    <div id="progress-label-4" class="progress-label">Espaces</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="step1" class="step">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Étape 1 : Importez votre fichier de base</h2>
+            <p class="mb-6 text-gray-600 text-center">Veuillez sélectionner le fichier Excel "AvancementProgramme" fourni. Le système extraira automatiquement la liste de vos formateurs.</p>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 hover:bg-gray-100 hover:border-blue-500 transition-all duration-300">
+                <input type="file" id="excelFile" class="hidden" accept=".xlsx, .xls">
+                <label for="excelFile" class="cursor-pointer"><i class="fas fa-cloud-upload-alt text-5xl text-blue-500 mb-4 inline-block"></i><p class="text-lg font-semibold text-gray-700">Cliquez pour choisir un fichier</p><p id="fileName" class="text-sm text-gray-500 mt-2 font-medium"></p></label>
+            </div>
+            <div id="step1-feedback" class="text-red-500 mt-4 text-center font-semibold"></div>
+            <button id="step1NextBtn" class="w-full bg-blue-600 text-white p-3 rounded-lg mt-6 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold transition-all duration-300 btn" disabled>Suivant <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <div id="step2" class="step">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Étape 2 : Vérifiez les informations des formateurs</h2>
+            <p class="mb-6 text-gray-600 text-center">Les e-mails et matricules ont été générés automatiquement. Veuillez les vérifier et les corriger si nécessaire.</p>
+            <div class="overflow-y-auto max-h-[50vh] border rounded-lg shadow-inner">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 sticky top-0">
+                        <tr>
+                            <th class="p-3 font-semibold">Nom du Formateur</th>
+                            <th class="p-3 font-semibold w-48">Masse Horaire Stat.</th>
+                            <th class="p-3 font-semibold w-48">Matricule</th>
+                            <th class="p-3 font-semibold">E-mail</th>
+                        </tr>
+                    </thead>
+                    <!-- Le contenu sera injecté par JavaScript -->
+                    <tbody id="formateurs-table-body" class="divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button id="step2PrevBtn" class="w-1/3 bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 font-bold transition-all duration-300 btn">Précédent</button>
+                <button id="step2NextBtn" class="w-2/3 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 font-bold flex items-center justify-center gap-2 transition-all duration-300 btn">Suivant <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <div id="step3" class="step">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Étape 3 : Configurez le calendrier de l'année</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                <!-- Section Jours Fériés (inchangée en HTML) -->
+                <div>
+                    <label for="holidays-picker" class="block font-medium text-gray-700 mb-2">Jours fériés</label>
+                    <p class="text-sm text-gray-500 mb-2">Les jours fériés pour le Maroc sont pré-chargés. Vous pouvez en ajouter ou en retirer.</p>
+                    <div class="date-input-container">
+                        <i class="fas fa-calendar-day date-input-icon"></i>
+                        <input type="text" id="holidays-picker" class="w-full p-2 border border-gray-300 rounded-md date-picker" placeholder="Ajouter un jour férié...">
+                    </div>
+                    <div id="holidays-tags" class="tags-container"></div>
+                </div>
+        
+                <!-- Section Périodes de Vacances (MODIFIÉE) -->
+                <div>
+                    <label class="block font-medium text-gray-700 mb-2">Périodes de vacances</label>
+                    <p class="text-sm text-gray-500 mb-2">Saisissez un nom, sélectionnez une période et cliquez sur "Ajouter".</p>
+                    
+                    <!-- Nouveau champ pour le nom des vacances -->
+                    <input type="text" id="vacation-name-input" class="w-full p-2 border border-gray-300 rounded-md mb-2" placeholder="Nom (ex: Vacances de Printemps)">
+        
+                    <div class="flex gap-2">
+                        <!-- Le sélecteur de date -->
+                        <div class="date-input-container flex-grow">
+                            <i class="fas fa-calendar-week date-input-icon"></i>
+                            <input type="text" id="vacations-picker" class="w-full p-2 border border-gray-300 rounded-md date-picker" placeholder="Sélectionnez une période...">
+                        </div>
+                        <!-- Nouveau bouton d'ajout -->
+                        <button id="add-vacation-btn" class="bg-blue-600 text-white px-4 rounded-md hover:bg-blue-700 transition-colors flex-shrink-0 btn">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                     <div id="vacation-feedback" class="text-red-500 text-sm mt-2"></div>
+                    <div id="vacations-tags" class="tags-container"></div>
+                </div>
+            </div>
+             <div class="flex gap-4 mt-8">
+                 <button id="step3PrevBtn" class="w-1/3 bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 font-bold btn">Précédent</button>
+                 <button id="step3NextBtn" class="w-2/3 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 font-bold btn">Suivant <i class="fas fa-arrow-right"></i></button>
+             </div>
+        </div>
+
+        <div id="step4" class="step">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Étape 4 : Listez vos espaces de travail</h2>
+            <p class="mb-6 text-gray-600 text-center">Ajoutez vos salles, amphis, laboratoires, etc. N'oubliez pas d'inclure "TEAMS" pour les cours à distance.</p>
+            
+            <div class="relative">
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="espace-input" class="flex-grow p-3 border border-gray-300 rounded-md shadow-inner" placeholder="Salle A101">
+                    <button id="ajouter-espace" class="bg-blue-600 text-white px-4 rounded-md hover:bg-blue-700 transition-colors btn">
+                        <i class="fas fa-plus mr-1"></i> Ajouter
+                    </button>
+                </div>
+                
+                <div id="suggestions-container" class="hidden"></div>
+            </div>
+            
+            <div class="mt-4">
+                <p class="text-sm text-gray-500 mb-2">Salles communes: 
+                    <span id="common-spaces" class="inline-flex gap-2 ml-2">
+                        <button class="text-blue-600 hover:text-blue-800 text-sm" data-space="Salle A101">Salle A101</button>
+                        <button class="text-blue-600 hover:text-blue-800 text-sm" data-space="Amphi B">Amphi B</button>
+                        <button class="text-blue-600 hover:text-blue-800 text-sm" data-space="Labo Info">Labo Info</button>
+                        <button class="text-blue-600 hover:text-blue-800 text-sm" data-space="TEAMS">TEAMS</button>
+                    </span>
+                </p>
+            </div>
+            
+            <div id="espaces-container" class="tags-container mt-4 min-h-[100px]"></div>
+            
+            <div id="step4-feedback" class="text-red-500 mt-4 text-center font-semibold"></div>
+            <div class="flex gap-4 mt-6">
+                <button id="step4PrevBtn" class="w-1/3 bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 font-bold btn">Précédent</button>
+                <button id="finishSetupBtn" class="w-2/3 bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 font-bold flex items-center justify-center gap-2 transition-all duration-300 btn">
+                    Terminer et Sauvegarder <i class="fas fa-check"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Le SCRIPT EST CELUI DU CODE ORIGINAL, ROBUSTE ET FONCTIONNEL,
+        // AVEC DES ADAPTATIONS POUR LA NOUVELLE INTERFACE GRAPHIQUE.
+
+        async function checkSessionAndLoad() {
+            try {
+                // Simuler une session valide pour le test en local.
+                // Remplacez ceci par votre véritable appel fetch.
+                const response = await fetch('../api/auth/verify_session.php');
+                const result = await response.json();
+                if (!result.success) {
+                    window.location.href = 'login.html';
+                } else {
+                    initializeSetupPage();
+                }
+            } catch (error) {
+                console.warn("API de session non disponible. Lancement en mode démo.");
+                initializeSetupPage(); // Lancer la page même si l'API échoue pour la démo
+            }
+        }
+        document.addEventListener('DOMContentLoaded', checkSessionAndLoad);
+
+        function initializeSetupPage() {
+    const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3'), document.getElementById('step4')];
+    const fileInput = document.getElementById('excelFile');
+    const fileNameLabel = document.getElementById('fileName');
+    const formateursTableBody = document.getElementById('formateurs-table-body');
+    const feedbacks = {
+        step1: document.getElementById('step1-feedback'),
+        step4: document.getElementById('step4-feedback'),
+        vacation: document.getElementById('vacation-feedback') // NOUVEAU : feedback pour les vacances
+    };
+    let rawExcelData = null;
+    let moroccanHolidaysData = []; // NOUVEAU : Pour stocker les données complètes des jours fériés
+
+    const nextButtons = { 1: document.getElementById('step1NextBtn'), 2: document.getElementById('step2NextBtn'), 3: document.getElementById('step3NextBtn') };
+    const prevButtons = { 2: document.getElementById('step2PrevBtn'), 3: document.getElementById('step3PrevBtn'), 4: document.getElementById('step4PrevBtn') };
+    const progressLineFilled = document.getElementById('progress-line-filled');
+
+    function goToStep(stepNumber) {
+        steps.forEach((step, index) => step.classList.toggle('active', (index + 1) === stepNumber));
+        updateProgress(stepNumber);
+    }
+
+    function updateProgress(currentStep) {
+        const totalSteps = steps.length;
+        const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+        progressLineFilled.style.width = `${progressPercentage}%`;
+        
+        for (let i = 1; i <= totalSteps; i++) {
+            const circle = document.getElementById(`progress-circle-${i}`);
+            const label = document.getElementById(`progress-label-${i}`);
+            
+            circle.classList.remove('active', 'completed', 'success');
+            label.classList.remove('active', 'completed');
+            circle.textContent = i;
+
+            if (i < currentStep) {
+                circle.classList.add('completed');
+                label.classList.add('completed');
+                circle.innerHTML = '';
+            } else if (i === currentStep) {
+                circle.classList.add('active');
+                label.classList.add('active');
+            }
+        }
+    }
+
+    // --- LOGIQUE POUR L'ÉTAPE 3 (Calendrier) ---
+
+    // MODIFIÉ : fetchMoroccanHolidays stocke maintenant le nom et la date
+    async function fetchMoroccanHolidays(year, options = {}) {
+    const locale = options.locale || 'fr'; // 'fr' ou 'en'
+    const sort = options.sort ?? true;
+
+    try {
+        const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/MA`);
+        
+        if (!response.ok) {
+            console.warn(`Échec de la requête: ${response.status} ${response.statusText}`);
+            return [];
+        }
+
+        const holidays = await response.json();
+
+        if (!Array.isArray(holidays)) {
+            console.error("Réponse inattendue : format JSON invalide");
+            return [];
+        }
+
+        const result = holidays.map(h => ({
+            date: h.date,
+            name: locale === 'fr' ? h.localName : h.name,
+            type: h.types?.join(', ') || 'Public'
+        }));
+
+        return sort
+            ? result.sort((a, b) => new Date(a.date) - new Date(b.date))
+            : result;
+    } catch (error) {
+        console.error("Erreur lors de la récupération des jours fériés :", error.message || error);
+        return [];
+    }
+}
+
+    
+    // MODIFIÉ : La fonction `addTag` est plus flexible
+    function addTag(type, value, displayText) {
+        const container = document.getElementById(`${type}-tags`);
+        if (Array.from(container.querySelectorAll('.tag')).find(t => t.dataset.value === value)) return;
+
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.dataset.value = value;
+        // Le texte affiché est maintenant personnalisable
+        tag.innerHTML = `${displayText} <button type="button" class="font-bold">×</button>`;
+        container.appendChild(tag);
+        
+        tag.querySelector('button').onclick = () => {
+            tag.remove();
+            // Si on supprime un jour férié, on met à jour le calendrier flatpickr
+            if (type === 'holidays') {
+                const currentDates = getTagsValues('holidays').map(h => holidaysPicker.parseDate(h.date, "d/m/Y"));
+                holidaysPicker.setDate(currentDates, false); // 'false' pour ne pas déclencher onChange
+            }
+        };
+    }
+    
+    // MODIFIÉ : La fonction de récupération des valeurs retourne des objets structurés
+    function getTagsValues(type) {
+        const container = document.getElementById(`${type}-tags`);
+        return Array.from(container.querySelectorAll('.tag')).map(t => {
+            const value = t.dataset.value;
+            if (type === 'holidays') {
+                // value est "jj/mm/aaaa|Nom du jour"
+                const [date, name] = value.split('|');
+                return { date, name };
+            }
+            if (type === 'vacations') {
+                // value est "jj/mm/aaaa - jj/mm/aaaa|Nom de la vacance"
+                const [dates, name] = value.split('|');
+                return { dates, name };
+            }
+            return value; // Pour l'étape 4 (espaces)
+        });
+    }
+
+    // --- Initialisation des Pickers ---
+    const holidaysPicker = flatpickr("#holidays-picker", {
+        dateFormat: "d/m/Y",
+        locale: "fr",
+        // MODIFIÉ : On gère maintenant des objets date complets
+        onChange: (selectedDates, dateStr, instance) => {
+            const selectedDate = selectedDates[0];
+            if (!selectedDate) return;
+
+            // Trouver le nom du jour férié correspondant dans nos données
+            const holidayData = moroccanHolidaysData.find(h => 
+                instance.formatDate(new Date(h.date), "d/m/Y") === instance.formatDate(selectedDate, "d/m/Y")
+            );
+
+            const name = holidayData ? holidayData.name : "Jour Férié";
+            const formattedDate = instance.formatDate(selectedDate, "d/m/Y");
+            const value = `${formattedDate}|${name}`;
+            const displayText = `<strong>${name}</strong> - ${formattedDate}`;
+
+            addTag('holidays', value, displayText);
+            
+            // Mettre à jour le picker avec toutes les dates actuellement dans les tags
+            const allHolidayDates = getTagsValues('holidays').map(h => h.date);
+            instance.setDate(allHolidayDates, false);
+        }
+    });
+
+    const vacationsPicker = flatpickr("#vacations-picker", {
+        mode: "range",
+        dateFormat: "d/m/Y",
+        locale: "fr"
+    });
+
+    // Données globales pour référence dans onChange
+
+// Initialiser les jours fériés à l'ouverture
+(async function initHolidays() {
+    const currentYear = new Date().getFullYear();
+    moroccanHolidaysData = await fetchMoroccanHolidays(currentYear);
+
+    moroccanHolidaysData.forEach(h => {
+        const dateObj = new Date(h.date);
+        const formattedDate = holidaysPicker.formatDate(dateObj, "d/m/Y");
+        const value = `${formattedDate}|${h.name}`;
+        const displayText = `<strong>${h.name}</strong> - ${formattedDate}`;
+
+        addTag('holidays', value, displayText);
+    });
+
+    // Mettre à jour le Flatpickr avec les dates fériées
+    const holidayDates = moroccanHolidaysData.map(h => new Date(h.date));
+    holidaysPicker.setDate(holidayDates, false); // false pour ne pas déclencher l'événement
+})();
+
+
+    // NOUVEAU : Logique pour le bouton "Ajouter" des vacances
+    document.getElementById('add-vacation-btn').addEventListener('click', () => {
+        const nameInput = document.getElementById('vacation-name-input');
+        const vacationName = nameInput.value.trim();
+        const selectedDates = vacationsPicker.selectedDates;
+
+        feedbacks.vacation.textContent = ''; // Reset feedback
+        if (!vacationName) {
+            feedbacks.vacation.textContent = "Veuillez donner un nom à la période de vacances.";
+            return;
+        }
+        if (selectedDates.length !== 2) {
+            feedbacks.vacation.textContent = "Veuillez sélectionner une période de début et de fin.";
+            return;
+        }
+
+        const startDate = vacationsPicker.formatDate(selectedDates[0], "d/m/Y");
+        const endDate = vacationsPicker.formatDate(selectedDates[1], "d/m/Y");
+        const dateRange = `${startDate} - ${endDate}`;
+        
+        const value = `${dateRange}|${vacationName}`;
+        const displayText = `<strong>${vacationName}</strong> (${dateRange})`;
+
+        addTag('vacations', value, displayText);
+
+        // Réinitialiser les champs
+        nameInput.value = '';
+        vacationsPicker.clear();
+    });
+
+    // Chargement initial des jours fériés
+    fetchMoroccanHolidays(new Date().getFullYear()).then(holidays => {
+        moroccanHolidaysData = holidays;
+        holidays.forEach(holiday => {
+            const formattedDate = flatpickr.formatDate(new Date(holiday.date), "d/m/Y");
+            const value = `${formattedDate}|${holiday.name}`;
+            const displayText = `<strong>${holiday.name}</strong> - ${formattedDate}`;
+            addTag('holidays', value, displayText);
+        });
+        // Mettre à jour le picker avec les dates pré-chargées
+        const allHolidayDates = getTagsValues('holidays').map(h => h.date);
+        holidaysPicker.setDate(allHolidayDates, false);
+    });
+    
+
+    // --- LOGIQUE POUR L'ÉTAPE 4 (Espaces) ---
+    // (Cette partie reste identique)
+    const espaceInput = document.getElementById('espace-input');
+    const ajouterEspaceBtn = document.getElementById('ajouter-espace');
+    const espacesContainer = document.getElementById('espaces-container');
+    const commonSpacesContainer = document.getElementById('common-spaces');
+            
+    function ajouterEspace(espace) {
+        espace = espace.trim();
+        if (!espace) return;
+        const displayText = espace; // Pour la compatibilité avec addTag
+        // Utilisation de la version simple de getTagsValues
+        const currentEspaces = Array.from(document.getElementById('espaces-container').querySelectorAll('.tag')).map(t => t.dataset.value);
+        if (currentEspaces.includes(espace)) return;
+        
+        addTag('espaces', espace, displayText);
+        espaceInput.value = '';
+    }
+            
+    ajouterEspaceBtn.addEventListener('click', () => ajouterEspace(espaceInput.value));
+    espaceInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); ajouterEspace(espaceInput.value); } });
+    commonSpacesContainer.querySelectorAll('button').forEach(btn => btn.addEventListener('click', (e) => ajouterEspace(e.target.dataset.space)));
+    
+    // --- NAVIGATION ET LOGIQUE DES ÉTAPES ---
+    // (Cette partie reste identique)
+    nextButtons[1].addEventListener('click', () => handleStep1Next());
+    nextButtons[2].addEventListener('click', () => goToStep(3));
+    nextButtons[3].addEventListener('click', () => goToStep(4));
+    prevButtons[2].addEventListener('click', () => goToStep(1));
+    prevButtons[3].addEventListener('click', () => goToStep(2));
+    prevButtons[4].addEventListener('click', () => goToStep(3));
+
+    fileInput.addEventListener('change', function() { if (this.files.length > 0) { fileNameLabel.textContent = this.files[0].name; nextButtons[1].disabled = false; feedbacks.step1.textContent = ""; } });
+
+    function handleStep1Next() {
+        const formData = new FormData();
+        if (!fileInput.files[0]) { feedbacks.step1.textContent = "Veuillez sélectionner un fichier."; return; }
+        formData.append('excelFile', fileInput.files[0]);
+        nextButtons[1].innerHTML = 'Analyse... <i class="fas fa-spinner fa-spin"></i>';
+        nextButtons[1].disabled = true;
+
+        fetch('../api/setup/parse_formateurs.php', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    rawExcelData = result.rawExcelData;
+                    populateFormateursTable(result.formateurs);
+                    goToStep(2);
+                } else {
+                    feedbacks.step1.textContent = result.message || "Erreur d'analyse.";
+                }
+            }).catch(() => feedbacks.step1.textContent = "Erreur de communication avec le serveur.")
+            .finally(() => { nextButtons[1].innerHTML = 'Suivant <i class="fas fa-arrow-right"></i>'; });
+    }
+
+    function populateFormateursTable(formateurs) {
+        formateursTableBody.innerHTML = '';
+        formateurs.forEach(f => {
+            const row = document.createElement('tr');
+            row.className = "hover:bg-gray-50 transition-colors duration-200";
+            row.innerHTML = `<td class="p-3 font-semibold text-gray-800 nom">${f.nom}</td><td class="p-3"><input type="number" class="w-full p-2 border rounded masse_horaire" value="${f.masse_horaire}"></td><td class="p-3"><input type="text" class="w-full p-2 border rounded bg-gray-100 matricule" value="${f.matricule}" readonly></td><td class="p-3"><input type="email" class="w-full p-2 border rounded email" value="${f.email}" placeholder="E-mail personnel si vacataire"></td>`;
+            formateursTableBody.appendChild(row);
+        });
+    }
+
+    const finishSetupBtn = document.getElementById('finishSetupBtn');
+    finishSetupBtn.addEventListener('click', function() {
+        const formateursData = Array.from(formateursTableBody.querySelectorAll('tr')).map(r => ({ nom: r.querySelector('.nom').textContent, masse_horaire: r.querySelector('.masse_horaire').value, matricule: r.querySelector('.matricule').value, email: r.querySelector('.email').value }));
+        
+        // MODIFIÉ : Utilisation de la nouvelle fonction getTagsValues
+        const holidays = getTagsValues('holidays');
+        const vacations = getTagsValues('vacations');
+        const espaces = getTagsValues('espaces');
+
+        if (espaces.length === 0) { feedbacks.step4.textContent = "Veuillez ajouter au moins un espace."; return; }
+
+        const finalData = { excelData: rawExcelData, formateursData, holidays, vacations, espaces };
+        this.innerHTML = 'Sauvegarde... <i class="fas fa-spinner fa-spin"></i>';
+        this.disabled = true;
+
+        fetch('../api/setup/complete_setup.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(finalData) })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    const circle4 = document.getElementById('progress-circle-4');
+                    const label4 = document.getElementById('progress-label-4');
+                    circle4.classList.remove('active');
+                    circle4.classList.add('success');
+                    label4.classList.add('completed');
+                    circle4.innerHTML = '';
+                    setTimeout(() => { window.location.href = 'admin.html'; }, 1200);
+                } else {
+                    feedbacks.step4.textContent = result.message || "Erreur de sauvegarde.";
+                    this.innerHTML = 'Terminer et Sauvegarder <i class="fas fa-check"></i>';
+                    this.disabled = false;
+                }
+            })
+            .catch(() => { feedbacks.step4.textContent = "Erreur de communication serveur."; this.innerHTML = 'Terminer et Sauvegarder <i class="fas fa-check"></i>'; this.disabled = false; });
+    });
+    
+    goToStep(1);
+}
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+name: Deploy to InfinityFree
+
+# Déclenchement du workflow
+on:
+  push:
+    branches:
+      - main  # On déploie uniquement quand on push sur "main"
+
+jobs:
+  ftp-deploy:
+    runs-on: ubuntu-latest  # Machine virtuelle Linux pour exécuter le job
+
+    steps:
+      # 1️⃣ Récupérer le code source depuis GitHub
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2️⃣ Envoyer les fichiers modifiés via FTP
+      - name: FTP Deploy to InfinityFree
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
+          server: ${{ secrets.FTP_HOST }}       # hôte FTP (ex: ftpupload.net)
+          username: ${{ secrets.FTP_USER }}     # utilisateur FTP
+          password: ${{ secrets.FTP_PASS }}     # mot de passe FTP
+          server-dir: ${{ secrets.FTP_DIR }}    # dossier cible sur InfinityFree (ex: /htdocs/)
+          protocol: ftp                         # Protocole FTP
+          exclude: |                            # Fichiers/dossiers à ignorer
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            **/vendor/**

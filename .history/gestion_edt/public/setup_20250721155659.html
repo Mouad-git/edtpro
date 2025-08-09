@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuration Initiale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        .step { display: none; }
+        .step.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2 text-center">Configuration Initiale</h1>
+        <p class="text-gray-500 mb-8 text-center">Bienvenue ! Veuillez suivre ces étapes pour configurer votre compte.</p>
+        
+        <!-- === ÉTAPE 1 : UPLOAD DU FICHIER === -->
+        <div id="step1" class="step active">
+            <h2 class="text-2xl font-semibold mb-4">Étape 1 : Importez votre fichier de base</h2>
+            <p class="mb-6">Veuillez sélectionner le fichier Excel "AvancementProgramme" fourni. Le système extraira automatiquement la liste de vos formateurs.</p>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <input type="file" id="excelFile" class="hidden" accept=".xlsx, .xls">
+                <label for="excelFile" class="cursor-pointer">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-4"></i>
+                    <p class="text-lg font-semibold text-gray-700">Cliquez pour choisir un fichier</p>
+                    <p id="fileName" class="text-sm text-gray-500 mt-2"></p>
+                </label>
+            </div>
+            <div id="step1-feedback" class="text-red-500 mt-4 text-center font-semibold"></div>
+            <button id="nextStepBtn" class="w-full bg-blue-600 text-white p-3 rounded-lg mt-6 hover:bg-blue-700 disabled:bg-gray-400" disabled>
+                Suivant <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- === ÉTAPE 2 : VÉRIFICATION DES FORMATEURS === -->
+        <div id="step2" class="step">
+            <h2 class="text-2xl font-semibold mb-4">Étape 2 : Vérifiez les informations des formateurs</h2>
+            <p class="mb-6">Les e-mails et matricules ont été générés automatiquement. Veuillez les vérifier et les corriger si nécessaire.</p>
+            <div class="overflow-y-auto max-h-[50vh]">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-2">Nom du Formateur</th>
+                            <th class="p-2 w-48">Masse Horaire Stat.</th>
+                            <th class="p-2 w-48">Matricule</th>
+                            <th class="p-2">E-mail (@ofppt.ma)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="formateurs-table-body">
+                        <!-- Le contenu sera généré par JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="step2-feedback" class="text-red-500 mt-4 text-center font-semibold"></div>
+            <button id="finishSetupBtn" class="w-full bg-green-600 text-white p-3 rounded-lg mt-6 hover:bg-green-700">
+                Terminer la Configuration
+            </button>
+        </div>
+    </div>
+
+    <script>
+        async function checkSessionAndLoad() {
+        try {
+            const response = await fetch('../api/auth/verify_session.php');
+            const result = await response.json();
+
+            if (!result.success) {
+                // Si pas de session, on ne peut pas être ici. On retourne à la connexion.
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // La session est valide, on peut initialiser la logique de la page.
+            initializeSetupPage();
+
+        } catch (error) {
+            console.error('Session check failed:', error);
+            window.location.href = 'login.html';
+        }
+    }
+    
+    function initializeSetupPage() {
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const fileInput = document.getElementById('excelFile');
+        const fileNameLabel = document.getElementById('fileName');
+        const nextStepBtn = document.getElementById('nextStepBtn');
+        const finishSetupBtn = document.getElementById('finishSetupBtn');
+        const formateursTableBody = document.getElementById('formateurs-table-body');
+        const step1Feedback = document.getElementById('step1-feedback');
+        const step2Feedback = document.getElementById('step2-feedback');
+
+        let rawExcelData = null;
+
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileNameLabel.textContent = this.files[0].name;
+                nextStepBtn.disabled = false;
+            }
+        });
+
+
+            finishSetupBtn.addEventListener('click', function() {
+                const formateursData = [];
+                formateursTableBody.querySelectorAll('tr').forEach(row => {
+                    formateursData.push({
+                        nom: row.querySelector('.nom').textContent,
+                        masse_horaire: row.querySelector('.masse_horaire').value,
+                        matricule: row.querySelector('.matricule').value,
+                        email: row.querySelector('.email').value + '@ofppt.ma'
+                    });
+                });
+
+                const finalData = {
+                    excelData: rawExcelData,
+                    formateursData: formateursData
+                };
+
+                // On envoie TOUT au script final de sauvegarde
+                fetch('../api/setup/complete_setup.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(finalData)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        window.location.href = 'admin.html'; // C'est terminé !
+                    } else {
+                        step2Feedback.textContent = result.message || "Erreur lors de la sauvegarde.";
+                    }
+                });
+            });
+
+            function populateFormateursTable(formateurs) {
+                formateursTableBody.innerHTML = '';
+                formateurs.forEach(f => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="p-2 nom">${f.nom}</td>
+                        <td class="p-2"><input type="number" class="w-full p-1 border rounded masse_horaire" value="910"></td>
+                        <td class="p-2"><input type="text" class="w-full p-1 border rounded matricule" value="${f.matricule}"></td>
+                        <td class="p-2">
+                            <div class="flex items-center">
+                                <input type="text" class="w-full p-1 border rounded-l email" value="${f.email_prefix}">
+                                <span class="bg-gray-200 p-1 border rounded-r border-l-0">@ofppt.ma</span>
+                            </div>
+                        </td>
+                    `;
+                    formateursTableBody.appendChild(row);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

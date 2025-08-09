@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Administrateur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        /* Variables CSS personnalisées */
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Animations personnalisées */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Styles pour les onglets */
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .tab-button:hover::before {
+            left: 100%;
+        }
+
+        .tab-button:hover {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-bottom-color: #cbd5e1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+
+        /* Styles pour le contenu des onglets */
+        .tab-content { 
+            display: none; 
+            animation: fadeInUp 0.4s ease-out;
+        }
+        
+        .tab-content.active { 
+            display: block; 
+        }
+
+        /* Styles pour les cartes */
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Styles pour les boutons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color) 0%, #dc2626 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Styles pour les tableaux */
+        .table-container {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .table-row {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table-row:hover {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            transform: scale(1.01);
+        }
+
+        /* Styles pour les badges */
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+
+        .badge-pending {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        .badge-rejected {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+
+        /* Styles pour la navigation */
+        .nav-container {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        /* Styles pour les statistiques */
+        .stats-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Animation de chargement */
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive design amélioré */
+        @media (max-width: 768px) {
+            .tab-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .card {
+                margin: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+    <!-- Navigation améliorée -->
+    <nav class="nav-container">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex-shrink-0">
+                        <img src="assets/images/logo_edtpro.png" style="height: 50px; width: auto;" alt="Logo" class="animate-pulse">
+                    </div>
+                    <div class="hidden md:block">
+                        <h2 class="text-lg font-semibold text-gray-800">Administration</h2>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:block">
+                        <span class="text-sm text-gray-600">
+                            <i class="fas fa-user-shield mr-2"></i>
+                            Administrateur
+                        </span>
+                    </div>
+                    <a href="../api/auth/logout.php" class="btn-danger text-sm">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- En-tête avec statistiques -->
+        <div class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-chart-line mr-3 text-blue-600"></i>
+                Tableau de Bord Administrateur
+            </h1>
+            <p class="text-gray-600 mb-6">Gérez les demandes d'inscription des directeurs d'établissement</p>
+            
+            <!-- Cartes de statistiques -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="stats-card">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-clock text-yellow-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">En Attente</p>
+                            <p class="text-2xl font-bold text-gray-900" id="pending-count">-</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Approuvés</p>
+                            <p class="text-2xl font-bold text-gray-900" id="approved-count">-</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-times-circle text-red-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Rejetés</p>
+                            <p class="text-2xl font-bold text-gray-900" id="rejected-count">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglets améliorés -->
+        <div class="card mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8 px-6" id="admin-tabs">
+                    <button class="tab-button active" data-target="panel-pending">
+                        <i class="fas fa-clock mr-2"></i>
+                        En Attente
+                    </button>
+                    <button class="tab-button" data-target="panel-approved">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Approuvés
+                    </button>
+                    <button class="tab-button" data-target="panel-rejected">
+                        <i class="fas fa-times-circle mr-2"></i>
+                        Rejetés
+                    </button>
+                </nav>
+            </div>
+
+            <div class="p-6">
+                <div id="panel-pending" class="tab-content active">
+                    <div class="table-container">
+                        <table class="w-full text-sm text-left text-gray-600">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="px-6 py-4">Nom</th>
+                                    <th class="px-6 py-4">Email</th>
+                                    <th class="px-6 py-4">Établissement</th>
+                                    <th class="px-6 py-4 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-users-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="panel-approved" class="tab-content">
+                    <div class="table-container">
+                        <table class="w-full text-sm text-left text-gray-600">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="px-6 py-4">Nom</th>
+                                    <th class="px-6 py-4">Email</th>
+                                    <th class="px-6 py-4">Établissement</th>
+                                    <th class="px-6 py-4 text-center">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody id="approved-users-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="panel-rejected" class="tab-content">
+                    <div class="table-container">
+                        <table class="w-full text-sm text-left text-gray-600">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="px-6 py-4">Nom</th>
+                                    <th class="px-6 py-4">Email</th>
+                                    <th class="px-6 py-4">Établissement</th>
+                                    <th class="px-6 py-4 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rejected-users-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', checkAdminSession);
+
+        async function checkAdminSession() {
+            try {
+                const response = await fetch('../api/auth/verify_admin_session.php');
+                if (!response.ok) { 
+                    window.location.href = 'login.html'; 
+                    return; 
+                }
+                loadAllUsers();
+                setupTabNavigation();
+            } catch (error) {
+                console.error("Erreur de vérification de session:", error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function loadAllUsers() {
+            const pendingTable = document.getElementById('pending-users-table');
+            const approvedTable = document.getElementById('approved-users-table');
+            const rejectedTable = document.getElementById('rejected-users-table');
+            
+            const loadingRow = `
+                <tr>
+                    <td colspan="4" class="px-6 py-8 text-center">
+                        <div class="flex items-center justify-center space-x-3">
+                            <div class="loading-spinner"></div>
+                            <span class="text-gray-600">Chargement en cours...</span>
+                        </div>
+                    </td>
+                </tr>`;
+            
+            pendingTable.innerHTML = loadingRow;
+            approvedTable.innerHTML = loadingRow;
+            rejectedTable.innerHTML = loadingRow;
+            
+            try {
+                const response = await fetch('../api/admin/get_all_users.php');
+                const result = await response.json();
+
+                if (result.success) {
+                    const pending = result.data.filter(u => u.status === 'pending');
+                    const approved = result.data.filter(u => u.status === 'approved');
+                    const rejected = result.data.filter(u => u.status === 'rejected');
+                    
+                    // Mettre à jour les compteurs
+                    document.getElementById('pending-count').textContent = pending.length;
+                    document.getElementById('approved-count').textContent = approved.length;
+                    document.getElementById('rejected-count').textContent = rejected.length;
+                    
+                    renderPendingTable(pending);
+                    renderApprovedTable(approved);
+                    renderRejectedTable(rejected);
+                } else {
+                    throw new Error(result.message || "Erreur inconnue");
+                }
+            } catch (error) {
+                const errorRow = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center">
+                            <div class="flex items-center justify-center space-x-3 text-red-500">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Erreur lors du chargement des données: ${error.message}</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                pendingTable.innerHTML = errorRow;
+                approvedTable.innerHTML = errorRow;
+                rejectedTable.innerHTML = errorRow;
+                console.error("Erreur de chargement:", error);
+            }
+        }
+
+        function renderPendingTable(users) {
+            const tableBody = document.getElementById('pending-users-table');
+            if (users.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center">
+                            <div class="flex flex-col items-center space-y-3 text-gray-500">
+                                <i class="fas fa-inbox text-4xl"></i>
+                                <span>Aucune demande en attente</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            users.forEach((user, index) => {
+                const row = `
+                    <tr class="table-row" style="animation-delay: ${index * 0.1}s">
+                        <td class="px-6 py-4 font-semibold text-gray-900">${user.nom_complet}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                                ${user.email}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-building mr-2 text-gray-400"></i>
+                                ${user.nom_etablissement}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <button onclick="updateUserStatus(${user.id}, 'approved')" class="btn-success text-xs">
+                                    <i class="fas fa-check mr-1"></i>
+                                    Approuver
+                                </button>
+                                <button onclick="updateUserStatus(${user.id}, 'rejected')" class="btn-danger text-xs">
+                                    <i class="fas fa-times mr-1"></i>
+                                    Rejeter
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+        
+        function renderApprovedTable(users) {
+            const tableBody = document.getElementById('approved-users-table');
+            if (users.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center">
+                            <div class="flex flex-col items-center space-y-3 text-gray-500">
+                                <i class="fas fa-check-circle text-4xl"></i>
+                                <span>Aucun directeur approuvé</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            users.forEach((user, index) => {
+                const row = `
+                    <tr class="table-row" style="animation-delay: ${index * 0.1}s">
+                        <td class="px-6 py-4 font-semibold text-gray-900">${user.nom_complet}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                                ${user.email}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-building mr-2 text-gray-400"></i>
+                                ${user.nom_etablissement}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="badge badge-success">
+                                <i class="fas fa-check mr-1"></i>
+                                Approuvé
+                            </span>
+                        </td>
+                    </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function renderRejectedTable(users) {
+            const tableBody = document.getElementById('rejected-users-table');
+            if (users.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center">
+                            <div class="flex flex-col items-center space-y-3 text-gray-500">
+                                <i class="fas fa-times-circle text-4xl"></i>
+                                <span>Aucune inscription rejetée</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            users.forEach((user, index) => {
+                const row = `
+                    <tr class="table-row" style="animation-delay: ${index * 0.1}s">
+                        <td class="px-6 py-4 font-semibold text-gray-900">${user.nom_complet}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                                ${user.email}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-building mr-2 text-gray-400"></i>
+                                ${user.nom_etablissement}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <button onclick="updateUserStatus(${user.id}, 'approved')" class="btn-success text-xs">
+                                    <i class="fas fa-undo mr-1"></i>
+                                    Ré-approuver
+                                </button>
+                                <button onclick="updateUserStatus(${user.id}, 'deleted')" class="btn-danger text-xs">
+                                    <i class="fas fa-trash mr-1"></i>
+                                    Supprimer
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+        
+        async function updateUserStatus(userId, status) {
+            const actions = {
+                'approved': 'approuver',
+                'rejected': 'rejeter',
+                'deleted': 'supprimer définitivement'
+            };
+            const actionText = actions[status] || 'modifier';
+
+            if (!confirm(`Êtes-vous sûr de vouloir ${actionText} cet utilisateur ?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../api/admin/update_user_status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, new_status: status })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    // Notification de succès
+                    showNotification(`Utilisateur ${status === 'deleted' ? 'supprimé' : actionText} avec succès.`, 'success');
+                    loadAllUsers();
+                } else {
+                    showNotification("Erreur: Impossible de mettre à jour le statut. " + (result.message || ''), 'error');
+                }
+            } catch (error) {
+                showNotification("Une erreur de communication est survenue.", 'error');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            // Créer une notification temporaire
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' : 
+                type === 'error' ? 'bg-red-500 text-white' : 
+                'bg-blue-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Supprimer après 3 secondes
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        function setupTabNavigation() {
+            const tabsContainer = document.getElementById('admin-tabs');
+            tabsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-button')) {
+                    // Retirer la classe active de tous les onglets
+                    tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    
+                    // Ajouter la classe active à l'onglet cliqué
+                    e.target.classList.add('active');
+                    
+                    // Masquer tous les contenus
+                    const targetId = e.target.dataset.target;
+                    document.querySelectorAll('.tab-content').forEach(panel => {
+                        panel.classList.remove('active');
+                    });
+                    
+                    // Afficher le contenu correspondant
+                    const targetPanel = document.getElementById(targetId);
+                    if (targetPanel) {
+                        targetPanel.classList.add('active');
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

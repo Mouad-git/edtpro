@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Administrateur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        .tab-button {
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            color: #6b7280; /* text-gray-500 */
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .tab-button:hover {
+            background-color: #f9fafb; /* bg-gray-50 */
+            border-bottom-color: #d1d5db; /* border-gray-300 */
+        }
+        .tab-button.active {
+            color: #3b82f6; /* text-blue-600 */
+            border-bottom-color: #3b82f6;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    <img src="assets/images/logo_edt.png" style="height: 50px; width: auto;" alt="Logo">
+                </div>
+                <div>
+                    <a href="../api/auth/logout.php" class="text-sm font-medium text-gray-500 hover:text-red-600 transition">
+                        <i class="fas fa-sign-out-alt mr-1"></i>Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Gestion des Directeurs</h1>
+        
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-6" id="admin-tabs">
+                <button class="tab-button active" data-target="panel-pending">En Attente</button>
+                <button class="tab-button" data-target="panel-approved">Approuvés</button>
+                <button class="tab-button" data-target="panel-rejected">Rejetés</button>
+            </nav>
+        </div>
+
+        <div>
+            <div id="panel-pending" class="tab-content active">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-600">
+                            <thead class="bg-gray-50 text-xs text-gray-700 uppercase"><tr><th class="px-6 py-3">Nom</th><th class="px-6 py-3">Email</th><th class="px-6 py-3">Établissement</th><th class="px-6 py-3 text-center">Action</th></tr></thead>
+                            <tbody id="pending-users-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="panel-approved" class="tab-content">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-600">
+                            <thead class="bg-gray-50 text-xs text-gray-700 uppercase"><tr><th class="px-6 py-3">Nom</th><th class="px-6 py-3">Email</th><th class="px-6 py-3">Établissement</th><th class="px-6 py-3 text-center">Statut</th></tr></thead>
+                            <tbody id="approved-users-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="panel-rejected" class="tab-content">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-600">
+                            <thead class="bg-gray-50 text-xs text-gray-700 uppercase"><tr><th class="px-6 py-3">Nom</th><th class="px-6 py-3">Email</th><th class="px-6 py-3">Établissement</th><th class="px-6 py-3 text-center">Action</th></tr></thead>
+                            <tbody id="rejected-users-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', checkAdminSession);
+
+        async function checkAdminSession() {
+            try {
+                const response = await fetch('../api/auth/verify_admin_session.php');
+                if (!response.ok) { window.location.href = 'login.html'; return; }
+                loadAllUsers();
+                setupTabNavigation();
+            } catch (error) {
+                console.error("Erreur de vérification de session:", error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function loadAllUsers() {
+            const pendingTable = document.getElementById('pending-users-table');
+            const approvedTable = document.getElementById('approved-users-table');
+            const rejectedTable = document.getElementById('rejected-users-table');
+            const loadingRow = '<tr><td colspan="4" class="px-6 py-4 text-center">Chargement...</td></tr>';
+            pendingTable.innerHTML = loadingRow;
+            approvedTable.innerHTML = loadingRow;
+            rejectedTable.innerHTML = loadingRow;
+            
+            try {
+                const response = await fetch('../api/admin/get_all_users.php');
+                const result = await response.json();
+
+                if (result.success) {
+                    const pending = result.data.filter(u => u.status === 'pending');
+                    const approved = result.data.filter(u => u.status === 'approved');
+                    const rejected = result.data.filter(u => u.status === 'rejected');
+                    
+                    renderPendingTable(pending);
+                    renderApprovedTable(approved);
+                    renderRejectedTable(rejected);
+                } else {
+                    throw new Error(result.message || "Erreur inconnue");
+                }
+            } catch (error) {
+                const errorRow = `<tr><td colspan="4" class="px-6 py-4 text-center text-red-500">Erreur lors du chargement des données: ${error.message}</td></tr>`;
+                pendingTable.innerHTML = errorRow;
+                approvedTable.innerHTML = errorRow;
+                rejectedTable.innerHTML = errorRow;
+                console.error("Erreur de chargement:", error);
+            }
+        }
+
+        function renderPendingTable(users) {
+            const tableBody = document.getElementById('pending-users-table');
+            if (users.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Aucune demande en attente.</td></tr>';
+                return;
+            }
+            tableBody.innerHTML = '';
+            users.forEach(user => {
+                const row = `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">${user.nom_complet}</td>
+                        <td class="px-6 py-4">${user.email}</td>
+                        <td class="px-6 py-4">${user.nom_etablissement}</td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <button onclick="updateUserStatus(${user.id}, 'approved')" class="font-medium text-green-600 hover:underline">Approuver</button>
+                            <button onclick="updateUserStatus(${user.id}, 'rejected')" class="font-medium text-red-600 hover:underline">Rejeter</button>
+                        </td>
+                    </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+        
+        function renderApprovedTable(users) {
+             const tableBody = document.getElementById('approved-users-table');
+             if (users.length === 0) { tableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Aucun directeur approuvé.</td></tr>'; return; }
+             tableBody.innerHTML = '';
+             users.forEach(user => {
+                const row = `
+                    <tr class="bg-white border-b">
+                        <td class="px-6 py-4 font-medium text-gray-900">${user.nom_complet}</td>
+                        <td class="px-6 py-4">${user.email}</td>
+                        <td class="px-6 py-4">${user.nom_etablissement}</td>
+                        <td class="px-6 py-4 text-center"><span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Approuvé</span></td>
+                    </tr>`;
+                tableBody.innerHTML += row;
+             });
+        }
+
+        function renderRejectedTable(users) {
+            const tableBody = document.getElementById('rejected-users-table');
+            if (users.length === 0) { tableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Aucune inscription rejetée.</td></tr>'; return; }
+            tableBody.innerHTML = '';
+            users.forEach(user => {
+                const row = `
+                     <tr class="bg-white border-b">
+                        <td class="px-6 py-4 font-medium text-gray-900">${user.nom_complet}</td>
+                        <td class="px-6 py-4">${user.email}</td>
+                        <td class="px-6 py-4">${user.nom_etablissement}</td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <button onclick="updateUserStatus(${user.id}, 'approved')" class="font-medium text-green-600 hover:underline">Ré-approuver</button>
+                            <button onclick="updateUserStatus(${user.id}, 'deleted')" class="font-medium text-gray-500 hover:underline">Supprimer</button>
+                        </td>
+                    </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+        
+        async function updateUserStatus(userId, status) {
+            const actions = {
+                'approved': 'approuver',
+                'rejected': 'rejeter',
+                'deleted': 'supprimer définitivement'
+            };
+            const actionText = actions[status] || 'modifier';
+
+            if (!confirm(`Êtes-vous sûr de vouloir ${actionText} cet utilisateur ?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../api/admin/update_user_status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, new_status: status })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`Utilisateur ${status === 'deleted' ? 'supprimé' : actionText} avec succès.`);
+                    loadAllUsers();
+                } else {
+                    alert("Erreur: Impossible de mettre à jour le statut. " + (result.message || ''));
+                }
+            } catch (error) {
+                alert("Une erreur de communication est survenue.");
+            }
+        }
+        
+        function setupTabNavigation() {
+            const tabsContainer = document.getElementById('admin-tabs');
+            tabsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-button')) {
+                    tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    const targetId = e.target.dataset.target;
+                    document.querySelectorAll('.tab-content').forEach(panel => {
+                        panel.classList.toggle('active', panel.id === targetId);
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

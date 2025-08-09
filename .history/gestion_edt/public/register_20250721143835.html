@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- AJOUTÉ : On a besoin de Font Awesome pour les icônes d'œil -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <title>Inscription - Gestionnaire EDT</title>
+    <style>
+        .feedback-error { color: #ef4444; }
+        .feedback-success { color: #22c55e; }
+        .input-error-message { color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem; }
+    </style>
+</head>
+<body>
+
+    <div class="h-[850px] flex items-center justify-center">
+        <div class="flex flex-col bg-white rounded-2xl m-8 mb-1 md:flex-row md:space-y-0">
+            
+            <div class="flex flex-col justify-center p-8 md:p-14">
+                <div class="text-center">
+                    <img style="width: 140px; height: auto; display: block; margin: 0 auto 0.5rem auto;"
+                         src="assets/images/logo_edt.png" 
+                         alt="Logo du site">
+                </div>
+                <span class="mb-3 text-4xl font-bold">Créer un Compte</span>
+                <span class="font-light text-gray-400 mb-8">
+                    Rejoignez-nous pour commencer à gérer vos emplois du temps.
+                </span>
+
+                <form id="registerForm">
+                    <div class="py-2">
+                        <span class="mb-2 text-md">Nom complet</span>
+                        <input type="text" class="w-full p-2 border border-gray-300 rounded-md" name="nom_complet" id="nom_complet" required />
+                    </div>
+                    
+                    <!-- ===== LISTES DÉROULANTES POUR L'ÉTABLISSEMENT ===== -->
+                    <div class="py-2">
+                        <label for="complexeSelect" class="mb-1 block text-md font-medium text-gray-700">
+                          Complexe de Formation
+                        </label>
+                        <div class="relative">
+                          <select id="complexeSelect"
+                          class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 appearance-none"
+                          >
+                            <option value="">-- Sélectionnez un complexe --</option>
+                          </select>
+                          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="py-2">
+                        <label for="etablissementSelect" class="mb-1 block text-md font-medium text-gray-700">
+                          Établissement
+                        </label>
+                        <div class="relative">
+                          <select id="etablissementSelect"
+                                  class="w-full appearance-none bg-white border border-gray-300 p-3 pr-10 rounded-md shadow-sm focus:outline-none focus:ring-2 "
+                                  disabled>
+                            <option value="">-- Sélectionnez d'abord un complexe --</option>
+                          </select>
+                          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      
+                    <input type="hidden" name="nom_etablissement" id="nom_etablissement" required>
+                    
+                    <!-- ===== MODIFICATION : CHAMP EMAIL AVEC DOMAINE FIXE ===== -->
+                    <div class="py-2">
+                        <span class="mb-2 text-md">Email</span>
+                        <!-- Conteneur stylisé pour ressembler à un seul champ de saisie -->
+                        <div class="flex items-center border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-offset-0 focus-within:ring-black transition-all duration-300">
+                            <input type="text"
+                                   class="w-full p-2 border-none rounded-l-md focus:outline-none"
+                                   name="email_username"
+                                   id="email_username"
+                                   required
+                                   placeholder="identifiant.ofppt"
+                                   autocomplete="username" />
+                            <!--<span class="whitespace-nowrap bg-gray-50 p-2 text-gray-500 rounded-r-md">
+                                @ofppt.ma
+                            </span>-->
+                        </div>
+                        <!-- Champ caché qui enverra l'email complet au serveur -->
+                        <input type="hidden" name="email" id="email" />
+                    </div>
+                    <!-- ========================================================== -->
+
+
+                    <!-- Champ : Mot de passe -->
+                    <div class="py-2 relative">
+                        <span class="mb-2 text-md">Mot de passe</span>
+                        <input type="password" class="w-full p-2 border border-gray-300 rounded-md"
+                               name="mot_de_passe" id="mot_de_passe" required autocomplete="new-password" />
+                        <img id="togglePasswordIcon"
+                             src="https://img.icons8.com/fluency-systems-regular/24/invisible.png"
+                             alt="toggle visibility"
+                             class="absolute top-11 right-3 w-5 h-5 cursor-pointer" />
+                      </div>
+                      
+                      <!-- Champ : Confirmation -->
+                      <div class="py-2 relative">
+                        <span class="mb-2 text-md">Confirmer le mot de passe</span>
+                        <input type="password" class="w-full p-2 border border-gray-300 rounded-md"
+                               name="confirm_mot_de_passe" id="confirm_mot_de_passe" required autocomplete="new-password" />
+                        <img id="toggleConfirmPasswordIcon"
+                             src="https://img.icons8.com/fluency-systems-regular/24/invisible.png"
+                             alt="toggle visibility"
+                             class="absolute top-11 right-3 w-5 h-5 cursor-pointer" />
+                        <div id="password-error" class="input-error-message"></div>
+                      </div>
+  
+                    
+                    <button type="submit" class="w-full bg-black text-white p-2 rounded-lg my-6 hover:bg-white hover:text-black hover:border hover:border-gray-300 transition-all duration-300">
+                        Créer mon compte
+                    </button>
+                </form>
+
+                <div id="feedback" class="text-center"></div>
+                
+                <div class="text-center text-gray-400 mt-2">
+                    Déjà un compte ?
+                    <a href="login.html" class="font-bold text-black">Connectez-vous</a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            
+            // --- LOGIQUE DE CHARGEMENT DES ÉTABLISSEMENTS ---
+            const complexeSelect = document.getElementById('complexeSelect');
+            const etablissementSelect = document.getElementById('etablissementSelect');
+            const hiddenEtablissementInput = document.getElementById('nom_etablissement');
+    
+            try {
+                const response = await fetch('data/etablissements.json');
+                if (!response.ok) throw new Error("Le fichier etablissements.json n'a pas pu être chargé.");
+                const etablissementsParComplexe = await response.json();
+    
+                const complexes = Object.keys(etablissementsParComplexe).sort();
+                complexes.forEach(complexe => {
+                    const option = new Option(complexe, complexe);
+                    complexeSelect.appendChild(option);
+                });
+    
+                complexeSelect.addEventListener('change', function() {
+                    const selectedComplexe = this.value;
+                    etablissementSelect.innerHTML = '<option value="">-- Sélectionnez un établissement --</option>';
+                    hiddenEtablissementInput.value = '';
+    
+                    if (selectedComplexe) {
+                        etablissementSelect.disabled = false;
+                        etablissementsParComplexe[selectedComplexe].sort().forEach(etab => {
+                            etablissementSelect.appendChild(new Option(etab, etab));
+                        });
+                    } else {
+                        etablissementSelect.disabled = true;
+                    }
+                });
+                
+                etablissementSelect.addEventListener('change', function() {
+                    hiddenEtablissementInput.value = this.value;
+                });
+    
+            } catch (error) {
+                console.error("Erreur critique lors du chargement des établissements:", error);
+                complexeSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                complexeSelect.disabled = true;
+                etablissementSelect.disabled = true;
+            }
+            
+            // --- NOUVELLE LOGIQUE POUR L'EMAIL FIXE ---
+            const emailUsernameInput = document.getElementById('email_username');
+            const emailHiddenInput = document.getElementById('email');
+
+            if (emailUsernameInput && emailHiddenInput) {
+              //  emailUsernameInput.addEventListener('input', function() {
+                    // Met à jour le champ caché avec l'identifiant + le domaine fixe
+                   // emailHiddenInput.value = `${this.value}@ofppt.ma`;
+                //});
+            //}
+
+            // --- GESTION DE LA VISIBILITÉ DU MOT DE PASSE ---
+            const passwordInput = document.getElementById("mot_de_passe");
+            const toggleIcon = document.getElementById("togglePasswordIcon");
+
+            toggleIcon.addEventListener("click", function () {
+                const isPassword = passwordInput.type === "password";
+                passwordInput.type = isPassword ? "text" : "password";
+                toggleIcon.src = isPassword
+                  ? "https://img.icons8.com/fluency-systems-regular/24/visible--v1.png"
+                  : "https://img.icons8.com/fluency-systems-regular/24/invisible.png";
+            });
+
+            const confirmPasswordInput = document.getElementById("confirm_mot_de_passe");
+            const toggleConfirmIcon = document.getElementById("toggleConfirmPasswordIcon");
+
+            toggleConfirmIcon.addEventListener("click", function () {
+                const isPassword = confirmPasswordInput.type === "password";
+                confirmPasswordInput.type = isPassword ? "text" : "password";
+                toggleConfirmIcon.src = isPassword
+                    ? "https://img.icons8.com/fluency-systems-regular/24/visible--v1.png"
+                    : "https://img.icons8.com/fluency-systems-regular/24/invisible.png";
+            });
+
+            
+            // --- GESTION DE LA SOUMISSION DU FORMULAIRE ---
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const feedbackEl = document.getElementById('feedback');
+    const passwordErrorEl = document.getElementById('password-error');
+    feedbackEl.textContent = '';
+    passwordErrorEl.textContent = '';
+
+    const password = document.getElementById('mot_de_passe').value;
+    const confirmPassword = document.getElementById('confirm_mot_de_passe').value;
+    
+    // --- NOUVELLE VÉRIFICATION AJOUTÉE ---
+    const nomEtablissement = document.getElementById('nom_etablissement').value;
+    if (!nomEtablissement) {
+        feedbackEl.className = 'feedback-error';
+        feedbackEl.textContent = "Veuillez sélectionner un complexe ET un établissement.";
+        return; // On arrête l'envoi
+    }
+    // ------------------------------------
+
+    if (password !== confirmPassword) {
+        passwordErrorEl.textContent = "Les mots de passe ne correspondent pas.";
+        return;
+    }
+    if (password.length < 6) {
+        passwordErrorEl.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
+        return;
+    }
+    
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                
+                // On supprime les champs inutiles pour le serveur
+                delete data.confirm_mot_de_passe;
+                delete data.email_username; // IMPORTANT : On retire l'identifiant partiel
+
+                fetch('../api/auth/register.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success && result.action === 'verify') {
+                        window.location.href = `verify.html?email=${encodeURIComponent(result.email)}`;
+                    } else {
+                        feedbackEl.className = 'feedback-error';
+                        feedbackEl.textContent = result.message || "Une erreur est survenue.";
+                    }
+                })
+                .catch(error => {
+                    feedbackEl.className = 'feedback-error';
+                    feedbackEl.textContent = "Erreur de communication avec le serveur.";
+                });
+            });
+        });
+    </script>
+</body>
+</html>

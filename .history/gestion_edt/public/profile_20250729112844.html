@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil & Paramètres</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        /* === Styles pour la barre de navigation principale (HORIZONTALE) === */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            padding: 10px 20px;
+            background:#fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            z-index: 700;
+            justify-content: space-between;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: #f0f4ff;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+
+        nav a.active {
+            background-color: #f0f4ff;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-menu-container {
+            position: relative;
+        }
+
+        .profile-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e0eaff;
+            color: #1d4ed8;
+            border: 1px solid #e0eaff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            width: 280px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 1010;
+            overflow: hidden;
+            transform-origin: top right;
+            animation: scale-up-and-fade-in 0.2s ease-out;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+        }
+
+        @keyframes scale-up-and-fade-in {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .dropdown-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .profile-pic {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #6b7280;
+        }
+
+        .profile-info strong {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+        }
+        .profile-info small {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .dropdown-menu-list {
+            list-style: none;
+            padding: 8px;
+            margin: 0;
+        }
+
+        .dropdown-link {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .dropdown-link:hover {
+            background-color: #f3f4f6;
+        }
+
+        .dropdown-link .icon {
+            width: 32px;
+            font-size: 16px;
+            color: #6b7280;
+        }
+        .dropdown-link .text {
+            flex-grow: 1;
+        }
+        .dropdown-link .chevron {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .dropdown-divider {
+            margin: 0 8px;
+            border: none;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .dropdown-link.logout {
+            margin: 8px;
+            width: calc(100% - 16px);
+            color: #ef4444;
+        }
+        .dropdown-link.logout .icon {
+            color: #ef4444;
+        }
+        .dropdown-link.logout:hover {
+            background-color: #fee2e2;
+        }
+
+        /* === STYLES AMÉLIORÉS POUR LE PROFIL === */
+        .container-main {
+            padding-top: 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .sidebar {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar:hover {
+            transform: translateY(-3px);
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            color: #4b5563;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            margin: 4px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-link:hover {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .sidebar-link.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        }
+
+        .sidebar-link.active i {
+            color: white;
+        }
+
+        .sidebar-link::after {
+            content: '';
+            position: absolute;
+            right: 16px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #ef4444;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-link.has-notification::after {
+            opacity: 1;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: linear-gradient(to right, #f0f4ff, #e6eeff);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+        }
+
+        .profile-info h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .profile-info p {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .content-panel {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .content-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 24px;
+        }
+
+        .panel-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            background: linear-gradient(to right, #f8fafc, #f1f5f9);
+        }
+
+        .panel-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-header h2 i {
+            color: #3b82f6;
+            font-size: 1.2em;
+        }
+
+        .panel-body {
+            padding: 24px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 1rem;
+            background-color: #f8fafc;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            background-color: white;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .info-box {
+            padding: 16px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .feedback-message {
+            text-align: right;
+            margin-top: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            height: 1.25rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .feedback-success {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .feedback-error {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .form-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .form-table th {
+            text-align: left;
+            padding: 12px 16px;
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: 600;
+        }
+
+        .form-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .form-table input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background-color: #f8fafc;
+            transition: all 0.3s;
+        }
+
+        .form-table input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            background-color: white;
+        }
+
+        .section-divider {
+            border-top: 1px dashed #e2e8f0;
+            margin: 24px 0;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 16px;
+            border-top: 1px solid #f1f5f9;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <nav>
+        <img src="assets/images/logo_edtpro.png" style="height: 80px; width: auto;" id="logo" alt="Logo">
+        <div class="nav-links">
+            <a href="admin.html" id="nav-admin">Emploi globale</a>
+            <a href="edition.html" id="nav-edition">Edition</a>
+            <a href="avancement.html" id="nav-avancement">Avancement</a>
+            <div class="profile-menu-container" id="profile-menu-container">
+                <button id="profile-button" class="profile-button">
+                    <span id="profile-initials">--</span>
+                </button>
+                <div id="profile-dropdown" class="profile-dropdown">
+                    <div class="dropdown-profile-header">
+                        <div class="profile-pic">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="profile-info">
+                            <strong id="dropdown-user-name">Chargement...</strong>
+                            <small id="dropdown-user-email">...</small>
+                        </div>
+                    </div>
+                    <ul class="dropdown-menu-list">
+                        <li>
+                            <a href="profile.html" class="dropdown-link">
+                                <i class="fas fa-user-edit icon"></i>
+                                <span class="text">Mon Profil</span>
+                                <i class="fas fa-chevron-right chevron"></i>
+                            </a>
+                        </li>
+                    </ul>
+                    <hr class="dropdown-divider">
+                    <a href="../api/auth/logout.php" class="dropdown-link logout">
+                        <i class="fas fa-sign-out-alt icon"></i>
+                        <span class="text">Déconnexion</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-main px-4 sm:px-6 lg:px-8">
+        <div class="md:flex md:gap-8">
+            <aside class="md:w-1/4 lg:w-1/5 mb-8 md:mb-0">
+                <div class="sidebar bg-white">
+                    <div class="profile-header">
+                        <div class="profile-avatar" id="profile-page-initials">--</div>
+                        <div class="profile-info">
+                            <h2 id="profile-page-name">Chargement...</h2>
+                            <p id="profile-page-etablissement"></p>
+                        </div>
+                    </div>
+                    <nav class="p-4">
+                        <a class="sidebar-link active" data-target="panel-account">
+                            <i class="fas fa-user-circle w-6 text-center"></i> 
+                            <span>Profil</span>
+                        </a>
+                        <a class="sidebar-link" data-target="panel-password">
+                            <i class="fas fa-key w-6 text-center"></i> 
+                            <span>Mot de passe</span>
+                        </a>
+                        <a class="sidebar-link" data-target="panel-espaces">
+                            <i class="fas fa-door-open w-6 text-center"></i> 
+                            <span>Espaces</span>
+                        </a>
+                        <a class="sidebar-link has-notification" data-target="panel-calendar">
+                            <i class="fas fa-calendar-alt w-6 text-center"></i> 
+                            <span>Calendrier Annuel</span>
+                        </a>
+                        <a class="sidebar-link" data-target="panel-formateurs">
+                            <i class="fas fa-chalkboard-teacher w-6 text-center"></i> 
+                            <span>Formateurs</span>
+                        </a>
+                    </nav>
+                </div>
+            </aside>
+            <main class="md:w-3/4 lg:w-4/5">
+                <div id="panel-account" class="content-panel active">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2><i class="fas fa-user-circle"></i> Paramètres du Compte</h2>
+                        </div>
+                        <div class="panel-body">
+                            <form id="userInfoForm" class="form-grid">
+                                <div class="form-group">
+                                    <label for="nom_complet" class="form-label">Nom & Prénom</label>
+                                    <input type="text" id="nom_complet" name="nom_complet" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" id="email" name="email" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Établissement</label>
+                                    <p id="etablissement_name" class="info-box"></p>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Complexe</label>
+                                    <p id="complexe_name" class="info-box"></p>
+                                </div>
+                                <div class="form-group md:col-span-2">
+                                    <div class="action-bar">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Mettre à jour le Profil
+                                        </button>
+                                    </div>
+                                    <div id="userInfoFeedback" class="feedback-message"></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="panel-password" class="content-panel">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2><i class="fas fa-key"></i> Changer le Mot de Passe</h2>
+                        </div>
+                        <div class="panel-body">
+                            <form id="passwordForm" class="max-w-md">
+                                <div class="form-group">
+                                    <label for="new_password" class="form-label">Nouveau mot de passe</label>
+                                    <input type="password" id="new_password" name="new_password" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirm_new_password" class="form-label">Confirmer le nouveau mot de passe</label>
+                                    <input type="password" id="confirm_new_password" name="confirm_new_password" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <div class="action-bar">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-lock"></i> Changer le Mot de Passe
+                                        </button>
+                                    </div>
+                                    <div id="passwordFeedback" class="feedback-message"></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="panel-espaces" class="content-panel">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2><i class="fas fa-door-open"></i> Gestion des Espaces de Travail</h2>
+                        </div>
+                        <div class="panel-body">
+                            <form id="espacesForm">
+                                <div class="form-group">
+                                    <label for="espaces" class="form-label">Liste des salles, amphis, etc. (un par ligne)</label>
+                                    <textarea id="espaces" name="espaces" rows="8" class="form-input form-textarea"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <div class="action-bar">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Sauvegarder les Espaces
+                                        </button>
+                                    </div>
+                                    <div id="espacesFeedback" class="feedback-message"></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="panel-calendar" class="content-panel">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2><i class="fas fa-calendar-alt"></i> Calendrier Annuel</h2>
+                        </div>
+                        <div class="panel-body">
+                            <form id="calendarForm" class="form-grid">
+                                <div class="form-group">
+                                    <label for="holidays" class="form-label">Jours fériés (un par ligne, format JJ/MM/AAAA)</label>
+                                    <textarea id="holidays" name="holidays" rows="8" class="form-input form-textarea"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="vacations" class="form-label">Périodes de vacances (une par ligne, format JJ/MM/AAAA-JJ/MM/AAAA)</label>
+                                    <textarea id="vacations" name="vacations" rows="8" class="form-input form-textarea"></textarea>
+                                </div>
+                                <div class="form-group md:col-span-2">
+                                    <div class="action-bar">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Sauvegarder le Calendrier
+                                        </button>
+                                    </div>
+                                    <div id="calendarFeedback" class="feedback-message"></div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="panel-formateurs" class="content-panel">
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2><i class="fas fa-chalkboard-teacher"></i> Liste des Formateurs</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="info-box mb-6">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Pour ajouter ou supprimer des formateurs, vous devez réimporter un fichier de base via le processus de configuration initiale.
+                            </div>
+                            <form id="formateursForm">
+                                <div class="overflow-x-auto">
+                                    <table class="form-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Nom</th>
+                                                <th>Matricule</th>
+                                                <th>Masse Horaire</th>
+                                                <th>Email</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="formateurs-table-body"></tbody>
+                                    </table>
+                                </div>
+                                <div class="action-bar">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Sauvegarder les Modifications
+                                    </button>
+                                </div>
+                                <div id="formateursFeedback" class="feedback-message"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', checkSessionAndLoad);
+
+        async function checkSessionAndLoad() {
+            try {
+                const response = await fetch('../api/auth/verify_session.php');
+                const result = await response.json();
+                if (!result.success) { window.location.href = 'login.html'; return; }
+                
+                populateUserInfo(result.userData);
+                setupProfileMenu();
+                loadPageData();
+                setupTabNavigation();
+            } catch (error) { window.location.href = 'login.html'; }
+        }
+
+        function getInitials(name) {
+            if (!name || typeof name !== 'string') return '--';
+            const words = name.trim().split(' ');
+            if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+            return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+        }
+
+        function populateUserInfo(userData) {
+            if (!userData) return;
+            const initialsEl = document.getElementById('profile-initials');
+            const nameEl = document.getElementById('dropdown-user-name');
+            const emailEl = document.getElementById('dropdown-user-email');
+            if (initialsEl) initialsEl.textContent = getInitials(userData.nom);
+            if (nameEl) nameEl.textContent = userData.nom;
+            if (emailEl) emailEl.textContent = userData.email;
+        }
+
+        function setupProfileMenu() {
+            const profileButton = document.getElementById('profile-button');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            if (profileButton && profileDropdown) {
+                profileButton.addEventListener('click', (e) => { e.stopPropagation(); profileDropdown.classList.toggle('show'); });
+            }
+            window.addEventListener('click', () => { if (profileDropdown && profileDropdown.classList.contains('show')) profileDropdown.classList.remove('show'); });
+        }
+
+        function loadPageData() {
+            fetch('../api/profile/get_profile_data.php')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const data = result.data;
+                        document.getElementById('profile-page-initials').textContent = getInitials(data.user.nom_complet);
+                        document.getElementById('profile-page-name').textContent = data.user.nom_complet;
+                        document.getElementById('profile-page-etablissement').textContent = data.user.nom_etablissement;
+                        document.getElementById('nom_complet').value = data.user.nom_complet;
+                        document.getElementById('email').value = data.user.email;
+                        document.getElementById('etablissement_name').textContent = data.user.nom_etablissement;
+                        document.getElementById('complexe_name').textContent = data.user.complexe;
+                        document.getElementById('espaces').value = (data.espaces || []).join('\n');
+                        document.getElementById('holidays').value = data.calendar.holidays || '';
+                        document.getElementById('vacations').value = data.calendar.vacations || '';
+                        
+                        const formateursTbody = document.getElementById('formateurs-table-body');
+                        formateursTbody.innerHTML = '';
+                        (data.formateurs || []).forEach(f => {
+                            const row = `
+                                <tr>
+                                    <td class="font-semibold">${f.nom}</td>
+                                    <td>${f.matricule}</td>
+                                    <td><input name="formateurs[${f.matricule}][masse_horaire]" type="number" class="w-24 p-1 border rounded" value="${f.masse_horaire}"></td>
+                                    <td><input name="formateurs[${f.matricule}][email]" type="email" class="w-full p-1 border rounded" value="${f.email}"></td>
+                                    <input name="formateurs[${f.matricule}][nom]" type="hidden" value="${f.nom}">
+                                    <input name="formateurs[${f.matricule}][matricule]" type="hidden" value="${f.matricule}">
+                                </tr>`;
+                            formateursTbody.innerHTML += row;
+                        });
+                    } else {
+                        alert("Erreur: Impossible de charger les données du profil.");
+                    }
+                });
+        }
+
+        function setupTabNavigation() {
+            const tabLinks = document.querySelectorAll('.sidebar-link');
+            const contentPanels = document.querySelectorAll('.content-panel');
+            tabLinks.forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    tabLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    const targetId = link.dataset.target;
+                    contentPanels.forEach(panel => {
+                        panel.classList.toggle('active', panel.id === targetId);
+                    });
+                });
+            });
+        }
+
+        function showFeedback(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = isSuccess ? 'feedback-message feedback-success' : 'feedback-message feedback-error';
+            setTimeout(() => { el.textContent = ''; }, 4000);
+        }
+
+        document.getElementById('userInfoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(this).entries());
+            fetch('../api/profile/update_user_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+            .then(res => res.json()).then(result => {
+                showFeedback('userInfoFeedback', result.message, result.success);
+                if (result.success) {
+                    populateUserInfo({ nom: data.nom_complet, email: data.email });
+                    document.getElementById('profile-page-name').textContent = data.nom_complet;
+                    document.getElementById('profile-page-initials').textContent = getInitials(data.nom_complet);
+                }
+            });
+        });
+        
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            const data = Object.fromEntries(new FormData(form).entries());
+            if(data.new_password !== data.confirm_new_password) {
+                showFeedback('passwordFeedback', 'Les mots de passe ne correspondent pas.', false); return;
+            }
+            fetch('../api/profile/update_password.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+            .then(res => res.json()).then(result => {
+                showFeedback('passwordFeedback', result.message, result.success);
+                if (result.success) form.reset();
+            });
+        });
+        
+        document.getElementById('espacesForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = { espaces: document.getElementById('espaces').value.split('\n').map(s => s.trim()).filter(Boolean) };
+            fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+            .then(res => res.json()).then(result => showFeedback('espacesFeedback', result.message, result.success));
+        });
+        
+        document.getElementById('calendarForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(this).entries());
+            fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+            .then(res => res.json()).then(result => showFeedback('calendarFeedback', result.message, result.success));
+        });
+
+        document.getElementById('formateursForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const formateursMap = {};
+            for (let [key, value] of formData.entries()) {
+                const match = key.match(/formateurs\[(.+?)]\[(.+?)]/);
+                if (match) {
+                    const matricule = match[1]; const property = match[2];
+                    if (!formateursMap[matricule]) formateursMap[matricule] = {};
+                    formateursMap[matricule][property] = value;
+                }
+            }
+            const data = { formateurs: Object.values(formateursMap) };
+            fetch('../api/profile/update_formateurs.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+            .then(res => res.json()).then(result => showFeedback('formateursFeedback', result.message, result.success));
+        });
+    </script>
+</body> 
+</html>

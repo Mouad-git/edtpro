@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Vérification du Compte</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .feedback-error { color: #ef4444; }
+        .feedback-success { color: #22c55e; }
+    </style>
+</head>
+<body class="flex items-center justify-center h-screen">
+    <div class="w-full max-w-md bg-white p-8 rounded-xl text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Vérifiez votre e-mail</h1>
+        <p class="text-gray-500 mb-8">Nous avons envoyé un code à 6 chiffres à <b id="user-email">votre email</b>. Veuillez le saisir ci-dessous.</p>
+        
+        <form id="verifyForm">
+            <!-- Ce champ caché contiendra l'email et sera envoyé avec le formulaire -->
+            <input type="hidden" name="email" id="hidden-email">
+            
+            <input type="text" name="code" id="code"
+                   class="w-full text-center text-3xl tracking-[1em] p-2 border border-gray-300 rounded-md placeholder:text-gray-300 placeholder:tracking-normal"
+                   placeholder="------"
+                   maxlength="6" required autocomplete="one-time-code">
+                   
+            <button type="submit" class="w-full bg-black text-white p-2 rounded-lg mt-6 hover:bg-white hover:text-black hover:border hover:border-gray-300 transition-all duration-300">Vérifier</button>
+        </form>
+        <div id="feedback" class="text-center mt-4"></div>
+    </div>
+
+    <script>
+    </script>
+</body>
+</html>

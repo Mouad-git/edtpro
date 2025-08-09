@@ -1,0 +1,376 @@
+document.addEventListener('DOMContentLoaded', function() {
+    // Références aux éléments DOM
+    const steps = [
+        document.getElementById('step1'),
+        document.getElementById('step2'),
+        document.getElementById('step3'),
+        document.getElementById('step4')
+    ];
+    
+    const progressLineFilled = document.getElementById('progress-line-filled');
+    const progressCircles = [
+        document.getElementById('progress-circle-1'),
+        document.getElementById('progress-circle-2'),
+        document.getElementById('progress-circle-3'),
+        document.getElementById('progress-circle-4')
+    ];
+    
+    const progressLabels = [
+        document.getElementById('progress-label-1'),
+        document.getElementById('progress-label-2'),
+        document.getElementById('progress-label-3'),
+        document.getElementById('progress-label-4')
+    ];
+    
+    // Navigation buttons
+    const nextButtons = {
+        1: document.getElementById('step1NextBtn'),
+        2: document.getElementById('step2NextBtn'),
+        3: document.getElementById('step3NextBtn')
+    };
+    
+    const prevButtons = {
+        2: document.getElementById('step2PrevBtn'),
+        3: document.getElementById('step3PrevBtn'),
+        4: document.getElementById('step4PrevBtn')
+    };
+    
+    const finishButton = document.getElementById('finishSetupBtn');
+    
+    // File upload elements
+    const fileInput = document.getElementById('excelFile');
+    const uploadArea = document.getElementById('upload-area');
+    const fileNameLabel = document.getElementById('fileName');
+    const step1Feedback = document.getElementById('step1-feedback');
+    const formateursTableBody = document.getElementById('formateurs-table-body');
+    const step4Feedback = document.getElementById('step4-feedback');
+    
+    // Variables pour stocker les données
+    let rawExcelData = null;
+    let currentStep = 1;
+    
+    // Initialiser flatpickr pour les dates
+    const holidaysPicker = flatpickr("#holidays-picker", { 
+        mode: "multiple", 
+        dateFormat: "d/m/Y", 
+        locale: "fr", 
+        onChange: (selectedDates) => updateTags('holidays', selectedDates.map(d => holidaysPicker.formatDate(d, "d/m/Y"))) 
+    });
+    
+    const vacationsPicker = flatpickr("#vacations-picker", { 
+        mode: "range", 
+        dateFormat: "d/m/Y", 
+        locale: "fr" 
+    });
+    
+    // Fonction pour naviguer entre les étapes
+    function goToStep(stepNumber) {
+        // Hide all steps
+        steps.forEach(step => step.classList.remove('active'));
+        
+        // Show current step
+        steps[stepNumber - 1].classList.add('active');
+        
+        // Update progress
+        updateProgress(stepNumber);
+        
+        currentStep = stepNumber;
+    }
+    
+    // Mettre à jour la barre de progression
+    function updateProgress(currentStep) {
+        const totalSteps = steps.length;
+        const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+        progressLineFilled.style.width = `${progressPercentage}%`;
+        
+        // Update circle states
+        for (let i = 0; i < totalSteps; i++) {
+            if (i < currentStep - 1) {
+                // Completed steps
+                progressCircles[i].classList.add('completed');
+                progressCircles[i].classList.remove('active');
+                progressLabels[i].classList.add('completed');
+            } else if (i === currentStep - 1) {
+                // Current step
+                progressCircles[i].classList.add('active');
+                progressCircles[i].classList.remove('completed');
+                progressLabels[i].classList.add('active');
+                progressLabels[i].classList.remove('completed');
+            } else {
+                // Future steps
+                progressCircles[i].classList.remove('active', 'completed');
+                progressLabels[i].classList.remove('active', 'completed');
+            }
+        }
+    }
+    
+    // Événements de navigation
+    nextButtons[1].addEventListener('click', () => handleStep1Next());
+    nextButtons[2].addEventListener('click', () => goToStep(3));
+    nextButtons[3].addEventListener('click', () => goToStep(4));
+    
+    prevButtons[2].addEventListener('click', () => goToStep(1));
+    prevButtons[3].addEventListener('click', () => goToStep(2));
+    prevButtons[4].addEventListener('click', () => goToStep(3));
+    
+    // Gestion du téléchargement de fichiers
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            const file = this.files[0];
+            fileNameLabel.textContent = file.name;
+            nextButtons[1].disabled = false;
+            step1Feedback.classList.add('hidden');
+        }
+    });
+    
+    // Traitement du fichier Excel (simulation)
+    function handleStep1Next() {
+        if (!fileInput.files[0]) {
+            step1Feedback.textContent = "Veuillez sélectionner un fichier.";
+            step1Feedback.classList.remove('hidden');
+            return;
+        }
+        
+        // Simuler le chargement et le traitement du fichier
+        nextButtons[1].innerHTML = 'Analyse... <i class="fas fa-spinner fa-spin ml-2"></i>';
+        nextButtons[1].disabled = true;
+        
+        setTimeout(() => {
+            // Simuler des données de formateurs
+            const formateurs = [
+                { nom: "Alexandre Martin", masse_horaire: 120, matricule: "M001", email: "alex.martin@example.com" },
+                { nom: "Sophie Dubois", masse_horaire: 90, matricule: "M002", email: "sophie.dubois@example.com" },
+                { nom: "Thomas Bernard", masse_horaire: 150, matricule: "M003", email: "thomas.bernard@example.com" },
+                { nom: "Marie Lefevre", masse_horaire: 110, matricule: "M004", email: "marie.lefevre@example.com" },
+                { nom: "Jean Petit", masse_horaire: 85, matricule: "M005", email: "jean.petit@example.com" }
+            ];
+            
+            populateFormateursTable(formateurs);
+            goToStep(2);
+            
+            // Réinitialiser le bouton
+            nextButtons[1].innerHTML = 'Suivant <i class="fas fa-arrow-right ml-2"></i>';
+            nextButtons[1].disabled = false;
+        }, 1500);
+    }
+    
+    // Remplir le tableau des formateurs
+    function populateFormateursTable(formateurs) {
+        formateursTableBody.innerHTML = '';
+        
+        formateurs.forEach(f => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="font-semibold text-gray-800 nom">${f.nom}</td>
+                <td><input type="number" class="form-input masse_horaire" value="${f.masse_horaire}"></td>
+                <td><input type="text" class="form-input matricule" value="${f.matricule}" readonly></td>
+                <td><input type="email" class="form-input email" value="${f.email}"></td>
+            `;
+            formateursTableBody.appendChild(row);
+        });
+    }
+    
+    // Gestion des jours fériés et vacances
+    document.getElementById('add-vacation-btn').addEventListener('click', function() {
+        const nameInput = document.getElementById('vacation-name-input');
+        const name = nameInput.value.trim();
+        const dates = vacationsPicker.selectedDates;
+        
+        if (!name) {
+            document.getElementById('vacation-feedback').textContent = "Veuillez saisir un nom pour les vacances.";
+            document.getElementById('vacation-feedback').classList.remove('hidden');
+            return;
+        }
+        
+        if (dates.length !== 2) {
+            document.getElementById('vacation-feedback').textContent = "Veuillez sélectionner une période valide.";
+            document.getElementById('vacation-feedback').classList.remove('hidden');
+            return;
+        }
+        
+        document.getElementById('vacation-feedback').classList.add('hidden');
+        
+        const startDate = vacationsPicker.formatDate(dates[0], "d/m/Y");
+        const endDate = vacationsPicker.formatDate(dates[1], "d/m/Y");
+        const value = `${name} (${startDate} - ${endDate})`;
+        
+        addTag('vacations', value);
+        
+        // Réinitialiser les champs
+        nameInput.value = '';
+        vacationsPicker.clear();
+    });
+    
+    // Fonctions pour gérer les tags
+    function updateTags(type, values) {
+        const container = document.getElementById(`${type}-tags`);
+        container.innerHTML = '';
+        values.forEach(value => addTag(type, value));
+    }
+    
+    function addTag(type, value) {
+        const container = document.getElementById(`${type}-tags`);
+        
+        if (Array.from(container.querySelectorAll('.tag')).some(t => t.dataset.value === value)) {
+            return;
+        }
+        
+        const tag = document.createElement('div');
+        tag.className = 'tag';
+        tag.dataset.value = value;
+        tag.innerHTML = `${value} <button><i class="fas fa-times"></i></button>`;
+        
+        tag.querySelector('button').addEventListener('click', function() {
+            tag.remove();
+            if (type === 'holidays') {
+                holidaysPicker.setDate(getTagsValues('holidays'), true);
+            }
+        });
+        
+        container.appendChild(tag);
+    }
+    
+    function getTagsValues(type) {
+        const container = document.getElementById(`${type}-tags`);
+        return Array.from(container.querySelectorAll('.tag')).map(t => t.dataset.value);
+    }
+    
+    // Récupérer les jours fériés pour le Maroc (simulation)
+    function fetchMoroccanHolidays() {
+        return [
+            "01/01/2024", "11/01/2024", "01/05/2024", 
+            "30/07/2024", "14/08/2024", "20/08/2024", 
+            "21/08/2024", "28/11/2024", "25/12/2024"
+        ];
+    }
+    
+    // Initialiser les jours fériés
+    setTimeout(() => {
+        const holidays = fetchMoroccanHolidays();
+        holidaysPicker.setDate(holidays, true);
+    }, 500);
+    
+    // Gestion des espaces de travail
+    const espaceInput = document.getElementById('espace-input');
+    const ajouterEspaceBtn = document.getElementById('ajouter-espace');
+    const espacesContainer = document.getElementById('espaces-container');
+    const suggestionsContainer = document.getElementById('suggestions-container');
+    const commonSpaces = ['Salle A101', 'Amphi B', 'Labo Info', 'TEAMS', 'ZOOM'];
+    
+    function ajouterEspace(espace) {
+        espace = espace.trim();
+        if (!espace) return;
+        
+        // Vérifier si l'espace existe déjà
+        const existingTags = Array.from(espacesContainer.querySelectorAll('.tag'));
+        if (existingTags.some(tag => tag.dataset.value === espace)) {
+            return;
+        }
+        
+        const tag = document.createElement('div');
+        tag.className = 'tag';
+        tag.dataset.value = espace;
+        tag.innerHTML = `${espace} <button><i class="fas fa-times"></i></button>`;
+        
+        tag.querySelector('button').addEventListener('click', function() {
+            tag.remove();
+        });
+        
+        espacesContainer.appendChild(tag);
+        espaceInput.value = '';
+        suggestionsContainer.classList.add('hidden');
+    }
+    
+    ajouterEspaceBtn.addEventListener('click', () => ajouterEspace(espaceInput.value));
+    
+    espaceInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            ajouterEspace(espaceInput.value);
+        }
+    });
+    
+    espaceInput.addEventListener('input', function() {
+        const value = this.value.trim().toLowerCase();
+        if (!value) {
+            suggestionsContainer.classList.add('hidden');
+            return;
+        }
+        
+        const filtered = commonSpaces.filter(space => 
+            space.toLowerCase().includes(value) && 
+            !Array.from(espacesContainer.querySelectorAll('.tag'))
+                .some(tag => tag.dataset.value === space)
+        );
+        
+        if (filtered.length === 0) {
+            suggestionsContainer.classList.add('hidden');
+            return;
+        }
+        
+        suggestionsContainer.innerHTML = '';
+        filtered.forEach(space => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            item.textContent = space;
+            item.addEventListener('click', () => {
+                ajouterEspace(space);
+            });
+            suggestionsContainer.appendChild(item);
+        });
+        
+        suggestionsContainer.classList.remove('hidden');
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!suggestionsContainer.contains(e.target)) {
+            suggestionsContainer.classList.add('hidden');
+        }
+    });
+    
+    // Ajouter des espaces via les boutons communs
+    document.querySelectorAll('#common-spaces button').forEach(btn => {
+        btn.addEventListener('click', function() {
+            ajouterEspace(this.dataset.space);
+        });
+    });
+    
+    // Terminer la configuration
+    finishButton.addEventListener('click', function() {
+        const espaces = Array.from(espacesContainer.querySelectorAll('.tag'))
+            .map(tag => tag.dataset.value);
+        
+        if (espaces.length === 0) {
+            step4Feedback.textContent = "Veuillez ajouter au moins un espace.";
+            step4Feedback.classList.remove('hidden');
+            return;
+        }
+        
+        // Simuler la sauvegarde
+        this.innerHTML = 'Sauvegarde... <i class="fas fa-spinner fa-spin ml-2"></i>';
+        this.disabled = true;
+        
+        setTimeout(() => {
+            // Mettre à jour la barre de progression avec succès
+            progressCircles[3].classList.remove('active');
+            progressCircles[3].classList.add('success');
+            progressLabels[3].classList.add('completed');
+            
+            // Afficher un message de succès
+            step4Feedback.textContent = "Configuration terminée avec succès !";
+            step4Feedback.classList.remove('feedback-error', 'hidden');
+            step4Feedback.classList.add('feedback-success');
+            
+            // Réinitialiser le bouton après un délai
+            setTimeout(() => {
+                this.innerHTML = 'Terminer <i class="fas fa-check ml-2"></i>';
+                this.disabled = false;
+            }, 2000);
+        }, 1500);
+    });
+    
+    // Initialiser à la première étape
+    goToStep(1);
+});

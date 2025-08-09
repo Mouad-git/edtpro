@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil & Paramètres</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        /* Styles pour la barre de navigation et le menu profil */
+        nav { position: fixed; top: 0; left: 0; width: 100%; height: 60px; padding: 10px 20px; background:#fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); display: flex; align-items: center; z-index: 1000; justify-content: space-between; }
+        .nav-links { display: flex; align-items: center; gap: 10px; }
+        .nav-links a { text-decoration: none; color: #333; padding: 8px 16px; border-radius: 8px; transition: background-color 0.3s; font-weight: 500;}
+        .nav-links a.active { background-color: #e0eaff; color: #1d4ed8; font-weight: 600; }
+        .nav-links a:hover { background-color: #f0f4ff; }
+
+        .profile-menu-container { position: relative; }
+        .profile-button { width: 42px; height: 42px; border-radius: 50%; background-color: #e0eaff; color: #1d4ed8; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .profile-dropdown { display: none; position: absolute; top: calc(100% + 8px); right: 0; width: 250px; background-color: white; border-radius: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); z-index: 1010; overflow: hidden; }
+        .profile-dropdown.show { display: block; }
+        .dropdown-header { padding: 15px; background-color: #f8f9fa; border-bottom: 1px solid #e9ecef; }
+        .dropdown-header strong { display: block; font-size: 16px; color: #333; }
+        .dropdown-header small { font-size: 13px; color: #6c757d; }
+        .dropdown-divider { margin: 0; border: none; border-top: 1px solid #e9ecef; }
+        .dropdown-link, .dropdown-logout-link { display: flex; align-items: center; gap: 10px; padding: 12px 15px; text-decoration: none; color: #333; transition: background-color 0.2s; font-weight: 500; }
+        .dropdown-logout-link { color: #d9534f; }
+        .dropdown-link:hover, .dropdown-logout-link:hover { background-color: #f0f4ff; }
+        .dropdown-link i, .dropdown-logout-link i { width: 16px; text-align: center; color: #6c757d; }
+        
+        .feedback-message { text-align: center; margin-top: 0.5rem; font-weight: 600; font-size: 0.875rem; }
+        .feedback-success { color: #16a34a; }
+        .feedback-error { color: #dc2626; }
+
+        /* Styles spécifiques à la page de profil */
+        .sidebar-link {
+            display: flex; align-items: center; gap: 0.75rem; /* 12px */
+            padding: 0.75rem 1rem; /* 12px 16px */
+            border-radius: 0.5rem; /* 8px */
+            font-weight: 500;
+            color: #4b5563; /* text-gray-600 */
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar-link:hover {
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #1f2937; /* text-gray-800 */
+        }
+        .sidebar-link.active {
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .sidebar-link.active i { color: white; }
+        .content-panel { display: none; }
+        .content-panel.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <nav>
+        <img src="assets/images/logo_edt.png" style="height: 50px; width: auto;" alt="Logo">
+        <div class="nav-links">
+            <a href="admin.html">Emploi du temps</a>
+            <a href="edition.html">Édition</a>
+            <a href="avancement.html">Avancement</a>
+            
+            <div class="profile-menu-container">
+                <button id="profile-button" class="profile-button"><span id="profile-initials">--</span></button>
+                <div id="profile-dropdown" class="profile-dropdown">
+                    <div class="dropdown-header">
+                        <strong id="dropdown-user-name">Chargement...</strong>
+                        <small id="dropdown-user-email">...</small>
+                    </div>
+                    <hr class="dropdown-divider">
+                    <a href="profile.html" class="dropdown-link active">
+                        <i class="fas fa-user-cog"></i><span>Mon Profil & Paramètres</span>
+                    </a>
+                    <hr class="dropdown-divider">
+                    <a href="../api/auth/logout.php" class="dropdown-logout-link">
+                        <i class="fas fa-sign-out-alt"></i><span>Déconnexion</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-24">
+        <div class="md:flex md:gap-8">
+            <!-- ===== SIDEBAR ===== -->
+            <aside class="md:w-1/4 lg:w-1/5 mb-8 md:mb-0">
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="flex items-center gap-4 border-b pb-4 mb-4">
+                        <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-blue-600" id="profile-page-initials">--</div>
+                        <div>
+                            <h2 class="font-bold text-lg" id="profile-page-name">Chargement...</h2>
+                            <p class="text-sm text-gray-500" id="profile-page-etablissement"></p>
+                        </div>
+                    </div>
+                    <nav class="space-y-2">
+                        <a href="#" class="sidebar-link active" data-target="panel-account"><i class="fas fa-user-circle w-6 text-center"></i> Profil</a>
+                        <a href="#" class="sidebar-link" data-target="panel-password"><i class="fas fa-key w-6 text-center"></i> Mot de passe</a>
+                        <a href="#" class="sidebar-link" data-target="panel-espaces"><i class="fas fa-door-open w-6 text-center"></i> Espaces</a>
+                        <a href="#" class="sidebar-link" data-target="panel-calendar"><i class="fas fa-calendar-alt w-6 text-center"></i> Calendrier Annuel</a>
+                        <a href="#" class="sidebar-link" data-target="panel-formateurs"><i class="fas fa-chalkboard-teacher w-6 text-center"></i> Formateurs</a>
+                    </nav>
+                </div>
+            </aside>
+
+            <!-- ===== MAIN CONTENT ===== -->
+            <main class="md:w-3/4 lg:w-4/5">
+                <!-- PANNEAU 1: PROFIL -->
+                <div id="panel-account" class="content-panel active">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-2xl font-bold mb-6">Profil du Directeur</h2>
+                        <form id="userInfoForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="nom_complet" class="block text-sm font-medium text-gray-700">Nom complet</label>
+                                <input type="text" id="nom_complet" name="nom_complet" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                                <input type="email" id="email" name="email" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700">Établissement Actuel</label>
+                                <p id="etablissement_name" class="mt-1 text-lg text-gray-900"></p>
+                            </div>
+                            <div class="md:col-span-2 text-right">
+                                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Sauvegarder</button>
+                            </div>
+                            <div id="userInfoFeedback" class="md:col-span-2 feedback-message"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PANNEAU 2: MOT DE PASSE -->
+                <div id="panel-password" class="content-panel">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-2xl font-bold mb-6">Changer le Mot de Passe</h2>
+                        <form id="passwordForm" class="space-y-6 max-w-md">
+                            <div>
+                                <label for="new_password" class="block text-sm font-medium text-gray-700">Nouveau mot de passe</label>
+                                <input type="password" id="new_password" name="new_password" class="mt-1 block w-full p-2 border rounded-md" required>
+                            </div>
+                            <div>
+                                <label for="confirm_new_password" class="block text-sm font-medium text-gray-700">Confirmer le nouveau mot de passe</label>
+                                <input type="password" id="confirm_new_password" name="confirm_new_password" class="mt-1 block w-full p-2 border rounded-md" required>
+                            </div>
+                            <div class="text-right">
+                                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Mettre à jour</button>
+                            </div>
+                            <div id="passwordFeedback" class="feedback-message"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PANNEAU 3: ESPACES -->
+                <div id="panel-espaces" class="content-panel">
+                     <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-2xl font-bold mb-6">Gestion des Espaces de Travail</h2>
+                        <form id="espacesForm">
+                            <textarea id="espaces" name="espaces" rows="12" class="mt-1 block w-full p-2 border rounded-md" placeholder="Salle A101
+Amphi B
+TEAMS"></textarea>
+                            <div class="text-right mt-4">
+                                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Sauvegarder les Espaces</button>
+                            </div>
+                            <div id="espacesFeedback" class="feedback-message"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PANNEAU 4: CALENDRIER -->
+                <div id="panel-calendar" class="content-panel">
+                     <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-2xl font-bold mb-6">Calendrier Annuel</h2>
+                        <form id="calendarForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="holidays" class="block text-sm font-medium text-gray-700">Jours fériés (un par ligne, format JJ/MM/AAAA)</label>
+                                <textarea id="holidays" name="holidays" rows="8" class="mt-1 block w-full p-2 border rounded-md" placeholder="01/01/2025
+01/05/2025"></textarea>
+                            </div>
+                            <div>
+                                <label for="vacations" class="block text-sm font-medium text-gray-700">Périodes de vacances (une par ligne, format JJ/MM/AAAA-JJ/MM/AAAA)</label>
+                                <textarea id="vacations" name="vacations" rows="8" class="mt-1 block w-full p-2 border rounded-md" placeholder="22/12/2024-05/01/2025"></textarea>
+                            </div>
+                            <div class="md:col-span-2 text-right">
+                                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Sauvegarder le Calendrier</button>
+                            </div>
+                            <div id="calendarFeedback" class="md:col-span-2 feedback-message"></div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- PANNEAU 5: FORMATEURS -->
+                <div id="panel-formateurs" class="content-panel">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-2xl font-bold mb-6">Liste des Formateurs</h2>
+                        <p class="text-sm text-gray-500 mb-4">Pour modifier la liste des formateurs, veuillez réimporter un fichier de base sur la page principale.</p>
+                        <form id="formateursForm">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="p-2">Nom</th>
+                                            <th class="p-2">Matricule</th>
+                                            <th class="p-2">Masse Horaire</th>
+                                            <th class="p-2">Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="formateurs-table-body">
+                                        <!-- Généré par JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-right mt-4">
+                                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Sauvegarder les modifications</button>
+                            </div>
+                             <div id="formateursFeedback" class="feedback-message"></div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // --- SÉCURITÉ ET CHARGEMENT ---
+        document.addEventListener('DOMContentLoaded', checkSessionAndLoad);
+
+        async function checkSessionAndLoad() {
+            try {
+                const response = await fetch('../api/auth/verify_session.php');
+                const result = await response.json();
+                if (!result.success) { window.location.href = 'login.html'; return; }
+                
+                populateUserInfo(result.userData);
+                setupProfileMenu();
+                loadPageData();
+                setupTabNavigation();
+            } catch (error) { window.location.href = 'login.html'; }
+        }
+
+        // --- GESTION DU MENU PROFIL ---
+        function getInitials(name) {
+            if (!name || typeof name !== 'string') return '--';
+            const words = name.trim().split(' ');
+            if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+            return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+        }
+
+        function populateUserInfo(userData) {
+            if (!userData) return;
+            const initialsEl = document.getElementById('profile-initials');
+            const nameEl = document.getElementById('dropdown-user-name');
+            const emailEl = document.getElementById('dropdown-user-email');
+            if (initialsEl) initialsEl.textContent = getInitials(userData.nom);
+            if (nameEl) nameEl.textContent = userData.nom;
+            if (emailEl) emailEl.textContent = userData.email;
+        }
+
+        function setupProfileMenu() {
+            const profileButton = document.getElementById('profile-button');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            if (profileButton && profileDropdown) {
+                profileButton.addEventListener('click', (e) => { e.stopPropagation(); profileDropdown.classList.toggle('show'); });
+            }
+            window.addEventListener('click', () => { if (profileDropdown && profileDropdown.classList.contains('show')) profileDropdown.classList.remove('show'); });
+        }
+
+        // --- LOGIQUE SPÉCIFIQUE À LA PAGE PROFIL ---
+        function loadPageData() {
+            fetch('../api/profile/get_profile_data.php')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const data = result.data;
+                        document.getElementById('profile-page-initials').textContent = getInitials(data.user.nom_complet);
+                        document.getElementById('profile-page-name').textContent = data.user.nom_complet;
+                        document.getElementById('profile-page-etablissement').textContent = data.user.nom_etablissement;
+                        
+                        document.getElementById('nom_complet').value = data.user.nom_complet;
+                        document.getElementById('email').value = data.user.email;
+                        document.getElementById('etablissement_name').textContent = data.user.nom_etablissement;
+                        
+                        document.getElementById('espaces').value = data.espaces.join('\n');
+                        
+                        document.getElementById('holidays').value = data.calendar.holidays;
+                        document.getElementById('vacations').value = data.calendar.vacations;
+                        
+                        const formateursTbody = document.getElementById('formateurs-table-body');
+                        formateursTbody.innerHTML = '';
+                        (data.formateurs || []).forEach(f => {
+                            const row = `
+                                <tr>
+                                    <td class="p-2 font-semibold">${f.nom}</td>
+                                    <td class="p-2">${f.matricule}</td>
+                                    <td class="p-2"><input name="formateurs[${f.matricule}][masse_horaire]" type="number" class="w-24 p-1 border rounded" value="${f.masse_horaire}"></td>
+                                    <td class="p-2"><input name="formateurs[${f.matricule}][email]" type="email" class="w-full p-1 border rounded" value="${f.email}"></td>
+                                    <input name="formateurs[${f.matricule}][nom]" type="hidden" value="${f.nom}">
+                                    <input name="formateurs[${f.matricule}][matricule]" type="hidden" value="${f.matricule}">
+                                </tr>`;
+                            formateursTbody.innerHTML += row;
+                        });
+                    }
+                });
+        }
+
+        function setupTabNavigation() {
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const contentPanels = document.querySelectorAll('.content-panel');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    const targetId = link.dataset.target;
+                    contentPanels.forEach(panel => {
+                        panel.classList.toggle('active', panel.id === targetId);
+                    });
+                });
+            });
+        }
+
+        function showFeedback(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = isSuccess ? 'feedback-message feedback-success' : 'feedback-message feedback-error';
+            setTimeout(() => { el.textContent = ''; }, 4000);
+        }
+
+        // --- GESTION DES SOUMISSIONS DE FORMULAIRES ---
+        document.getElementById('userInfoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(this).entries());
+            fetch('../api/profile/update_user_info.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(result => {
+                showFeedback('userInfoFeedback', result.message, result.success);
+                if (result.success) { // On met à jour le menu de la nav en direct
+                    populateUserInfo({ nom: data.nom_complet, email: data.email });
+                }
+            });
+        });
+        
+        document.getElementById('passwordForm').addEventListener('submit', function(e) { /* ... fetch vers api/profile/update_password.php ... */ });
+        
+        document.getElementById('espacesForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = { 
+                espaces: document.getElementById('espaces').value.split('\n').map(s => s.trim()).filter(Boolean) 
+            };
+            fetch('../api/profile/update_establishment_info.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(result => showFeedback('espacesFeedback', result.message, result.success));
+        });
+        
+        document.getElementById('calendarForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(this).entries());
+            fetch('../api/profile/update_establishment_info.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(result => showFeedback('calendarFeedback', result.message, result.success));
+        });
+
+        document.getElementById('formateursForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = { formateurs: [] };
+            // Logique pour transformer les données du formulaire en un tableau d'objets
+            const formateursMap = {};
+            for (let [key, value] of formData.entries()) {
+                const match = key.match(/formateurs\[(.+?)]\[(.+?)]/);
+                if (match) {
+                    const matricule = match[1];
+                    const property = match[2];
+                    if (!formateursMap[matricule]) formateursMap[matricule] = {};
+                    formateursMap[matricule][property] = value;
+                }
+            }
+            data.formateurs = Object.values(formateursMap);
+
+            fetch('../api/profile/update_formateurs.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(result => showFeedback('formateursFeedback', result.message, result.success));
+        });
+    </script>
+</body>
+</html>

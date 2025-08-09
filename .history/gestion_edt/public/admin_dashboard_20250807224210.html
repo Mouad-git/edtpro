@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Administrateur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gray-100">
+
+    <!-- BARRE DE NAVIGATION SIMPLE POUR L'ADMINISTRATEUR -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    <img src="assets/images/logo_edt.png" style="height: 50px; width: auto;" alt="Logo">
+                </div>
+                <div>
+                    <a href="../api/auth/logout.php" class="text-sm font-medium text-gray-500 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-1"></i>Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENU PRINCIPAL DE LA PAGE -->
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Demandes d'Inscription en Attente</h1>
+        
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-600">
+                    <thead class="bg-gray-50 text-xs text-gray-700 uppercase">
+                        <tr>
+                            <th class="px-6 py-3">Nom</th>
+                            <th class="px-6 py-3">Email</th>
+                            <th class="px-6 py-3">Établissement</th>
+                            <th class="px-6 py-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-users-table">
+                        <!-- Les lignes seront insérées ici par JavaScript -->
+                        <tr><td colspan="4" class="px-6 py-4 text-center">Chargement des demandes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SÉCURITÉ ET CHARGEMENT ---
+        document.addEventListener('DOMContentLoaded', checkAdminSession);
+
+        /**
+         * Vérifie si l'utilisateur connecté est bien un administrateur.
+         * Si ce n'est pas le cas, il le redirige vers la page de connexion.
+         */
+        async function checkAdminSession() {
+            try {
+                // On appelle un script PHP dédié à la vérification de la session admin
+                const response = await fetch('../api/auth/verify_admin_session.php');
+                if (!response.ok) { 
+                    // Si le statut n'est pas 200 OK (ex: 403 Forbidden), on redirige
+                    window.location.href = 'login.html';
+                    return;
+                }
+                // Si la session est valide, on charge les données de la page
+                loadPendingUsers();
+            } catch (error) {
+                console.error("Erreur de vérification de session:", error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        /**
+         * Récupère la liste des utilisateurs en attente depuis le serveur et l'affiche.
+         */
+        async function loadPendingUsers() {
+            const tableBody = document.getElementById('pending-users-table');
+            tableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center">Chargement des demandes...</td></tr>';
+
+            try {
+                const response = await fetch('../api/admin/get_pending_users.php');
+                const result = await response.json();
+
+                if (result.success && result.data.length > 0) {
+                    tableBody.innerHTML = ''; // Vider le message de chargement
+                    result.data.forEach(user => {
+                        const row = `
+                            <tr class="bg-white border-b hover:bg-gray-50">
+                                <td class="px-6 py-4 font-medium text-gray-900">${user.nom_complet}</td>
+                                <td class="px-6 py-4">${user.email}</td>
+                                <td class="px-6 py-4">${user.nom_etablissement}</td>
+                                <td class="px-6 py-4 text-center space-x-2">
+                                    <button onclick="updateUserStatus(${user.id}, 'approved')" class="font-medium text-green-600 hover:underline">Approuver</button>
+                                    <button onclick="updateUserStatus(${user.id}, 'rejected')" class="font-medium text-red-600 hover:underline">Rejeter</button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Aucune demande d\'inscription en attente.</td></tr>';
+                }
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-500">Erreur lors du chargement des données.</td></tr>';
+                console.error("Erreur de chargement:", error);
+            }
+        }
+
+        /**
+         * Met à jour le statut d'un utilisateur (approuvé ou rejeté).
+         * @param {number} userId - L'ID de l'utilisateur à modifier.
+         * @param {string} status - Le nouveau statut ('approved' ou 'rejected').
+         */
+        async function updateUserStatus(userId, status) {
+            const actionText = status === 'approved' ? 'approuver' : 'rejeter';
+            if (!confirm(`Êtes-vous sûr de vouloir ${actionText} cet utilisateur ?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../api/admin/update_user_status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, new_status: status })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`Utilisateur ${actionText} avec succès.`);
+                    loadPendingUsers(); // Rafraîchir la liste
+                } else {
+                    alert("Erreur: Impossible de mettre à jour le statut de l'utilisateur.");
+                }
+            } catch (error) {
+                alert("Une erreur de communication est survenue.");
+                console.error("Erreur de mise à jour:", error);
+            }
+        }
+    </script>
+</body>
+</html>

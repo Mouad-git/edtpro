@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Système d'Emploi du Temps avec Excel</title>
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="/gestion_edt/public/assets/css/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <nav>
+      <img src="assets/images/logo_edtpro.png" style="height: 80px; width: auto;" id="logo" alt="Logo">
+      <div class="nav-links"> <!-- J'ai ajouté une classe pour mieux cibler les liens -->
+          <a href="admin.html" id="nav-admin">Emploi globale</a>
+          <a href="edition.html" id="nav-edition">Edition</a>
+          <a href="avancement.html" id="nav-avancement">Avancement</a>
+          <div class="profile-menu-container" id="profile-menu-container">
+            <!-- Le bouton/lien principal reste le même -->
+            <button id="profile-button" class="profile-button">
+              <span id="profile-initials">--</span>
+          </button>
+        
+            <!-- === NOUVELLE STRUCTURE SIMPLIFIÉE DU MENU DÉROULANT === -->
+<div id="profile-dropdown" class="profile-dropdown">
+  <!-- En-tête avec l'image et le nom -->
+  <div class="dropdown-profile-header">
+      <div class="profile-pic">
+          <i class="fas fa-user"></i>
+      </div>
+      <div class="profile-info">
+          <strong id="dropdown-user-name">Chargement...</strong>
+          <small id="dropdown-user-email">...</small>
+      </div>
+  </div>
+
+  <!-- Liste des liens (simplifiée) -->
+  <ul class="dropdown-menu-list">
+      <li>
+          <a href="profile.html" class="dropdown-link">
+              <i class="fas fa-user-edit icon"></i>
+              <span class="text">Mon Profil</span>
+              <i class="fas fa-chevron-right chevron"></i>
+          </a>
+      </li>
+      <!-- Le lien "Paramètres" a été supprimé -->
+  </ul>
+
+  <!-- Séparateur et lien de déconnexion -->
+  <hr class="dropdown-divider">
+  <a href="../api/auth/logout.php" class="dropdown-link logout">
+      <i class="fas fa-sign-out-alt icon"></i>
+      <span class="text">Déconnexion</span>
+  </a>
+</div>
+<!-- ======================================================== -->
+      </div>
+  </nav>
+    
+    <section class="upload-section">
+      <div class="upload">
+        <div class="file-input-container">
+          <button class="container-btn-file">
+            <svg fill="#fff" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 50 50">
+              <path d="M28.8125 .03125L.8125 5.34375C.339844 5.433594 0 5.863281 0 6.34375L0 43.65625C0 
+                44.136719 .339844 44.566406 .8125 44.65625L28.8125 
+                49.96875C28.875 49.980469 28.9375 50 29 50C29.230469 
+                50 29.445313 49.929688 29.625 49.78125C29.855469 49.589844 
+                30 49.296875 30 49L30 1C30 .703125 29.855469 .410156 29.625 
+                .21875C29.394531 .0273438 29.105469 -.0234375 28.8125 .03125ZM32 
+                6L32 13L34 13L34 15L32 15L32 20L34 20L34 22L32 22L32 27L34 27L34 
+                29L32 29L32 35L34 35L34 37L32 37L32 44L47 44C48.101563 44 49 
+                43.101563 49 42L49 8C49 6.898438 48.101563 6 47 6ZM36 13L44 
+                13L44 15L36 15ZM6.6875 15.6875L11.8125 15.6875L14.5 21.28125C14.710938 
+                21.722656 14.898438 22.265625 15.0625 22.875L15.09375 22.875C15.199219 
+                22.511719 15.402344 21.941406 15.6875 21.21875L18.65625 15.6875L23.34375 
+                15.6875L17.75 24.9375L23.5 34.375L18.53125 34.375L15.28125 
+                28.28125C15.160156 28.054688 15.035156 27.636719 14.90625 
+                27.03125L14.875 27.03125C14.8125 27.316406 14.664063 27.761719 
+                14.4375 28.34375L11.1875 34.375L6.1875 34.375L12.15625 25.03125ZM36 
+                20L44 20L44 22L36 22ZM36 27L44 27L44 29L36 29ZM36 35L44 35L44 37L36 37Z">
+              </path>
+            </svg>
+            Sélectionner fichier
+            <input class="file" name="text" type="file" id="fileInput" accept=".xlsx, .xls" />
+          </button>
+          <div class="file-name" id="fileName" style="display: none;">Aucun fichier sélectionné</div>
+        </div>
+
+        <!-- ***** DÉBUT DE LA ZONE DU CALENDRIER PERSONNALISÉ ***** -->
+        <div class="week-selection">
+            <div class="custom-week-picker">
+              <div id="customWeekDisplay">
+                <img src="https://cdn-icons-png.flaticon.com/512/12887/12887924.png" alt="">
+                <span id="weekDisplayText"></span>
+              </div>
+                <div id="calendarPopup">
+                    <div class="calendar-header">
+                        <button id="prevMonthBtn"><i class="fas fa-chevron-left"></i></button>
+                        <span id="calendarTitle"></span>
+                        <button id="nextMonthBtn"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <table class="calendar-grid">
+                        <thead>
+                            <tr><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th><th>D</th></tr>
+                        </thead>
+                        <tbody id="calendarBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="week-import-btn">
+              <button class="btn-import" id="importWeekBtn">
+                <svg class="svg-icon-import" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#9b59b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 8l-5-5-5 5M12 4.2v10.3"/>
+                </svg>
+                <span class="lable-import">Importer</span>
+              </button>
+              <div id="weekImportMenu" class="week-import-menu">
+                <!-- Le contenu sera chargé dynamiquement -->
+              </div>
+            </div>
+        </div>
+        <!-- ***** FIN DE LA ZONE DU CALENDRIER PERSONNALISÉ ***** -->
+
+        <!-- MODIFICATION : ANCIEN BOUTON REMPLACÉ PAR LE NOUVEAU -->
+        <button class="button" id="saveTimetableBtn">
+          <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#056dfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M3 6H21V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/>
+            <path d="M3 6l3-4h6l3 4"/>
+          </svg>
+          <span class="lable">Enregistrer</span>
+        </button>
+
+        <button class="button-reset" id="resetBtn">
+          <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    viewBox="0 0 20 20"
+    height="20"
+    fill="none"
+    class="svg-icon-reset"
+  >
+    <g stroke-width="1.5" stroke-linecap="round" stroke="#ff342b">
+      <path
+        d="m3.33337 10.8333c0 3.6819 2.98477 6.6667 6.66663 6.6667 3.682 0 6.6667-2.9848 6.6667-6.6667 0-3.68188-2.9847-6.66664-6.6667-6.66664-1.29938 0-2.51191.37174-3.5371 1.01468"
+      ></path>
+      <path
+        d="m7.69867 1.58163-1.44987 3.28435c-.18587.42104.00478.91303.42582 1.0989l3.28438 1.44986"
+      ></path>
+    </g>
+  </svg>
+          <span class="lable-reset">Réinitialiser</span>
+        </button>
+
+        <button class="button-autogen" id="autoGenerateBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 20 20" height="20" fill="none" class="svg-icon"><g stroke-width="1.5" stroke-linecap="round" stroke="#5d41de"><circle r="2.5" cy="10" cx="10"></circle><path fill-rule="evenodd" d="m8.39079 2.80235c.53842-1.51424 2.67991-1.51424 3.21831-.00001.3392.95358 1.4284 1.40477 2.3425.97027 1.4514-.68995 2.9657.82427 2.2758 2.27575-.4345.91407.0166 2.00334.9702 2.34248 1.5143.53842 1.5143 2.67996 0 3.21836-.9536.3391-1.4047 1.4284-.9702 2.3425.6899 1.4514-.8244 2.9656-2.2758 2.2757-.9141-.4345-2.0033.0167-2.3425.9703-.5384 1.5142-2.67989 1.5142-3.21831 0-.33914-.9536-1.4284-1.4048-2.34247-.9703-1.45148.6899-2.96571-.8243-2.27575-2.2757.43449-.9141-.01669-2.0034-.97028-2.3425-1.51422-.5384-1.51422-2.67994.00001-3.21836.95358-.33914 1.40476-1.42841.97027-2.34248-.68996-1.45148.82427-2.9657 2.27575-2.27575.91407.4345 2.00333-.01669 2.34247-.97026z" clip-rule="evenodd"></path></g></svg>       
+          <span class="lable-autogen">Générer Automatiquement</span>
+        </button>
+        
+        <button class="button-analyze" id="analyzeHoursBtn">
+          <svg class="svg-icon-analyze" xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 20 20" height="20" fill="none">
+            <path stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M17.5 17.5V6.66667"></path>
+            <path stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M12.5 17.5V2.5"></path>
+            <path stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M7.5 17.5v-5.83333"></path>
+            <path stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M2.5 17.5v-9.16667"></path>
+          </svg>        
+          <span class="lable-analyze">Analyser</span>
+        </button>
+    
+  </section>
+    
+    <section class="timetable-container">
+      <table id="timetable">
+        <thead>
+          <tr>
+            <th rowspan="2" colspan="2"></th>
+            <th colspan="4" class="day-header lundi-day-header">Lundi</th>
+            <th colspan="4" class="day-header mardi-day-header">Mardi</th>
+            <th colspan="4" class="day-header mercredi-day-header">Mercredi</th>
+            <th colspan="4" class="day-header jeudi-day-header">Jeudi</th>
+            <th colspan="4" class="day-header vendredi-day-header">Vendredi</th>
+            <th colspan="4" class="day-header samedi-day-header">Samedi</th>
+          </tr>
+          <tr>
+            <!-- Lundi -->
+            <th class="time-header lundi-session">S1</th>
+            <th class="time-header lundi-session">S2</th>
+            <th class="time-header lundi-session">S3</th>
+            <th class="time-header lundi-session">S4</th>
+            <!-- Mardi -->
+            <th class="time-header mardi-session">S1</th>
+            <th class="time-header mardi-session">S2</th>
+            <th class="time-header mardi-session">S3</th>
+            <th class="time-header mardi-session">S4</th>
+            <!-- Mercredi -->
+            <th class="time-header mercredi-session">S1</th>
+            <th class="time-header mercredi-session">S2</th>
+            <th class="time-header mercredi-session">S3</th>
+            <th class="time-header mercredi-session">S4</th>
+            <!-- Jeudi -->
+            <th class="time-header jeudi-session">S1</th>
+            <th class="time-header jeudi-session">S2</th>
+            <th class="time-header jeudi-session">S3</th>
+            <th class="time-header jeudi-session">S4</th>
+            <!-- Vendredi -->
+            <th class="time-header vendredi-session">S1</th>
+            <th class="time-header vendredi-session">S2</th>
+            <th class="time-header vendredi-session">S3</th>
+            <th class="time-header vendredi-session">S4</th>
+            <!-- Samedi -->
+            <th class="time-header samedi-session">S1</th>
+            <th class="time-header samedi-session">S2</th>
+            <th class="time-header samedi-session">S3</th>
+            <th class="time-header samedi-session">S4</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Généré dynamiquement -->
+        </tbody>
+      </table>
+    </section>
+    
+    
+    
+  </div>
+  
+  <div class="excel-toolbar" id="excelToolbar">
+    <button id="copyBtn" class="tooltip">
+      <i class="fas fa-copy"></i> Copier <span class="keyboard-shortcut">Ctrl+C</span>
+      <span class="tooltiptext">Copier les cellules sélectionnées</span>
+    </button>
+    <button id="pasteBtn" class="tooltip">
+      <i class="fas fa-paste"></i> Coller <span class="keyboard-shortcut">Ctrl+V</span>
+      <span class="tooltiptext">Coller dans les cellules sélectionnées</span>
+    </button>
+    <button id="cutBtn" class="tooltip">
+      <i class="fas fa-cut"></i> Couper <span class="keyboard-shortcut">Ctrl+X</span>
+      <span class="tooltiptext">Couper les cellules sélectionnées</span>
+    </button>
+    <button id="deleteBtn" class="tooltip">
+      <i class="fas fa-trash-alt"></i> Supprimer <span class="keyboard-shortcut">Suppr</span>
+      <span class="tooltiptext">Effacer le contenu des cellules</span>
+    </button>
+    <button id="clearSelectionBtn" class="tooltip">
+      <i class="fas fa-times"></i> Annuler sélection
+      <span class="tooltiptext">Désélectionner les cellules</span>
+    </button>
+  </div>
+  
+  <div class="paste-notification" id="pasteNotification"></div>
+  
+  <!-- NOUVELLE STRUCTURE HTML POUR LA NOTIFICATION -->
+  <div id="notification" class="notification" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="notification__icon" id="notificationIcon">
+        <i class="fas fa-check"></i>
+    </div>
+    <div class="notification__body">
+        <h2 class="notification__header" id="notificationHeader">Success</h2>
+        <p class="notification__text" id="notificationText">Your changes have been saved</p>
+    </div>
+    <div class="notification__action">
+        <button id="notificationClose" class="button" aria-label="dismiss this notification">
+            <span aria-hidden="true">✕</span>
+        </button>
+    </div>
+  </div>
+
+
+  <div id="weekLoader" class="loader-container" style="display: none;">
+    <div class="loader">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <p>Chargement en cours...</p>
+</div>
+
+  <div id="autoGenModal" style="display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: #fefefe; margin: 40px auto; padding: 10px; border: 1px solid #888; width: 90%; max-width: 1600px; max-height: 90vh; overflow-y: auto; border-radius: 10px;">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+         <!--<h2 style="font-size: 1.8rem; color: #333;">Configuration de la Génération Automatique</h2>-->
+         <div style="text-align: right; padding-top: 0px;">
+          <button id="runAutoGenerateBtn" class="btn btn-save">Lancer la Génération</button>
+        </div>
+        <button id="closeModalBtn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+      </div>
+
+      <div style="margin-bottom: 20px; font-size: 1.1rem; display: none; align-items: center;">
+        <input type="checkbox" id="prefer5hBlocks" checked style="width: 20px; height: 20px; margin-right: 10px;">
+        <label for="prefer5hBlocks">Privilégier les blocs de 5h (2 séances consécutives)</label>
+    </div>
+      
+      <div id="autoGenConstraintsContainer" style="max-height: 400px; overflow-y: auto; padding-right: 15px;">
+        <!-- Le contenu sera généré par JS -->
+      </div>
+
+      
+    </div>
+  </div>
+
+  <button class="uiverse" id="voiceAssistantBtn" title="Activer l'assistant vocal">
+    <div class="wrapper">
+      <span><i class="fas fa-microphone"></i></span>
+      <div class="circle circle-12"></div>
+      <div class="circle circle-11"></div>
+      <div class="circle circle-10"></div>
+      <div class="circle circle-9"></div>
+      <div class="circle circle-8"></div>
+      <div class="circle circle-7"></div>
+      <div class="circle circle-6"></div>
+      <div class="circle circle-5"></div>
+      <div class="circle circle-4"></div>
+      <div class="circle circle-3"></div>
+      <div class="circle circle-2"></div>
+      <div class="circle circle-1"></div>
+    </div>
+  </button>
+<div class="assistant-status" id="assistantStatus"></div>
+
+<div id="groupHoursModal" class="summary-modal" style="display: none;">
+  <div class="summary-modal-content">
+    <div class="summary-modal-header">
+      <h2 id="groupHoursModalTitle">Répartition Horaire par Groupe</h2>
+      <button id="closeGroupHoursModal" class="close-btn">&times;</button>
+    </div>
+    <div class="summary-modal-body">
+      
+      <!-- NOUVEL ÉLÉMENT CANVAS POUR LE GRAPHIQUE -->
+      <div class="chart-container">
+        <canvas id="groupHoursChartCanvas"></canvas>
+      </div>
+      
+      <!-- Le conteneur du tableau reste pour le détail -->
+      <div class="summary-table-container" style="display: none;">
+        <table id="groupHoursSummaryTable">
+          <thead>
+            <tr>
+              <th>Groupe</th>
+              <th>Heures Affectées</th>
+            </tr>
+          </thead>
+          <tbody id="groupHoursResultTbody">
+            <!-- Le contenu sera généré par JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</body>
+</html>

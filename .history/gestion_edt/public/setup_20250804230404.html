@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Initiale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/fr.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .stepper-container {
+            position: relative;
+            padding: 0 2rem 2rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .progress-line {
+            position: absolute;
+            top: 24px;
+            left: 60px;
+            right: 60px;
+            height: 4px;
+            background: #e2e8f0;
+            z-index: 1;
+            border-radius: 2px;
+        }
+        
+        .progress-line-filled {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: #3b82f6;
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+            border-radius: 2px;
+        }
+        
+        .stepper-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+            flex: 1;
+        }
+        
+        .progress-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #64748b;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            font-size: 18px;
+        }
+        
+        .progress-circle.active {
+            background: #3b82f6;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2);
+        }
+        
+        .progress-circle.completed {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .progress-circle.completed::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 18px;
+        }
+        
+        .progress-circle.success {
+            background: #10b981;
+            box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.2);
+        }
+        
+        .progress-label {
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+        
+        .progress-label.active {
+            color: #1e40af;
+        }
+        
+        .progress-label.completed {
+            color: #1e293b;
+        }
+        
+        .step {
+            display: none;
+            padding: 32px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .step.active { display: block; }
+        
+        .step-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .step-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .step-subtitle {
+            font-size: 16px;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            transition: all 0.3s ease;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+        
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: #f0f7ff;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: #3b82f6;
+            margin-bottom: 16px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #64748b;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .btn-outline:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(5, 150, 105, 0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+            justify-content: center;
+        }
+        
+        .form-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        
+        .form-table th {
+            background: #f1f5f9;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+        }
+        
+        .form-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+        }
+        
+        .form-table tr:hover {
+            background: #f8fafc;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .tags-container {
+            margin-top: 16px;
+            padding: 12px;
+            min-height: 80px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-content: flex-start;
+        }
+        
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: popIn 0.3s ease-out;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .tag button {
+            margin-left: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #3b82f6;
+            font-size: 14px;
+            line-height: 1;
+            opacity: 0.7;
+        }
+        
+        .tag button:hover {
+            opacity: 1;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .form-col {
+            flex: 1;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-hint {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        
+        .feedback {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            margin-top: 16px;
+        }
+        
+        .feedback-error {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        
+        .feedback-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .date-input-container { 
+            position: relative;
+            margin-bottom: 8px;
+        }
+        
+        .date-input-icon { 
+            position: absolute; 
+            left: 12px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: #94a3b8; 
+        }
+        
+        input.date-picker { 
+            padding-left: 36px !important; 
+        }
+        
+        .suggestion-item { 
+            padding: 8px 12px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+        }
+        
+        .suggestion-item:hover { 
+            background-color: #f1f5f9; 
+            transform: translateX(5px); 
+        }
+        
+        #suggestions-container { 
+            position: absolute; 
+            width: 100%; 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 0.375rem; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            max-height: 200px; 
+            overflow-y: auto; 
+            z-index: 20; 
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="form-container w-full max-w-4xl">
+        
+        <!-- Barre de progression améliorée -->
+        <div class="stepper-container">
+            <div class="progress-line">
+                <div class="progress-line-filled" id="progress-line-filled"></div>
+            </div>
+            
+            <div class="flex items-start justify-between">
+                <div id="progress-step-1" class="stepper-item">
+                    <div id="progress-circle-1" class="progress-circle">1</div>
+                    <div id="progress-label-1" class="progress-label">Fichier</div>
+                </div>
+                <div id="progress-step-2" class="stepper-item">
+                    <div id="progress-circle-2" class="progress-circle">2</div>
+                    <div id="progress-label-2" class="progress-label">Formateurs</div>
+                </div>
+                <div id="progress-step-3" class="stepper-item">
+                    <div id="progress-circle-3" class="progress-circle">3</div>
+                    <div id="progress-label-3" class="progress-label">Calendrier</div>
+                </div>
+                <div id="progress-step-4" class="stepper-item">
+                    <div id="progress-circle-4" class="progress-circle">4</div>
+                    <div id="progress-label-4" class="progress-label">Espaces</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Étape 1 : Import du fichier -->
+        <div id="step1" class="step active">
+            <div class="step-header">
+                <h2 class="step-title">Étape 1 : Importez votre fichier de base</h2>
+                <p class="step-subtitle">Veuillez sélectionner le fichier Excel "AvancementProgramme" fourni. Le système extraira automatiquement la liste de vos formateurs.</p>
+            </div>
+            
+            <div class="form-card">
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-700">Cliquez pour choisir un fichier</p>
+                    <p id="fileName" class="text-gray-500 mt-2 font-medium"></p>
+                </div>
+                <input type="file" id="excelFile" class="file-input" accept=".xlsx, .xls">
+                
+                <div id="step1-feedback" class="feedback feedback-error hidden"></div>
+                
+                <div class="btn-group">
+                    <button id="step1NextBtn" class="btn btn-primary flex-1" disabled>
+                        Suivant <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étape 2 : Vérification des formateurs -->
+        <div id="step2" class="step">
+            <div class="step-header">
+                <h2 class="step-title">Étape 2 : Vérifiez les informations des formateurs</h2>
+                <p class="step-subtitle">Les e-mails et matricules ont été générés automatiquement. Veuillez les vérifier et les corriger si nécessaire.</p>
+            </div>
+            
+            <div class="form-card">
+                <div class="overflow-x-auto border rounded-lg max-h-[50vh]">
+                    <table class="form-table">
+                        <thead>
+                            <tr>
+                                <th>Nom du Formateur</th>
+                                <th class="w-32">Masse Horaire Stat.</th>
+                                <th class="w-40">Matricule</th>
+                                <th>E-mail</th>
+                            </tr>
+                        </thead>
+                        <tbody id="formateurs-table-body">
+                            <!-- Le contenu sera injecté par JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="btn-group">
+                    <button id="step2PrevBtn" class="btn btn-outline flex-1">
+                        <i class="fas fa-arrow-left mr-2"></i> Précédent
+                    </button>
+                    <button id="step2NextBtn" class="btn btn-primary flex-1">
+                        Suivant <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étape 3 : Configuration du calendrier -->
+        <div id="step3" class="step">
+            <div class="step-header">
+                <h2 class="step-title">Étape 3 : Configurez le calendrier de l'année</h2>
+                <p class="step-subtitle">Définissez les jours fériés et les périodes de vacances pour votre établissement.</p>
+            </div>
+            
+            <div class="form-card">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label class="form-label">Jours fériés</label>
+                        <p class="form-hint">Les jours fériés pour le Maroc sont pré-chargés. Vous pouvez en ajouter ou en retirer.</p>
+                        <div class="date-input-container">
+                            <i class="fas fa-calendar-day date-input-icon"></i>
+                            <input type="text" id="holidays-picker" class="form-input date-picker" placeholder="Ajouter un jour férié...">
+                        </div>
+                        <div id="holidays-tags" class="tags-container"></div>
+                    </div>
+                    
+                    <div class="form-col">
+                        <label class="form-label">Périodes de vacances</label>
+                        <p class="form-hint">Saisissez un nom, sélectionnez une période et cliquez sur "Ajouter".</p>
+                        <input type="text" id="vacation-name-input" class="form-input mb-2" placeholder="Nom (ex: Vacances de Printemps)">
+                        <div class="flex gap-2">
+                            <div class="date-input-container flex-grow">
+                                <i class="fas fa-calendar-week date-input-icon"></i>
+                                <input type="text" id="vacations-picker" class="form-input date-picker" placeholder="Sélectionnez une période...">
+                            </div>
+                            <button id="add-vacation-btn" class="btn btn-primary">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="vacation-feedback" class="text-red-500 text-sm mt-2 hidden"></div>
+                        <div id="vacations-tags" class="tags-container"></div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button id="step3PrevBtn" class="btn btn-outline flex-1">
+                        <i class="fas fa-arrow-left mr-2"></i> Précédent
+                    </button>
+                    <button id="step3NextBtn" class="btn btn-primary flex-1">
+                        Suivant <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étape 4 : Espaces de travail -->
+        <div id="step4" class="step">
+            <div class="step-header">
+                <h2 class="step-title">Étape 4 : Listez vos espaces de travail</h2>
+                <p class="step-subtitle">Ajoutez vos salles, amphis, laboratoires, etc. N'oubliez pas d'inclure "TEAMS" pour les cours à distance.</p>
+            </div>
+            
+            <div class="form-card">
+                <div class="relative mb-4">
+                    <div class="flex gap-2">
+                        <input type="text" id="espace-input" class="form-input flex-grow" placeholder="Salle A101">
+                        <button id="ajouter-espace" class="btn btn-primary">
+                            <i class="fas fa-plus mr-1"></i> Ajouter
+                        </button>
+                    </div>
+                    <div id="suggestions-container" class="hidden"></div>
+                </div>
+                
+                <div class="mb-4">
+                    <p class="form-hint">Salles communes:</p>
+                    <div class="flex flex-wrap gap-2 mt-2" id="common-spaces">
+                        <button class="tag" data-space="Salle A101">Salle A101</button>
+                        <button class="tag" data-space="Amphi B">Amphi B</button>
+                        <button class="tag" data-space="Labo Info">Labo Info</button>
+                        <button class="tag" data-space="TEAMS">TEAMS</button>
+                    </div>
+                </div>
+                
+                <div id="espaces-container" class="tags-container">
+                    <!-- Les espaces seront ajoutés dynamiquement -->
+                </div>
+                
+                <div id="step4-feedback" class="feedback feedback-error hidden"></div>
+                
+                <div class="btn-group">
+                    <button id="step4PrevBtn" class="btn btn-outline flex-1">
+                        <i class="fas fa-arrow-left mr-2"></i> Précédent
+                    </button>
+                    <button id="finishSetupBtn" class="btn btn-success flex-1">
+                        Terminer <i class="fas fa-check ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Références aux éléments DOM
+            const steps = [
+                document.getElementById('step1'),
+                document.getElementById('step2'),
+                document.getElementById('step3'),
+                document.getElementById('step4')
+            ];
+            
+            const progressLineFilled = document.getElementById('progress-line-filled');
+            const progressCircles = [
+                document.getElementById('progress-circle-1'),
+                document.getElementById('progress-circle-2'),
+                document.getElementById('progress-circle-3'),
+                document.getElementById('progress-circle-4')
+            ];
+            
+            const progressLabels = [
+                document.getElementById('progress-label-1'),
+                document.getElementById('progress-label-2'),
+                document.getElementById('progress-label-3'),
+                document.getElementById('progress-label-4')
+            ];
+            
+            // Navigation buttons
+            const nextButtons = {
+                1: document.getElementById('step1NextBtn'),
+                2: document.getElementById('step2NextBtn'),
+                3: document.getElementById('step3NextBtn')
+            };
+            
+            const prevButtons = {
+                2: document.getElementById('step2PrevBtn'),
+                3: document.getElementById('step3PrevBtn'),
+                4: document.getElementById('step4PrevBtn')
+            };
+            
+            const finishButton = document.getElementById('finishSetupBtn');
+            
+            // File upload elements
+            const fileInput = document.getElementById('excelFile');
+            const uploadArea = document.getElementById('upload-area');
+            const fileNameLabel = document.getElementById('fileName');
+            const step1Feedback = document.getElementById('step1-feedback');
+            const formateursTableBody = document.getElementById('formateurs-table-body');
+            const step4Feedback = document.getElementById('step4-feedback');
+            
+            // Variables pour stocker les données
+            let rawExcelData = null;
+            let currentStep = 1;
+            
+            // Initialiser flatpickr pour les dates
+            const holidaysPicker = flatpickr("#holidays-picker", { 
+                mode: "multiple", 
+                dateFormat: "d/m/Y", 
+                locale: "fr", 
+                onChange: (selectedDates) => updateTags('holidays', selectedDates.map(d => holidaysPicker.formatDate(d, "d/m/Y"))) 
+            });
+            
+            const vacationsPicker = flatpickr("#vacations-picker", { 
+                mode: "range", 
+                dateFormat: "d/m/Y", 
+                locale: "fr" 
+            });
+            
+            // Fonction pour naviguer entre les étapes
+            function goToStep(stepNumber) {
+                // Hide all steps
+                steps.forEach(step => step.classList.remove('active'));
+                
+                // Show current step
+                steps[stepNumber - 1].classList.add('active');
+                
+                // Update progress
+                updateProgress(stepNumber);
+                
+                currentStep = stepNumber;
+            }
+            
+            // Mettre à jour la barre de progression
+            function updateProgress(currentStep) {
+                const totalSteps = steps.length;
+                const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+                progressLineFilled.style.width = `${progressPercentage}%`;
+                
+                // Update circle states
+                for (let i = 0; i < totalSteps; i++) {
+                    if (i < currentStep - 1) {
+                        // Completed steps
+                        progressCircles[i].classList.add('completed');
+                        progressCircles[i].classList.remove('active');
+                        progressLabels[i].classList.add('completed');
+                    } else if (i === currentStep - 1) {
+                        // Current step
+                        progressCircles[i].classList.add('active');
+                        progressCircles[i].classList.remove('completed');
+                        progressLabels[i].classList.add('active');
+                        progressLabels[i].classList.remove('completed');
+                    } else {
+                        // Future steps
+                        progressCircles[i].classList.remove('active', 'completed');
+                        progressLabels[i].classList.remove('active', 'completed');
+                    }
+                }
+            }
+            
+            // Événements de navigation
+            nextButtons[1].addEventListener('click', () => handleStep1Next());
+            nextButtons[2].addEventListener('click', () => goToStep(3));
+            nextButtons[3].addEventListener('click', () => goToStep(4));
+            
+            prevButtons[2].addEventListener('click', () => goToStep(1));
+            prevButtons[3].addEventListener('click', () => goToStep(2));
+            prevButtons[4].addEventListener('click', () => goToStep(3));
+            
+            // Gestion du téléchargement de fichiers
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    fileNameLabel.textContent = file.name;
+                    nextButtons[1].disabled = false;
+                    step1Feedback.classList.add('hidden');
+                }
+            });
+            
+            // Traitement du fichier Excel (simulation)
+            function handleStep1Next() {
+                if (!fileInput.files[0]) {
+                    step1Feedback.textContent = "Veuillez sélectionner un fichier.";
+                    step1Feedback.classList.remove('hidden');
+                    return;
+                }
+                
+                // Simuler le chargement et le traitement du fichier
+                nextButtons[1].innerHTML = 'Analyse... <i class="fas fa-spinner fa-spin ml-2"></i>';
+                nextButtons[1].disabled = true;
+                
+                setTimeout(() => {
+                    // Simuler des données de formateurs
+                    const formateurs = [
+                        { nom: "Alexandre Martin", masse_horaire: 120, matricule: "M001", email: "alex.martin@example.com" },
+                        { nom: "Sophie Dubois", masse_horaire: 90, matricule: "M002", email: "sophie.dubois@example.com" },
+                        { nom: "Thomas Bernard", masse_horaire: 150, matricule: "M003", email: "thomas.bernard@example.com" },
+                        { nom: "Marie Lefevre", masse_horaire: 110, matricule: "M004", email: "marie.lefevre@example.com" },
+                        { nom: "Jean Petit", masse_horaire: 85, matricule: "M005", email: "jean.petit@example.com" }
+                    ];
+                    
+                    populateFormateursTable(formateurs);
+                    goToStep(2);
+                    
+                    // Réinitialiser le bouton
+                    nextButtons[1].innerHTML = 'Suivant <i class="fas fa-arrow-right ml-2"></i>';
+                    nextButtons[1].disabled = false;
+                }, 1500);
+            }
+            
+            // Remplir le tableau des formateurs
+            function populateFormateursTable(formateurs) {
+                formateursTableBody.innerHTML = '';
+                
+                formateurs.forEach(f => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="font-semibold text-gray-800 nom">${f.nom}</td>
+                        <td><input type="number" class="form-input masse_horaire" value="${f.masse_horaire}"></td>
+                        <td><input type="text" class="form-input matricule" value="${f.matricule}" readonly></td>
+                        <td><input type="email" class="form-input email" value="${f.email}"></td>
+                    `;
+                    formateursTableBody.appendChild(row);
+                });
+            }
+            
+            // Gestion des jours fériés et vacances
+            document.getElementById('add-vacation-btn').addEventListener('click', function() {
+                const nameInput = document.getElementById('vacation-name-input');
+                const name = nameInput.value.trim();
+                const dates = vacationsPicker.selectedDates;
+                
+                if (!name) {
+                    document.getElementById('vacation-feedback').textContent = "Veuillez saisir un nom pour les vacances.";
+                    document.getElementById('vacation-feedback').classList.remove('hidden');
+                    return;
+                }
+                
+                if (dates.length !== 2) {
+                    document.getElementById('vacation-feedback').textContent = "Veuillez sélectionner une période valide.";
+                    document.getElementById('vacation-feedback').classList.remove('hidden');
+                    return;
+                }
+                
+                document.getElementById('vacation-feedback').classList.add('hidden');
+                
+                const startDate = vacationsPicker.formatDate(dates[0], "d/m/Y");
+                const endDate = vacationsPicker.formatDate(dates[1], "d/m/Y");
+                const value = `${name} (${startDate} - ${endDate})`;
+                
+                addTag('vacations', value);
+                
+                // Réinitialiser les champs
+                nameInput.value = '';
+                vacationsPicker.clear();
+            });
+            
+            // Fonctions pour gérer les tags
+            function updateTags(type, values) {
+                const container = document.getElementById(`${type}-tags`);
+                container.innerHTML = '';
+                values.forEach(value => addTag(type, value));
+            }
+            
+            function addTag(type, value) {
+                const container = document.getElementById(`${type}-tags`);
+                
+                if (Array.from(container.querySelectorAll('.tag')).some(t => t.dataset.value === value)) {
+                    return;
+                }
+                
+                const tag = document.createElement('div');
+                tag.className = 'tag';
+                tag.dataset.value = value;
+                tag.innerHTML = `${value} <button><i class="fas fa-times"></i></button>`;
+                
+                tag.querySelector('button').addEventListener('click', function() {
+                    tag.remove();
+                    if (type === 'holidays') {
+                        holidaysPicker.setDate(getTagsValues('holidays'), true);
+                    }
+                });
+                
+                container.appendChild(tag);
+            }
+            
+            function getTagsValues(type) {
+                const container = document.getElementById(`${type}-tags`);
+                return Array.from(container.querySelectorAll('.tag')).map(t => t.dataset.value);
+            }
+            
+            // Récupérer les jours fériés pour le Maroc (simulation)
+            function fetchMoroccanHolidays() {
+                return [
+                    "01/01/2024", "11/01/2024", "01/05/2024", 
+                    "30/07/2024", "14/08/2024", "20/08/2024", 
+                    "21/08/2024", "28/11/2024", "25/12/2024"
+                ];
+            }
+            
+            // Initialiser les jours fériés
+            setTimeout(() => {
+                const holidays = fetchMoroccanHolidays();
+                holidaysPicker.setDate(holidays, true);
+            }, 500);
+            
+            // Gestion des espaces de travail
+            const espaceInput = document.getElementById('espace-input');
+            const ajouterEspaceBtn = document.getElementById('ajouter-espace');
+            const espacesContainer = document.getElementById('espaces-container');
+            const suggestionsContainer = document.getElementById('suggestions-container');
+            const commonSpaces = ['Salle A101', 'Amphi B', 'Labo Info', 'TEAMS', 'ZOOM'];
+            
+            function ajouterEspace(espace) {
+                espace = espace.trim();
+                if (!espace) return;
+                
+                // Vérifier si l'espace existe déjà
+                const existingTags = Array.from(espacesContainer.querySelectorAll('.tag'));
+                if (existingTags.some(tag => tag.dataset.value === espace)) {
+                    return;
+                }
+                
+                const tag = document.createElement('div');
+                tag.className = 'tag';
+                tag.dataset.value = espace;
+                tag.innerHTML = `${espace} <button><i class="fas fa-times"></i></button>`;
+                
+                tag.querySelector('button').addEventListener('click', function() {
+                    tag.remove();
+                });
+                
+                espacesContainer.appendChild(tag);
+                espaceInput.value = '';
+                suggestionsContainer.classList.add('hidden');
+            }
+            
+            ajouterEspaceBtn.addEventListener('click', () => ajouterEspace(espaceInput.value));
+            
+            espaceInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    ajouterEspace(espaceInput.value);
+                }
+            });
+            
+            espaceInput.addEventListener('input', function() {
+                const value = this.value.trim().toLowerCase();
+                if (!value) {
+                    suggestionsContainer.classList.add('hidden');
+                    return;
+                }
+                
+                const filtered = commonSpaces.filter(space => 
+                    space.toLowerCase().includes(value) && 
+                    !Array.from(espacesContainer.querySelectorAll('.tag'))
+                        .some(tag => tag.dataset.value === space)
+                );
+                
+                if (filtered.length === 0) {
+                    suggestionsContainer.classList.add('hidden');
+                    return;
+                }
+                
+                suggestionsContainer.innerHTML = '';
+                filtered.forEach(space => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = space;
+                    item.addEventListener('click', () => {
+                        ajouterEspace(space);
+                    });
+                    suggestionsContainer.appendChild(item);
+                });
+                
+                suggestionsContainer.classList.remove('hidden');
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!suggestionsContainer.contains(e.target)) {
+                    suggestionsContainer.classList.add('hidden');
+                }
+            });
+            
+            // Ajouter des espaces via les boutons communs
+            document.querySelectorAll('#common-spaces button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    ajouterEspace(this.dataset.space);
+                });
+            });
+            
+            // Terminer la configuration
+            finishButton.addEventListener('click', function() {
+                const espaces = Array.from(espacesContainer.querySelectorAll('.tag'))
+                    .map(tag => tag.dataset.value);
+                
+                if (espaces.length === 0) {
+                    step4Feedback.textContent = "Veuillez ajouter au moins un espace.";
+                    step4Feedback.classList.remove('hidden');
+                    return;
+                }
+                
+                // Simuler la sauvegarde
+                this.innerHTML = 'Sauvegarde... <i class="fas fa-spinner fa-spin ml-2"></i>';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    // Mettre à jour la barre de progression avec succès
+                    progressCircles[3].classList.remove('active');
+                    progressCircles[3].classList.add('success');
+                    progressLabels[3].classList.add('completed');
+                    
+                    // Afficher un message de succès
+                    step4Feedback.textContent = "Configuration terminée avec succès !";
+                    step4Feedback.classList.remove('feedback-error', 'hidden');
+                    step4Feedback.classList.add('feedback-success');
+                    
+                    // Réinitialiser le bouton après un délai
+                    setTimeout(() => {
+                        this.innerHTML = 'Terminer <i class="fas fa-check ml-2"></i>';
+                        this.disabled = false;
+                    }, 2000);
+                }, 1500);
+            });
+            
+            // Initialiser à la première étape
+            goToStep(1);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- On charge la bibliothèque Tailwind CSS depuis un CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Connexion - Gestionnaire EDT</title>
+    <style>
+        .feedback-error {
+            color: #ef4444; /* Rouge de Tailwind (red-500) */
+            font-weight: 600;
+            margin-top: 1rem; /* mb-4 de Tailwind */
+        }
+
+        
+    </style>
+</head>
+<body>
+
+    <div class="min-h-screen flex items-center justify-center" style="height: 600px;">
+        <div class="flex flex-col bg-white rounded-2xl m-7 md:flex-row md:space-y-0">
+            
+            <div class="text-center">
+                <img class="w-[140px] mx-auto mb-4"
+                     src="assets/images/logo.png"
+                     alt="Logo du site">
+              </div>
+              <div class="mb-3 text-4xl font-bold text-center">Se connecter</div>
+              <div class="font-light text-gray-400 mb-8 text-center">
+                Bienvenue ! Veuillez saisir vos coordonnées.
+              </div>
+              
+
+                <!-- MODIFICATION : Ajout de l'ID au formulaire pour le cibler en JS -->
+                <form id="loginForm">
+                    <div class="py-4">
+                        <span class="mb-2 text-md">Email</span>
+                        <!-- MODIFICATION : Les attributs id, name, et autocomplete ont été corrigés -->
+                        <input
+                            type="email"
+                            class="w-full p-2 border border-gray-300 rounded-md placeholder:font-light placeholder:text-gray-500"
+                            name="email"
+                            id="email"
+                            autocomplete="email"
+                            required
+                        />
+                    </div>
+                    <div class="py-4">
+                        <span class="mb-2 text-md">Mot de passe</span>
+                        <!-- MODIFICATION : Les attributs id, name, et autocomplete ont été corrigés -->
+                        <input
+                            type="password"
+                            name="mot_de_passe"
+                            id="mot_de_passe"
+                            class="w-full p-2 border border-gray-300 rounded-md placeholder:font-light placeholder:text-gray-500"
+                            autocomplete="current-password"
+                            required
+                        />
+                    </div>
+                    
+                    <button
+                        type="submit"
+                        class="w-full bg-black text-white p-2 rounded-lg mb-6 hover:bg-white hover:text-black hover:border hover:border-gray-300 transition-all duration-300"
+                    >
+                        Se connecter
+                    </button>
+                </form>
+
+                <!-- MODIFICATION : Zone pour afficher les messages d'erreur -->
+                <div id="feedback" class="text-center"></div>
+                
+                <div class="text-center text-gray-400">
+                    Pas encore de compte ?
+                    <a href="register.html" class="font-bold text-black">Inscrivez-vous</a>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- ====== SCRIPT JAVASCRIPT ====== -->
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const feedbackEl = document.getElementById('feedback');
+            feedbackEl.textContent = '';
+            feedbackEl.className = ''; // Réinitialiser la classe d'erreur
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            fetch('../api/auth/login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // La connexion a réussi, on redirige vers la page principale
+                    window.location.href = 'admin.html';
+                } else {
+                    // La connexion a échoué, on affiche le message d'erreur
+                    feedbackEl.textContent = result.message || "Email ou mot de passe incorrect.";
+                    feedbackEl.className = 'feedback-error'; // Appliquer le style d'erreur
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                feedbackEl.textContent = "Erreur de communication avec le serveur.";
+                feedbackEl.className = 'feedback-error';
+            });
+        });
+    </script>
+</body>
+</html>
+

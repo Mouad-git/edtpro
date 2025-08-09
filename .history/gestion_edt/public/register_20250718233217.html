@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Gestion d'Emploi du Temps</title>
+    <!-- Vous pouvez ajouter un lien vers un fichier CSS ici -->
+    <style>
+        body { font-family: sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .register-container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h2 { text-align: center; color: #333; margin-bottom: 30px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        input[type="text"], input[type="email"], input[type="password"], textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+        textarea { resize: vertical; min-height: 100px; }
+        button { width: 100%; padding: 15px; background-color: #5cb85c; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
+        button:hover { background-color: #4cae4c; }
+        .login-link { text-align: center; margin-top: 20px; }
+        .login-link a { color: #0275d8; text-decoration: none; }
+        #feedback { text-align: center; margin-top: 15px; font-weight: bold; }
+        .feedback-success { color: #4cae4c; }
+        .feedback-error { color: #d9534f; }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Créer un compte</h2>
+        <form id="registerForm">
+            <div class="input-group">
+                <label for="nom_complet">Nom complet</label>
+                <input type="text" id="nom_complet" name="nom_complet" required>
+            </div>
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="input-group">
+                <label for="mot_de_passe">Mot de passe</label>
+                <input type="password" id="mot_de_passe" name="mot_de_passe" required>
+            </div>
+            <hr style="margin: 30px 0; border: 1px solid #eee;">
+            <div class="input-group">
+                <label for="nom_etablissement">Nom de l'établissement</label>
+                <input type="text" id="nom_etablissement" name="nom_etablissement" required>
+            </div>
+             <div class="input-group">
+                <label for="annee_scolaire">Année scolaire (ex: 2024-2025)</label>
+                <input type="text" id="annee_scolaire" name="annee_scolaire" required>
+            </div>
+            <div class="input-group">
+                <label for="espaces">Espaces / Salles (un par ligne)</label>
+                <textarea id="espaces" name="espaces" placeholder="Salle A101
+Amphi B
+Labo Info
+TEAMS" required></textarea>
+            </div>
+            <button type="submit">S'inscrire</button>
+        </form>
+        <div id="feedback"></div>
+        <div class="login-link">
+            <p>Déjà un compte ? <a href="login.html">Connectez-vous</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const feedbackEl = document.getElementById('feedback');
+            feedbackEl.textContent = '';
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            fetch('../api/auth/register.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    feedbackEl.textContent = "Inscription réussie ! Vous allez être redirigé...";
+                    feedbackEl.className = 'feedback-success';
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    feedbackEl.textContent = result.message || "Une erreur est survenue.";
+                    feedbackEl.className = 'feedback-error';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                feedbackEl.textContent = "Erreur de communication avec le serveur.";
+                feedbackEl.className = 'feedback-error';
+            });
+        });
+    </script>
+</body>
+</html>

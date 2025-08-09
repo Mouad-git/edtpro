@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuration Initiale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <!-- On charge la bibliothèque de calendrier Flatpickr et son thème -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- On charge la traduction française pour Flatpickr -->
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/fr.js"></script>
+    <style>
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Style pour les tags (jours fériés, vacances) */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e0e7ff;
+            color: #4338ca;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin: 4px;
+        }
+        .tag button {
+            margin-left: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6366f1;
+            font-size: 1rem;
+            line-height: 1;
+        }
+        .tag button:hover {
+            color: #4338ca;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-4xl bg-white p-6 md:p-8 rounded-xl shadow-lg">
+        <!-- Barre de progression -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between text-sm font-semibold text-gray-400">
+                <span id="progress-text-1" class="text-blue-600 font-bold">1. Fichier de base</span>
+                <span id="progress-text-2">2. Formateurs</span>
+                <span id="progress-text-3">3. Calendrier</span>
+                <span id="progress-text-4">4. Espaces</span>
+            </div>
+            <div class="mt-2 h-2 bg-gray-200 rounded-full">
+                <div id="progress-bar" class="h-2 bg-blue-600 rounded-full transition-all duration-500" style="width: 25%;"></div>
+            </div>
+        </div>
+        
+        <!-- === ÉTAPE 1 : UPLOAD DU FICHIER === -->
+        <div id="step1" class="step active">
+            <h2 class="text-2xl font-semibold mb-4">Étape 1 : Importez votre fichier de base</h2>
+            <p class="mb-6 text-gray-600">Veuillez sélectionner le fichier Excel "AvancementProgramme" fourni. Le système extraira automatiquement la liste de vos formateurs.</p>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
+                <input type="file" id="excelFile" class="hidden" accept=".xlsx, .xls">
+                <label for="excelFile" class="cursor-pointer">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-4 inline-block"></i>
+                    <p class="text-lg font-semibold text-gray-700">Cliquez pour choisir un fichier</p>
+                    <p id="fileName" class="text-sm text-gray-500 mt-2 font-medium"></p>
+                </label>
+            </div>
+            <div id="step1-feedback" class="text-red-500 mt-4 text-center font-semibold"></div>
+            <button id="step1NextBtn" class="w-full bg-blue-600 text-white p-3 rounded-lg mt-6 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                Suivant <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- === ÉTAPE 2 : VÉRIFICATION DES FORMATEURS === -->
+        <div id="step2" class="step">
+            <h2 class="text-2xl font-semibold mb-4">Étape 2 : Vérifiez les informations des formateurs</h2>
+            <p class="mb-6 text-gray-600">Les e-mails et matricules ont été générés automatiquement. Veuillez les vérifier et les corriger si nécessaire.</p>
+            <div class="overflow-y-auto max-h-[50vh] border rounded-lg">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 sticky top-0">
+                        <tr>
+                            <th class="p-2">Nom du Formateur</th>
+                            <th class="p-2 w-48">Masse Horaire Stat.</th>
+                            <th class="p-2 w-48">Matricule</th>
+                            <th class="p-2">E-mail</th>
+                        </tr>
+                    </thead>
+                    <tbody id="formateurs-table-body">
+                        <!-- Le contenu sera généré par JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <button id="step2NextBtn" class="w-full bg-blue-600 text-white p-3 rounded-lg mt-6 hover:bg-blue-700">Suivant <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <!-- === ÉTAPE 3 : JOURS FÉRIÉS ET VACANCES === -->
+        <div id="step3" class="step">
+            <h2 class="text-2xl font-semibold mb-4">Étape 3 : Configurez le calendrier de l'année</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <label for="holidays" class="block font-medium text-gray-700 mb-2">Jours fériés</label>
+                    <input type="text" id="holidays" class="w-full p-2 border rounded-md" placeholder="Sélectionnez les jours fériés...">
+                    <div id="holidays-tags" class="mt-4 flex flex-wrap gap-2"></div>
+                </div>
+                <div>
+                    <label for="vacations" class="block font-medium text-gray-700 mb-2">Périodes de vacances</label>
+                    <input type="text" id="vacations" class="w-full p-2 border rounded-md" placeholder="Sélectionnez les périodes de vacances...">
+                    <div id="vacations-tags" class="mt-4 flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+            <button id="step3NextBtn" class="w-full bg-blue-600 text-white p-3 rounded-lg mt-8">Suivant <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <!-- === ÉTAPE 4 : ESPACES === -->
+        <div id="step4" class="step">
+            <h2 class="text-2xl font-semibold mb-4">Étape 4 : Listez vos espaces de travail</h2>
+            <p class="mb-6 text-gray-600">Entrez la liste de toutes vos salles, amphis, laboratoires, etc. (un par ligne). N'oubliez pas d'inclure "TEAMS" pour les cours à distance.</p>
+            <textarea id="espaces" class="w-full p-2 border rounded-md h-48" placeholder="Salle A101
+Amphi B
+Labo Info
+TEAMS"></textarea>
+            <div id="step4-feedback" class="text-red-500 mt-4 text-center font-semibold"></div>
+            <button id="finishSetupBtn" class="w-full bg-green-600 text-white p-3 rounded-lg mt-6 hover:bg-green-700">
+                Terminer la Configuration et Accéder à l'Application
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- SCRIPT D'INITIALISATION ---
+        async function checkSessionAndLoad() {
+            try {
+                const response = await fetch('../api/auth/verify_session.php');
+                const result = await response.json();
+                if (!result.success) {
+                    window.location.href = 'login.html';
+                } else {
+                    initializeSetupPage();
+                }
+            } catch (error) {
+                window.location.href = 'login.html';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', checkSessionAndLoad);
+
+        // --- LOGIQUE DE LA PAGE ---
+        function initializeSetupPage() {
+            // Références aux éléments du DOM
+            const steps = [
+                document.getElementById('step1'),
+                document.getElementById('step2'),
+                document.getElementById('step3'),
+                document.getElementById('step4')
+            ];
+            const fileInput = document.getElementById('excelFile');
+            const fileNameLabel = document.getElementById('fileName');
+            const step1NextBtn = document.getElementById('step1NextBtn');
+            const step2NextBtn = document.getElementById('step2NextBtn');
+            const step3NextBtn = document.getElementById('step3NextBtn');
+            const finishSetupBtn = document.getElementById('finishSetupBtn');
+            const formateursTableBody = document.getElementById('formateurs-table-body');
+            const feedbacks = {
+                step1: document.getElementById('step1-feedback'),
+                step2: document.getElementById('step2-feedback'),
+                step4: document.getElementById('step4-feedback')
+            };
+
+            let rawExcelData = null; // Pour stocker les données brutes de l'Excel
+
+            // --- NAVIGATION ENTRE LES ÉTAPES ---
+            function goToStep(stepNumber) {
+                steps.forEach((step, index) => {
+                    step.classList.toggle('active', (index + 1) === stepNumber);
+                });
+                updateProgress(stepNumber);
+            }
+
+            function updateProgress(step) {
+                for (let i = 1; i <= 4; i++) {
+                    const el = document.getElementById(`progress-text-${i}`);
+                    el.classList.toggle('text-blue-600', i <= step);
+                    el.classList.toggle('font-bold', i === step);
+                    el.classList.toggle('text-gray-400', i > step);
+                }
+                document.getElementById('progress-bar').style.width = ((step - 1) / 3 * 100) + '%';
+            }
+
+            // --- LOGIQUE DE L'ÉTAPE 1 ---
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    fileNameLabel.textContent = this.files[0].name;
+                    step1NextBtn.disabled = false;
+                }
+            });
+
+            step1NextBtn.addEventListener('click', function() {
+                const formData = new FormData();
+                formData.append('excelFile', fileInput.files[0]);
+                
+                this.innerHTML = 'Analyse en cours... <i class="fas fa-spinner fa-spin"></i>';
+                this.disabled = true;
+
+                fetch('../api/setup/parse_formateurs.php', { method: 'POST', body: formData })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            rawExcelData = result.rawExcelData;
+                            populateFormateursTable(result.formateurs);
+                            goToStep(2);
+                        } else {
+                            feedbacks.step1.textContent = result.message || "Erreur d'analyse.";
+                            this.innerHTML = 'Suivant <i class="fas fa-arrow-right"></i>';
+                            this.disabled = false;
+                        }
+                    });
+            });
+
+            // --- LOGIQUE DE L'ÉTAPE 2 ---
+            step2NextBtn.addEventListener('click', () => goToStep(3));
+
+            function populateFormateursTable(formateurs) {
+                formateursTableBody.innerHTML = '';
+                formateurs.forEach(f => {
+                    const row = document.createElement('tr');
+                    row.className = "border-b";
+                    row.innerHTML = `
+                        <td class="p-2 font-semibold nom">${f.nom}</td>
+                        <td class="p-2"><input type="number" class="w-full p-1 border rounded masse_horaire" value="${f.masse_horaire}"></td>
+                        <td class="p-2"><input type="text" class="w-full p-1 border rounded bg-gray-100 matricule" value="${f.matricule}" readonly></td>
+                        <td class="p-2"><input type="email" class="w-full p-1 border rounded email" value="${f.email}" placeholder="E-mail personnel si vacataire"></td>
+                    `;
+                    formateursTableBody.appendChild(row);
+                });
+            }
+
+            // --- LOGIQUE DE L'ÉTAPE 3 ---
+            const holidaysPicker = flatpickr("#holidays", {
+                mode: "multiple", dateFormat: "d/m/Y", locale: "fr",
+                onChange: (selectedDates) => updateTags('holidays', selectedDates.map(d => holidaysPicker.formatDate(d, "d/m/Y")))
+            });
+            const vacationsPicker = flatpickr("#vacations", {
+                mode: "range", dateFormat: "d/m/Y", locale: "fr",
+                onClose: (selectedDates) => {
+                    if (selectedDates.length === 2) {
+                        const rangeStr = `${vacationsPicker.formatDate(selectedDates[0], "d/m/Y")} - ${vacationsPicker.formatDate(selectedDates[1], "d/m/Y")}`;
+                        addTag('vacations', rangeStr);
+                    }
+                }
+            });
+
+            step3NextBtn.addEventListener('click', () => goToStep(4));
+
+            function updateTags(type, values) {
+                const container = document.getElementById(`${type}-tags`);
+                container.innerHTML = '';
+                values.forEach(value => addTag(type, value));
+            }
+
+            function addTag(type, value) {
+                const container = document.getElementById(`${type}-tags`);
+                const existing = Array.from(container.querySelectorAll('.tag')).find(t => t.dataset.value === value);
+                if (existing) return;
+
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.dataset.value = value;
+                tag.innerHTML = `${value} <button type="button">×</button>`;
+                tag.querySelector('button').onclick = () => {
+                    tag.remove();
+                    if (type === 'holidays') {
+                        const newDates = getTagsValues('holidays');
+                        holidaysPicker.setDate(newDates);
+                    }
+                };
+                container.appendChild(tag);
+            }
+            
+            function getTagsValues(type) {
+                return Array.from(document.getElementById(`${type}-tags`).querySelectorAll('.tag')).map(t => t.dataset.value);
+            }
+            
+            // --- LOGIQUE DE L'ÉTAPE 4 ---
+            finishSetupBtn.addEventListener('click', function() {
+                const formateursData = [];
+                formateursTableBody.querySelectorAll('tr').forEach(row => {
+                    formateursData.push({
+                        nom: row.querySelector('.nom').textContent,
+                        masse_horaire: row.querySelector('.masse_horaire').value,
+                        matricule: row.querySelector('.matricule').value,
+                        email: row.querySelector('.email').value
+                    });
+                });
+
+                const finalData = {
+                    excelData: rawExcelData,
+                    formateursData: formateursData,
+                    holidays: getTagsValues('holidays'),
+                    vacations: getTagsValues('vacations'),
+                    espaces: document.getElementById('espaces').value.trim().split('\n').filter(Boolean)
+                };
+
+                this.innerHTML = 'Sauvegarde en cours... <i class="fas fa-spinner fa-spin"></i>';
+                this.disabled = true;
+
+                fetch('../api/setup/complete_setup.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(finalData)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        window.location.href = 'admin.html';
+                    } else {
+                        feedbacks.step4.textContent = result.message || "Erreur lors de la sauvegarde.";
+                        this.innerHTML = 'Terminer la Configuration';
+                        this.disabled = false;
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
