@@ -1,7 +1,13 @@
 <?php
 // /gestion_edt/index.php
-require_once __DIR__ . '/config/security.php';
 
+
+// On inclut le fichier qui contient la fonction secure_log() et les autres
+require_once 'config/security.php';
+
+
+// Démarrage de session sécurisé
+// ...
 // Démarrage de session sécurisé
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

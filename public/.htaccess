@@ -14,15 +14,6 @@ Options -Indexes
     Require all denied
 </FilesMatch>
 
-# Autoriser seulement les fichiers HTML, CSS, JS et images
-<FilesMatch "\.(html|css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$">
-    Require all granted
-</FilesMatch>
-
-# Bloquer l'accès aux fichiers sensibles
-<Files "*.json">
-    Require all denied
-</Files>
 
 <Files "*.xml">
     Require all denied

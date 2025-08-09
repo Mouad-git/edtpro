@@ -5,7 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- AJOUTÉ : On a besoin de Font Awesome pour les icônes d'œil -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <title>Inscription - Gestionnaire EDT</title>
     <style>
@@ -74,30 +73,28 @@
                       </div>
                       
                       <input type="hidden" name="nom_etablissement" id="nom_etablissement" required>
-                      <!-- === AJOUTEZ CETTE LIGNE === -->
                       <input type="hidden" name="complexe" id="complexe" required>
                     
-                    <!-- ===== MODIFICATION : CHAMP EMAIL AVEC DOMAINE FIXE ===== -->
+                    <!-- ===== CHAMP EMAIL AVEC DOMAINE SÉLECTIONNABLE ===== -->
                     <div class="py-2">
                         <span class="mb-2 text-md">Email</span>
-                        <!-- Conteneur stylisé pour ressembler à un seul champ de saisie -->
                         <div class="flex items-center border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-offset-0 focus-within:ring-black transition-all duration-300">
                             <input type="text"
                                    class="w-full p-2 border-none rounded-l-md focus:outline-none"
                                    name="email_username"
                                    id="email_username"
                                    required
-                                   placeholder="identifiant.ofppt"
+                                   placeholder="identifiant"
                                    autocomplete="username" />
-                            <span class="whitespace-nowrap bg-gray-50 p-2 text-gray-500 rounded-r-md">
-                                @ofppt.ma
-                            </span>
+                            <select id="email_domain"
+                                    class="bg-gray-50 p-2 text-gray-500 rounded-r-md border-l border-gray-300 focus:outline-none">
+                                <option value="@gmail.com">@gmail.com</option>
+                                <option value="@ofppt.ma">@ofppt.ma</option>
+                            </select>
                         </div>
-                        <!-- Champ caché qui enverra l'email complet au serveur -->
                         <input type="hidden" name="email" id="email" />
                     </div>
                     <!-- ========================================================== -->
-
 
                     <!-- Champ : Mot de passe -->
                     <div class="py-2 relative">
@@ -139,6 +136,153 @@
         </div>
     </div>
 
-    <script src="/gestion_edt/public/assets/js/register.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            
+            // --- LOGIQUE DE CHARGEMENT DES ÉTABLISSEMENTS ---
+            const complexeSelect = document.getElementById('complexeSelect');
+            const etablissementSelect = document.getElementById('etablissementSelect');
+            const hiddenEtablissementInput = document.getElementById('nom_etablissement');
+    
+            try {
+                const response = await fetch('data/etablissements.json');
+                if (!response.ok) throw new Error("Le fichier etablissements.json n'a pas pu être chargé.");
+                const etablissementsParComplexe = await response.json();
+    
+                const complexes = Object.keys(etablissementsParComplexe).sort();
+                complexes.forEach(complexe => {
+                    const option = new Option(complexe, complexe);
+                    complexeSelect.appendChild(option);
+                });
+    
+                complexeSelect.addEventListener('change', function() {
+                    const selectedComplexe = this.value;
+                    etablissementSelect.innerHTML = '<option value="">-- Sélectionnez un établissement --</option>';
+                    hiddenEtablissementInput.value = '';
+
+                    document.getElementById('complexe').value = selectedComplexe;
+    
+                    if (selectedComplexe) {
+                        etablissementSelect.disabled = false;
+                        etablissementsParComplexe[selectedComplexe].sort().forEach(etab => {
+                            etablissementSelect.appendChild(new Option(etab, etab));
+                        });
+                    } else {
+                        etablissementSelect.disabled = true;
+                    }
+                });
+                
+                etablissementSelect.addEventListener('change', function() {
+                    hiddenEtablissementInput.value = this.value;
+                });
+    
+            } catch (error) {
+                console.error("Erreur critique lors du chargement des établissements:", error);
+                complexeSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                complexeSelect.disabled = true;
+                etablissementSelect.disabled = true;
+            }
+            
+            // --- GESTION DE L'EMAIL AVEC DOMAINE DYNAMIQUE (VERSION CORRIGÉE) ---
+            const emailUsernameInput = document.getElementById('email_username');
+            const emailDomainSelect = document.getElementById('email_domain');
+            const emailHiddenInput = document.getElementById('email');
+
+            // Une fonction pour mettre à jour l'email complet
+            function updateFullEmail() {
+                // On combine l'identifiant et le domaine sélectionné
+                const username = emailUsernameInput.value;
+                const domain = emailDomainSelect.value;
+                emailHiddenInput.value = `${username}${domain}`;
+            }
+
+            // On écoute les changements sur les deux champs
+            if (emailUsernameInput && emailDomainSelect && emailHiddenInput) {
+                emailUsernameInput.addEventListener('input', updateFullEmail);
+                emailDomainSelect.addEventListener('change', updateFullEmail);
+                // On initialise la valeur au chargement de la page
+                updateFullEmail();
+            }
+            // --------------------------------------------------------------------
+
+            // --- GESTION DE LA VISIBILITÉ DU MOT DE PASSE ---
+            const passwordInput = document.getElementById("mot_de_passe");
+            const toggleIcon = document.getElementById("togglePasswordIcon");
+
+            toggleIcon.addEventListener("click", function () {
+                const isPassword = passwordInput.type === "password";
+                passwordInput.type = isPassword ? "text" : "password";
+                toggleIcon.src = isPassword
+                  ? "https://img.icons8.com/fluency-systems-regular/24/visible--v1.png"
+                  : "https://img.icons8.com/fluency-systems-regular/24/invisible.png";
+            });
+
+            const confirmPasswordInput = document.getElementById("confirm_mot_de_passe");
+            const toggleConfirmIcon = document.getElementById("toggleConfirmPasswordIcon");
+
+            toggleConfirmIcon.addEventListener("click", function () {
+                const isPassword = confirmPasswordInput.type === "password";
+                confirmPasswordInput.type = isPassword ? "text" : "password";
+                toggleConfirmIcon.src = isPassword
+                    ? "https://img.icons8.com/fluency-systems-regular/24/visible--v1.png"
+                    : "https://img.icons8.com/fluency-systems-regular/24/invisible.png";
+            });
+
+            
+            // --- GESTION DE LA SOUMISSION DU FORMULAIRE ---
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const feedbackEl = document.getElementById('feedback');
+                const passwordErrorEl = document.getElementById('password-error');
+                feedbackEl.textContent = '';
+                passwordErrorEl.textContent = '';
+
+                const password = document.getElementById('mot_de_passe').value;
+                const confirmPassword = document.getElementById('confirm_mot_de_passe').value;
+                
+                const nomEtablissement = document.getElementById('nom_etablissement').value;
+                if (!nomEtablissement) {
+                    feedbackEl.className = 'feedback-error';
+                    feedbackEl.textContent = "Veuillez sélectionner un complexe ET un établissement.";
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    passwordErrorEl.textContent = "Les mots de passe ne correspondent pas.";
+                    return;
+                }
+                if (password.length < 6) {
+                    passwordErrorEl.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
+                    return;
+                }
+                
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                
+                delete data.confirm_mot_de_passe;
+                delete data.email_username;
+
+                fetch('../api/auth/register.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success && result.action === 'verify') {
+                        window.location.href = `verify.html?email=${encodeURIComponent(result.email)}`;
+                    } else {
+                        feedbackEl.className = 'feedback-error';
+                        feedbackEl.textContent = result.message || "Une erreur est survenue.";
+                    }
+                })
+                .catch(error => {
+                    feedbackEl.className = 'feedback-error';
+                    feedbackEl.textContent = "Erreur de communication avec le serveur.";
+                });
+            });
+        });
+    </script>
 </body>
 </html>

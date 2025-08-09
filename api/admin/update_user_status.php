@@ -1,11 +1,5 @@
 <?php
-
-// --- LIGNES DE DÉBOGAGE OBLIGATOIRES ---
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-// ------------------------------------
-
+// api/admin/update_user_status.php
 require_once '../auth/session_check_admin.php';
 require_once '../../config/database.php';
 header('Content-Type: application/json');
@@ -14,16 +8,31 @@ $data = json_decode(file_get_contents("php://input"));
 $userId = $data->user_id ?? null;
 $newStatus = $data->new_status ?? null;
 
-// Validation
-if (!$userId || !in_array($newStatus, ['approved', 'rejected'])) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Données invalides.']);
-    exit;
-}
+// ... (validation des données) ...
 
 try {
-    $stmt = $pdo->prepare("UPDATE utilisateurs SET status = ? WHERE id = ?");
-    $success = $stmt->execute([$newStatus, $userId]);
+    if ($newStatus === 'deleted') {
+        // Logique de suppression
+        $stmt = $pdo->prepare("DELETE FROM utilisateurs WHERE id = ?");
+        $success = $stmt->execute([$userId]);
+    } else {
+        // Logique de mise à jour
+        $dateColumn = null;
+        if ($newStatus === 'approved') $dateColumn = 'date_approbation';
+        if ($newStatus === 'rejected') $dateColumn = 'date_rejet';
+
+        $sql = "UPDATE utilisateurs SET status = ?";
+        $params = [$newStatus];
+        if ($dateColumn) {
+            $sql .= ", {$dateColumn} = NOW()";
+        }
+        $sql .= " WHERE id = ?";
+        $params[] = $userId;
+        
+        $stmt = $pdo->prepare($sql);
+        $success = $stmt->execute($params);
+    }
+    
     echo json_encode(['success' => $success]);
 } catch (Exception $e) {
     http_response_code(500);

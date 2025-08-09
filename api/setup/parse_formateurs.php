@@ -55,17 +55,7 @@ try {
     $formateursData = [];
     $processedNames = [];
 
-    function getFormattedName($name) {
-        if (!$name || !is_string($name)) return '';
-        $words = array_filter(preg_split('/\s+/', trim(strtoupper($name))));
-        $wordCount = count($words);
-        if ($wordCount === 0) return '';
-        if ($wordCount <= 1) return $words[0];
-        if ($wordCount >= 3 && mb_strlen($words[1]) <= 3) return $words[1] . ' ' . $words[2];
-        $dernierMot = $words[$wordCount - 1];
-        if (mb_strlen($dernierMot) <= 2 && $wordCount > 1) return $words[$wordCount - 2] . ' ' . $dernierMot;
-        return $dernierMot;
-    }
+
 
     foreach ($dataRows as $row) {
         // ... (Le reste de votre logique pour extraire les formateurs est inchangé)

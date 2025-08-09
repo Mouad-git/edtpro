@@ -1,4 +1,5 @@
 <?php
+
 // api/auth/register.php
 require_once '../../config/security.php';
 require_once '../../config/database.php';
@@ -6,7 +7,7 @@ require_once '../../vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as PHPMailerException;
-use PDOException;
+
 
 // Démarrage de session sécurisé
 if (session_status() === PHP_SESSION_NONE) {
@@ -21,16 +22,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Méthode non autorisée']);
     exit;
 }
-
+/* DÉSACTIVÉ POUR LE DÉVELOPPEMENT
+//
 // Rate limiting pour l'inscription
 $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-if (!check_rate_limit("register_$ip", 3, 3600)) { // 3 tentatives max par heure
+if (!check_rate_limit("register_$ip", 50, 60)) { // 50 tentatives max par minute
     secure_log("Rate limit dépassé pour l'inscription - IP: $ip", 'WARNING');
     http_response_code(429);
     echo json_encode(['success' => false, 'message' => 'Trop de tentatives d\'inscription. Veuillez réessayer dans 1 heure.']);
     exit;
 }
-
+*/
 // Récupération et validation des données
 $input = file_get_contents("php://input");
 $data = json_decode($input);
@@ -96,9 +98,9 @@ try {
         $utilisateur_id = $existingUser['id'];
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         secure_update($pdo, 'utilisateurs', 
-            ['nom_complet' => $nom_complet, 'mot_de_passe' => $hashed_password], 
-            'id = ?', [$utilisateur_id]
-        );
+    ['nom_complet' => $nom_complet, 'mot_de_passe' => $hashed_password], 
+    ['id' => $utilisateur_id] // On passe un tableau associatif pour la condition WHERE
+);
     } else {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         $utilisateur_id = secure_insert($pdo, 'utilisateurs', [
@@ -209,9 +211,19 @@ HTML;
     echo json_encode(['success' => false, 'message' => 'Erreur lors de l\'envoi de l\'email de vérification. Veuillez réessayer.']);
 } catch (Exception $e) {
     // Toutes les autres erreurs
-    if ($pdo->inTransaction()) $pdo->rollBack();
-    secure_log("Erreur inattendue lors de l'inscription: " . $e->getMessage() . " - IP: $ip", 'ERROR');
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    
+    // --- BLOC DE DÉBOGAGE TEMPORAIRE ---
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Une erreur inattendue est survenue. Veuillez réessayer.']);
+    // Affichez le message d'erreur réel, le fichier et la ligne
+    echo json_encode([
+        'success' => false, 
+        'message' => 'ERREUR PHP CAPTURÉE : ' . $e->getMessage(),
+        'file'    => 'Fichier : ' . $e->getFile(),
+        'line'    => 'Ligne : ' . $e->getLine()
+    ]);
+    // --- FIN DU BLOC DE DÉBOGAGE ---
 }
 ?>

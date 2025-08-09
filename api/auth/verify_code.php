@@ -1,5 +1,5 @@
 <?php
-//require_once '../../config/security.php'; // Toujours en premier !
+require_once '../../config/security.php'; // Toujours en premier !
 /**
  * API pour la Vérification du Code d'Inscription
  *
