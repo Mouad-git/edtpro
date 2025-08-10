@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Administrateur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root {
+            --primary: #2563eb; --primary-light: #dbeafe; --secondary: #64748b;
+            --success: #16a34a; --danger: #dc2626; --warning: #d97706; --background: #f8fafc;
+        }
+        body { background-color: white; font-family: 'Segoe UI', system-ui, sans-serif; color: #1e293b; }
+        
+        .tabs-container { background-color: #f8fafc; padding: 0 1rem; }
+        .tab-button {
+            padding: 1rem; font-weight: 600; color: #64748b;
+            border-bottom: 3px solid transparent; transition: all 0.2s ease;
+            position: relative; background: none; border-top: 3px solid transparent;
+            border-left: none; border-right: none; cursor: pointer; font-size: 1rem;
+        }
+        .tab-button:hover { color: var(--primary); background-color: #f1f5f9; }
+        .tab-button.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-button .badge {
+            background: #e0e7ff; color: #4338ca; border-radius: 6px;
+            width: auto; min-width: 24px; height: 24px; padding: 0 6px;
+            font-size: 0.8rem; display: inline-flex; align-items: center; justify-content: center;
+            margin-left: 8px;
+        }
+        .tab-button.active .badge { background-color: var(--primary); color: white; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03); overflow: hidden; border: 1px solid #e2e8f0; }
+        .table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .table th { background-color: #f1f5f9; color: #334155; font-weight: 600; padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .table td { padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; }
+        .table tr:last-child td { border-bottom: none; }
+        .table tr:hover { background-color: #f8fafc; }
+        
+        .btn { padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-success:hover { background-color: #15803d; }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-danger:hover { background-color: #b91c1c; }
+        .btn-warning { background-color: var(--warning); color: white; }
+        .btn-warning:hover { background-color: #b45309; }
+        .btn-outline { background-color: transparent; border: 1px solid #cbd5e1; color: #475569; }
+        .btn-outline:hover { background-color: #f1f5f9; border-color: #94a3b8; }
+        
+        .empty-state { padding: 3rem; text-align: center; color: #94a3b8; }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; color: #e2e8f0; }
+        
+        .stats-card { background: white; border-radius: 10px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0; }
+        .stats-card .value { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .stats-card .title { color: #64748b; font-size: 0.9rem; }
+        .stats-card .icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+        .pending .icon { background: #fffbeb; color: #d97706; }
+        .approved .icon { background: #f0fdf4; color: #16a34a; }
+        .rejected .icon { background: #fef2f2; color: #dc2626; }
+        .blocked .icon { background: #f1f5f9; color: #475569; }
+
+        nav { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .logout-btn { color: #64748b; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; border: 1px solid #e2e8f0; background-color: white; }
+        .logout-btn:hover { color: #dc2626; background-color: #fef2f2; border-color: #fecaca; text-decoration: none; }
+        .logout-btn i { font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <img src="assets/images/logo_edtpro.png" style="height: 80px; width: auto;" id="logo" alt="Logo">
+                <div><a href="../api/auth/logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i>Déconnexion</a></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <div class="mb-8"><h1 class="text-2xl md:text-3xl font-bold text-slate-800">Gestion des Directeurs</h1><p class="text-slate-600 mt-2">Approbation et gestion des demandes d'accès des directeurs</p></div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="stats-card pending"><div class="icon"><i class="fas fa-clock text-xl"></i></div><div id="stat-pending" class="value text-amber-600">0</div><div class="title">En Attente</div></div>
+            <div class="stats-card approved"><div class="icon"><i class="fas fa-check-circle text-xl"></i></div><div id="stat-approved" class="value text-green-600">0</div><div class="title">Approuvés</div></div>
+            <div class="stats-card rejected"><div class="icon"><i class="fas fa-times-circle text-xl"></i></div><div id="stat-rejected" class="value text-red-600">0</div><div class="title">Rejetés</div></div>
+            <div class="stats-card blocked"><div class="icon"><i class="fas fa-ban text-xl"></i></div><div id="stat-blocked" class="value text-slate-600">0</div><div class="title">Bloqués</div></div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm mb-6">
+            <div class="tabs-container flex overflow-x-auto" id="admin-tabs">
+                <button class="tab-button active" data-target="panel-pending">En Attente<span id="badge-pending" class="badge">0</span></button>
+                <button class="tab-button" data-target="panel-approved">Approuvés<span id="badge-approved" class="badge">0</span></button>
+                <button class="tab-button" data-target="panel-rejected">Rejetés<span id="badge-rejected" class="badge">0</span></button>
+                <button class="tab-button" data-target="panel-blocked">Bloqués<span id="badge-blocked" class="badge">0</span></button>
+            </div>
+        </div>
+
+        <div>
+            <div id="panel-pending" class="tab-content active">
+                <div class="card"><div class="overflow-x-auto"><table class="table">
+                    <thead><tr><th>Nom</th><th>Email</th><th>Établissement</th><th class="text-center">Actions</th></tr></thead>
+                    <tbody id="pending-users-table"></tbody>
+                </table></div></div>
+            </div>
+            <div id="panel-approved" class="tab-content">
+                <div class="card"><div class="overflow-x-auto"><table class="table">
+                    <thead><tr><th>Nom</th><th>Email</th><th>Établissement</th><th class="text-center">Actions</th></tr></thead>
+                    <tbody id="approved-users-table"></tbody>
+                </table></div></div>
+            </div>
+            <div id="panel-rejected" class="tab-content">
+                <div class="card"><div class="overflow-x-auto"><table class="table">
+                    <thead><tr><th>Nom</th><th>Email</th><th>Établissement</th><th class="text-center">Actions</th></tr></thead>
+                    <tbody id="rejected-users-table"></tbody>
+                </table></div></div>
+            </div>
+             <div id="panel-blocked" class="tab-content">
+                <div class="card"><div class="overflow-x-auto"><table class="table">
+                    <thead><tr><th>Nom</th><th>Email</th><th>Établissement</th><th class="text-center">Actions</th></tr></thead>
+                    <tbody id="blocked-users-table"></tbody>
+                </table></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', checkAdminSession);
+
+        async function checkAdminSession() {
+            try {
+                const response = await fetch('../api/auth/verify_admin_session.php');
+                if (!response.ok) { window.location.href = 'login.html'; return; }
+                loadAllUsers();
+                setupTabNavigation();
+            } catch (error) { window.location.href = 'login.html'; }
+        }
+
+        async function loadAllUsers() {
+            const tables = {
+                pending: document.getElementById('pending-users-table'),
+                approved: document.getElementById('approved-users-table'),
+                rejected: document.getElementById('rejected-users-table'),
+                blocked: document.getElementById('blocked-users-table'),
+            };
+            const loadingRow = (cols) => `<tr><td colspan="${cols}" class="text-center py-10 text-slate-500">Chargement...</td></tr>`;
+            Object.values(tables).forEach(t => t.innerHTML = loadingRow(4));
+
+            try {
+                const response = await fetch('../api/admin/get_all_users.php');
+                const result = await response.json();
+
+                if (result.success) {
+                    const pending = result.data.filter(u => u.status === 'pending');
+                    const approved = result.data.filter(u => u.status === 'approved');
+                    const rejected = result.data.filter(u => u.status === 'rejected');
+                    const blocked = result.data.filter(u => u.status === 'blocked');
+                    
+                    updateStatsAndBadges(pending, approved, rejected, blocked);
+                    renderPendingTable(pending);
+                    renderApprovedTable(approved);
+                    renderRejectedTable(rejected);
+                    renderBlockedTable(blocked);
+                } else { throw new Error(result.message); }
+            } catch (error) {
+                const errorRow = `<tr><td colspan="4" class="text-center py-10 text-red-500">Erreur: ${error.message}</td></tr>`;
+                Object.values(tables).forEach(t => t.innerHTML = errorRow);
+            }
+        }
+
+        function updateStatsAndBadges(pending, approved, rejected, blocked) {
+            document.getElementById('stat-pending').textContent = pending.length;
+            document.getElementById('stat-approved').textContent = approved.length;
+            document.getElementById('stat-rejected').textContent = rejected.length;
+            document.getElementById('stat-blocked').textContent = blocked.length;
+            
+            document.getElementById('badge-pending').textContent = pending.length;
+            document.getElementById('badge-approved').textContent = approved.length;
+            document.getElementById('badge-rejected').textContent = rejected.length;
+            document.getElementById('badge-blocked').textContent = blocked.length;
+        }
+
+        function renderEmptyState(icon, message) {
+            return `<tr><td colspan="4" class="empty-state"><i class="fas fa-${icon}"></i><p>${message}</p></td></tr>`;
+        }
+
+        function renderPendingTable(users) {
+            const tableBody = document.getElementById('pending-users-table');
+            if (users.length === 0) { tableBody.innerHTML = renderEmptyState('inbox', 'Aucune demande en attente.'); return; }
+            tableBody.innerHTML = users.map(user => `
+                <tr>
+                    <td class="font-medium">${user.nom_complet}</td><td>${user.email}</td><td>${user.nom_etablissement}</td>
+                    <td class="text-center"><div class="flex justify-center gap-2">
+                        <button onclick="updateUserStatus(${user.id}, 'approved')" class="btn btn-success"><i class="fas fa-check"></i>Approuver</button>
+                        <button onclick="updateUserStatus(${user.id}, 'rejected')" class="btn btn-danger"><i class="fas fa-times"></i>Rejeter</button>
+                    </div></td>
+                </tr>`).join('');
+        }
+        
+        function renderApprovedTable(users) {
+             const tableBody = document.getElementById('approved-users-table');
+             if (users.length === 0) { tableBody.innerHTML = renderEmptyState('user-check', 'Aucun directeur approuvé.'); return; }
+             tableBody.innerHTML = users.map(user => `
+                <tr>
+                    <td class="font-medium">${user.nom_complet}</td><td>${user.email}</td><td>${user.nom_etablissement}</td>
+                    <td class="text-center"><div class="flex justify-center gap-2">
+                        <button onclick="updateUserStatus(${user.id}, 'blocked')" class="btn btn-warning"><i class="fas fa-ban"></i>Bloquer</button>
+                        <button onclick="updateUserStatus(${user.id}, 'deleted')" class="btn btn-outline"><i class="fas fa-trash-alt"></i>Supprimer</button>
+                    </div></td>
+                </tr>`).join('');
+        }
+
+        function renderRejectedTable(users) {
+            const tableBody = document.getElementById('rejected-users-table');
+            if (users.length === 0) { tableBody.innerHTML = renderEmptyState('user-times', 'Aucune inscription rejetée.'); return; }
+            tableBody.innerHTML = users.map(user => `
+                 <tr>
+                    <td class="font-medium">${user.nom_complet}</td><td>${user.email}</td><td>${user.nom_etablissement}</td>
+                    <td class="text-center"><div class="flex justify-center gap-2">
+                        <button onclick="updateUserStatus(${user.id}, 'approved')" class="btn btn-success"><i class="fas fa-redo-alt"></i>Ré-approuver</button>
+                        <button onclick="updateUserStatus(${user.id}, 'deleted')" class="btn btn-outline"><i class="fas fa-trash-alt"></i>Supprimer</button>
+                    </div></td>
+                </tr>`).join('');
+        }
+
+        function renderBlockedTable(users) {
+            const tableBody = document.getElementById('blocked-users-table');
+            if (users.length === 0) { tableBody.innerHTML = renderEmptyState('user-slash', 'Aucun directeur bloqué.'); return; }
+            tableBody.innerHTML = users.map(user => `
+                 <tr>
+                    <td class="font-medium">${user.nom_complet}</td><td>${user.email}</td><td>${user.nom_etablissement}</td>
+                    <td class="text-center"><div class="flex justify-center gap-2">
+                        <button onclick="updateUserStatus(${user.id}, 'approved')" class="btn btn-success"><i class="fas fa-check-circle"></i>Débloquer</button>
+                        <button onclick="updateUserStatus(${user.id}, 'deleted')" class="btn btn-danger"><i class="fas fa-trash-alt"></i>Supprimer</button>
+                    </div></td>
+                </tr>`).join('');
+        }
+        
+        async function updateUserStatus(userId, status) {
+            const actions = { 
+                'approved': 'approuver', 
+                'rejected': 'rejeter', 
+                'deleted': 'supprimer définitivement',
+                'blocked': 'bloquer'
+            };
+            const verb = actions[status] || 'mettre à jour';
+            if (!confirm(`Êtes-vous sûr de vouloir ${verb} cet utilisateur ?`)) return;
+
+            try {
+                const response = await fetch('../api/admin/update_user_status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, new_status: status })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    // Affiche une alerte plus simple et recharge les données
+                    alert(`L'utilisateur a été ${verb} avec succès.`);
+                    loadAllUsers();
+                } else {
+                    throw new Error(result.message || "Impossible de mettre à jour le statut.");
+                }
+            } catch (error) { 
+                alert("Une erreur de communication est survenue: " + error.message); 
+            }
+        }
+        
+        function setupTabNavigation() {
+            const tabsContainer = document.getElementById('admin-tabs');
+            tabsContainer.addEventListener('click', (e) => {
+                const targetButton = e.target.closest('.tab-button');
+                if (targetButton) {
+                    tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    targetButton.classList.add('active');
+                    const targetId = targetButton.dataset.target;
+                    document.querySelectorAll('.tab-content').forEach(panel => {
+                        panel.classList.toggle('active', panel.id === targetId);
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

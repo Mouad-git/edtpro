@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Initiale - Version Finale</title>
+    
+    <!-- Dépendances externes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/fr.js"></script>
+
+    <!-- Styles (issus de votre version préférée) -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #f8fafc; /* Fond plus doux */
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05), 0 5px 10px rgba(0,0,0,0.02);
+        }
+        
+        .stepper-container {
+            position: relative;
+            padding: 2rem 2rem 2rem;
+            height: 100px;
+        }
+        
+        .progress-line {
+            position: absolute;
+            top: 50px;
+            left: 60px;
+            right: 60px;
+            height: 4px;
+            background: #e2e8f0;
+            z-index: 1;
+            border-radius: 2px;
+        }
+        
+        .progress-line-filled {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: #3b82f6;
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+            border-radius: 2px;
+        }
+        
+        .stepper-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+            flex: 1;
+        }
+        
+        .progress-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #64748b;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            font-size: 18px;
+        }
+        
+        .progress-circle.active {
+            background: #3b82f6;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2);
+        }
+        
+        .progress-circle.completed {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .progress-circle.completed::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 18px;
+        }
+        
+        .progress-circle.success {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.2);
+        }
+
+        .progress-circle.success::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 18px;
+        }
+        
+        .progress-label {
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+        
+        .progress-label.active { color: #1e40af; }
+        .progress-label.completed { color: #1e293b; }
+        
+        .step { display: none; padding: 32px; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .step.active { display: block; }
+        
+        .step-header { text-align: center; margin-bottom: 32px; }
+        .step-title { font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
+        .step-subtitle { font-size: 16px; color: #64748b; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+        
+        .form-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; transition: all 0.3s ease; max-width: 800px; margin: 0 auto; }
+        .form-card:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+        
+        .upload-area { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: #f8fafc; }
+        .upload-area:hover { border-color: #3b82f6; background: #f0f7ff; }
+        .upload-icon { font-size: 48px; color: #3b82f6; margin-bottom: 16px; }
+        .file-input { display: none; }
+        
+        .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2); }
+        .btn-outline { background: white; color: #64748b; border: 1px solid #cbd5e1; }
+        .btn-outline:hover { background: #f8fafc; border-color: #94a3b8; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(5, 150, 105, 0.2); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+        .btn-group { display: flex; gap: 16px; margin-top: 32px; justify-content: center; }
+        
+        .form-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        .form-table th { background: #f1f5f9; padding: 12px 16px; text-align: left; font-weight: 600; color: #334155; font-size: 14px; }
+        .form-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; color: #334155; }
+        .form-table tr:hover { background: #f8fafc; }
+        
+        .form-input { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; transition: all 0.2s; }
+        .form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        
+        .tags-container { margin-top: 16px; padding: 12px; min-height: 80px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; }
+        .tag { display: inline-flex; align-items: center; background-color: #dbeafe; color: #1d4ed8; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 500; animation: popIn 0.3s ease-out; }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .tag button { margin-left: 8px; background: none; border: none; cursor: pointer; color: #3b82f6; font-size: 14px; line-height: 1; opacity: 0.7; }
+        .tag button:hover { opacity: 1; }
+        
+        .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+        .form-col { flex: 1; }
+        .form-label { display: block; font-weight: 600; color: #334155; margin-bottom: 8px; font-size: 14px; }
+        .form-hint { font-size: 13px; color: #64748b; margin-bottom: 8px; }
+        
+        .feedback { text-align: center; font-weight: 500; margin-top: 16px; }
+        .feedback-error { color: #b91c1c; }
+        
+        .date-input-container { position: relative; margin-bottom: 8px; }
+        .date-input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        input.date-picker { padding-left: 36px !important; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="form-container w-full max-w-4xl">
+        
+        <!-- Barre de progression -->
+        <div class="stepper-container">
+            <div class="progress-line"><div class="progress-line-filled" id="progress-line-filled"></div></div>
+            <div class="flex items-start justify-between">
+                <div class="stepper-item"><div id="progress-circle-1" class="progress-circle">1</div><div id="progress-label-1" class="progress-label">Fichier</div></div>
+                <div class="stepper-item"><div id="progress-circle-2" class="progress-circle">2</div><div id="progress-label-2" class="progress-label">Formateurs</div></div>
+                <div class="stepper-item"><div id="progress-circle-3" class="progress-circle">3</div><div id="progress-label-3" class="progress-label">Calendrier</div></div>
+                <div class="stepper-item"><div id="progress-circle-4" class="progress-circle">4</div><div id="progress-label-4" class="progress-label">Espaces</div></div>
+            </div>
+        </div>
+        
+        <!-- Contenu des étapes -->
+        <div id="step1" class="step">
+            <div class="step-header"><h2 class="step-title">Étape 1 : Importez votre fichier de base</h2><p class="step-subtitle">Veuillez sélectionner le fichier Excel "AvancementProgramme" fourni. Le système extraira automatiquement la liste de vos formateurs.</p></div>
+            <div class="form-card">
+                <div class="upload-area" id="upload-area"><div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div><p class="text-lg font-semibold text-gray-700">Cliquez pour choisir un fichier</p><p id="fileName" class="text-gray-500 mt-2 font-medium"></p></div>
+                <input type="file" id="excelFile" class="file-input" accept=".xlsx, .xls">
+                <div id="step1-feedback" class="feedback feedback-error hidden"></div>
+                <div class="btn-group"><button id="step1NextBtn" class="btn btn-primary flex-1" disabled>Suivant <i class="fas fa-arrow-right ml-2"></i></button></div>
+            </div>
+        </div>
+
+        <div id="step2" class="step">
+            <div class="step-header"><h2 class="step-title">Étape 2 : Vérifiez les informations des formateurs</h2><p class="step-subtitle">Les e-mails et matricules ont été générés automatiquement. Veuillez les vérifier et les corriger si nécessaire.</p></div>
+            <div class="form-card">
+                <div class="overflow-x-auto border rounded-lg max-h-[50vh]">
+                    <table class="form-table">
+                        <thead><tr><th>Nom du Formateur</th><th class="w-32">Masse Horaire Stat.</th><th class="w-40">Matricule</th><th>E-mail</th></tr></thead>
+                        <tbody id="formateurs-table-body"></tbody>
+                    </table>
+                </div>
+                <div class="btn-group"><button id="step2PrevBtn" class="btn btn-outline flex-1"><i class="fas fa-arrow-left mr-2"></i> Précédent</button><button id="step2NextBtn" class="btn btn-primary flex-1">Suivant <i class="fas fa-arrow-right ml-2"></i></button></div>
+            </div>
+        </div>
+
+        <div id="step3" class="step">
+            <div class="step-header"><h2 class="step-title">Étape 3 : Configurez le calendrier de l'année</h2><p class="step-subtitle">Définissez les jours fériés et les périodes de vacances pour votre établissement.</p></div>
+            <div class="form-card">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label class="form-label">Jours fériés</label><p class="form-hint">Les jours fériés pour le Maroc sont pré-chargés. Vous pouvez en ajouter ou en retirer.</p>
+                        <div class="date-input-container"><i class="fas fa-calendar-day date-input-icon"></i><input type="text" id="holidays-picker" class="form-input date-picker" placeholder="Ajouter un jour férié..."></div>
+                        <div id="holidays-tags" class="tags-container"></div>
+                    </div>
+                    <div class="form-col">
+                        <label class="form-label">Périodes de vacances</label><p class="form-hint">Saisissez un nom, sélectionnez une période et cliquez sur "Ajouter".</p>
+                        <input type="text" id="vacation-name-input" class="form-input mb-2" placeholder="Nom (ex: Vacances de Printemps)">
+                        <div class="flex gap-2">
+                            <div class="date-input-container flex-grow"><i class="fas fa-calendar-week date-input-icon"></i><input type="text" id="vacations-picker" class="form-input date-picker" placeholder="Sélectionnez une période..."></div>
+                            <button id="add-vacation-btn" class="btn btn-primary"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div id="vacation-feedback" class="feedback feedback-error mt-2 hidden"></div>
+                        <div id="vacations-tags" class="tags-container"></div>
+                    </div>
+                </div>
+                <div class="btn-group"><button id="step3PrevBtn" class="btn btn-outline flex-1"><i class="fas fa-arrow-left mr-2"></i> Précédent</button><button id="step3NextBtn" class="btn btn-primary flex-1">Suivant <i class="fas fa-arrow-right ml-2"></i></button></div>
+            </div>
+        </div>
+
+        <div id="step4" class="step">
+            <div class="step-header"><h2 class="step-title">Étape 4 : Listez vos espaces de travail</h2><p class="step-subtitle">Ajoutez vos salles, amphis, laboratoires, etc. N'oubliez pas d'inclure "TEAMS" pour les cours à distance.</p></div>
+            <div class="form-card">
+                <div class="flex gap-2 mb-4"><input type="text" id="espace-input" class="form-input flex-grow" placeholder="Salle A101"><button id="ajouter-espace" class="btn btn-primary"><i class="fas fa-plus mr-1"></i> Ajouter</button></div>
+                <div class="mb-4">
+                    <p class="form-hint">Suggestions :</p>
+                    <div class="flex flex-wrap gap-2 mt-2" id="common-spaces"><button class="tag" data-space="Salle A101">Salle A101</button><button class="tag" data-space="Amphi B">Amphi B</button><button class="tag" data-space="Labo Info">Labo Info</button><button class="tag" data-space="TEAMS">TEAMS</button></div>
+                </div>
+                <div id="espaces-container" class="tags-container"></div>
+                <div id="step4-feedback" class="feedback feedback-error hidden"></div>
+                <div class="btn-group"><button id="step4PrevBtn" class="btn btn-outline flex-1"><i class="fas fa-arrow-left mr-2"></i> Précédent</button><button id="finishSetupBtn" class="btn btn-success flex-1">Terminer et Sauvegarder <i class="fas fa-check ml-2"></i></button></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // --- REFERENCES DOM ---
+        const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3'), document.getElementById('step4')];
+        const progressLineFilled = document.getElementById('progress-line-filled');
+        const progressCircles = [document.getElementById('progress-circle-1'), document.getElementById('progress-circle-2'), document.getElementById('progress-circle-3'), document.getElementById('progress-circle-4')];
+        const progressLabels = [document.getElementById('progress-label-1'), document.getElementById('progress-label-2'), document.getElementById('progress-label-3'), document.getElementById('progress-label-4')];
+
+        const nextButtons = { 1: document.getElementById('step1NextBtn'), 2: document.getElementById('step2NextBtn'), 3: document.getElementById('step3NextBtn') };
+        const prevButtons = { 2: document.getElementById('step2PrevBtn'), 3: document.getElementById('step3PrevBtn'), 4: document.getElementById('step4PrevBtn') };
+        const finishButton = document.getElementById('finishSetupBtn');
+
+        const fileInput = document.getElementById('excelFile');
+        const uploadArea = document.getElementById('upload-area');
+        const fileNameLabel = document.getElementById('fileName');
+        const formateursTableBody = document.getElementById('formateurs-table-body');
+        
+        const feedbacks = {
+            step1: document.getElementById('step1-feedback'),
+            vacation: document.getElementById('vacation-feedback'),
+            step4: document.getElementById('step4-feedback')
+        };
+        
+        let rawExcelData = null; // Pour stocker la donnée brute du fichier
+
+        // --- INITIALISATION DES LIBRAIRIES ---
+        flatpickr.localize(flatpickr.l10ns.fr);
+        const holidaysPicker = flatpickr("#holidays-picker", { mode: "multiple", dateFormat: "d/m/Y", onChange: (selectedDates) => updateTagsFromPicker('holidays', selectedDates.map(d => holidaysPicker.formatDate(d, "d/m/Y"))) });
+        const vacationsPicker = flatpickr("#vacations-picker", { mode: "range", dateFormat: "d/m/Y" });
+
+
+        // --- LOGIQUE DE NAVIGATION ---
+        function goToStep(stepNumber) {
+            steps.forEach(step => step.classList.remove('active'));
+            steps[stepNumber - 1].classList.add('active');
+            updateProgress(stepNumber);
+        }
+
+        function updateProgress(currentStep) {
+            const progressPercentage = ((currentStep - 1) / (steps.length - 1)) * 100;
+            progressLineFilled.style.width = `${progressPercentage}%`;
+
+            for (let i = 0; i < steps.length; i++) {
+                const circle = progressCircles[i];
+                const label = progressLabels[i];
+                circle.innerHTML = i + 1; // Reset to number
+                circle.classList.remove('active', 'completed', 'success');
+                label.classList.remove('active', 'completed');
+
+                if (i < currentStep - 1) {
+                    circle.classList.add('completed');
+                    circle.innerHTML = ''; // Let CSS ::after show the checkmark
+                    label.classList.add('completed');
+                } else if (i === currentStep - 1) {
+                    circle.classList.add('active');
+                    label.classList.add('active');
+                }
+            }
+        }
+
+        nextButtons[1].addEventListener('click', () => handleStep1Next());
+        nextButtons[2].addEventListener('click', () => goToStep(3));
+        nextButtons[3].addEventListener('click', () => goToStep(4));
+        prevButtons[2].addEventListener('click', () => goToStep(1));
+        prevButtons[3].addEventListener('click', () => goToStep(2));
+        prevButtons[4].addEventListener('click', () => goToStep(3));
+        
+        // --- ÉTAPE 1 : FICHIER ---
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileNameLabel.textContent = this.files[0].name;
+                nextButtons[1].disabled = false;
+                feedbacks.step1.classList.add('hidden');
+            }
+        });
+
+        function handleStep1Next() {
+            if (!fileInput.files[0]) {
+                feedbacks.step1.textContent = "Veuillez sélectionner un fichier.";
+                feedbacks.step1.classList.remove('hidden');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('excelFile', fileInput.files[0]);
+            
+            setButtonLoading(nextButtons[1], true, 'Analyse...');
+            
+            // REMPLACER PAR VOTRE APPEL API RÉEL
+            // fetch('../api/setup/parse_formateurs.php', { method: 'POST', body: formData })
+            // .then(res => res.json())
+            setTimeout(() => { // Simulation d'appel API
+                const result = {
+                    success: true,
+                    rawExcelData: "BASE64_ENCODED_DATA_HERE",
+                    formateurs: [
+                        { nom: "Alexandre Martin", masse_horaire: 120, matricule: "M001", email: "alex.martin@example.com" },
+                        { nom: "Sophie Dubois", masse_horaire: 90, matricule: "M002", email: "sophie.dubois@example.com" },
+                        { nom: "Thomas Bernard", masse_horaire: 150, matricule: "M003", email: "thomas.bernard@example.com" }
+                    ]
+                };
+
+                if (result.success) {
+                    rawExcelData = result.rawExcelData;
+                    populateFormateursTable(result.formateurs);
+                    goToStep(2);
+                } else {
+                    feedbacks.step1.textContent = result.message || "Erreur lors de l'analyse du fichier.";
+                    feedbacks.step1.classList.remove('hidden');
+                }
+                setButtonLoading(nextButtons[1], false, 'Suivant');
+            }, 1500);
+        }
+
+        // --- ÉTAPE 2 : FORMATEURS ---
+        function populateFormateursTable(formateurs) {
+            formateursTableBody.innerHTML = '';
+            formateurs.forEach(f => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="font-semibold text-gray-800 nom">${f.nom}</td>
+                    <td><input type="number" class="form-input masse_horaire" value="${f.masse_horaire}"></td>
+                    <td><input type="text" class="form-input bg-gray-100 matricule" value="${f.matricule}" readonly></td>
+                    <td><input type="email" class="form-input email" value="${f.email}" placeholder="E-mail personnel..."></td>
+                `;
+                formateursTableBody.appendChild(row);
+            });
+        }
+
+        // --- ÉTAPE 3 : CALENDRIER ---
+        document.getElementById('add-vacation-btn').addEventListener('click', function() {
+            const nameInput = document.getElementById('vacation-name-input');
+            const name = nameInput.value.trim();
+            const dates = vacationsPicker.selectedDates;
+            
+            if (!name) {
+                feedbacks.vacation.textContent = "Veuillez saisir un nom pour les vacances.";
+                feedbacks.vacation.classList.remove('hidden');
+                return;
+            }
+            if (dates.length !== 2) {
+                feedbacks.vacation.textContent = "Veuillez sélectionner une période valide.";
+                feedbacks.vacation.classList.remove('hidden');
+                return;
+            }
+            feedbacks.vacation.classList.add('hidden');
+
+            const startDate = vacationsPicker.formatDate(dates[0], "d/m/Y");
+            const endDate = vacationsPicker.formatDate(dates[1], "d/m/Y");
+            const value = `${name} [${startDate} - ${endDate}]`;
+            
+            addTag('vacations', value, 'vacations-tags', null);
+            nameInput.value = '';
+            vacationsPicker.clear();
+        });
+
+        async function initializeHolidays() {
+            try {
+                // REMPLACER PAR VOTRE APPEL API RÉEL
+                // const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${new Date().getFullYear()}/MA`);
+                // const holidays = await response.json();
+                const holidays = [ // Simulation
+                    { date: '2024-01-01', localName: "Jour de l'an" }, { date: '2024-01-11', localName: "Manifeste de l'indépendance" },
+                    { date: '2024-05-01', localName: "Fête du Travail" }, { date: '2024-07-30', localName: "Fête du Trône" }
+                ];
+                const holidayDates = holidays.map(h => {
+                    const d = new Date(h.date);
+                    return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
+                });
+                holidaysPicker.setDate(holidayDates, true);
+            } catch (error) {
+                console.error("Impossible de charger les jours fériés.");
+            }
+        }
+        
+        function updateTagsFromPicker(type, values) {
+            const container = document.getElementById(`${type}-tags`);
+            container.innerHTML = '';
+            values.forEach(value => addTag(type, value, `${type}-tags`));
+        }
+
+        function addTag(type, value, containerId) {
+            const container = document.getElementById(containerId);
+            if (Array.from(container.querySelectorAll('.tag')).some(t => t.dataset.value === value)) return;
+            
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.dataset.value = value;
+            tag.innerHTML = `${value} <button><i class="fas fa-times"></i></button>`;
+            tag.querySelector('button').addEventListener('click', () => {
+                tag.remove();
+                if (type === 'holidays') {
+                    holidaysPicker.setDate(getTagsValues(`${type}-tags`), true);
+                }
+            });
+            container.appendChild(tag);
+        }
+
+        function getTagsValues(containerId) {
+            return Array.from(document.getElementById(containerId).querySelectorAll('.tag')).map(t => t.dataset.value);
+        }
+
+        // --- ÉTAPE 4 : ESPACES ---
+        const espaceInput = document.getElementById('espace-input');
+        const espacesContainer = document.getElementById('espaces-container');
+        document.getElementById('ajouter-espace').addEventListener('click', () => addTag('espaces', espaceInput.value.trim(), 'espaces-container'));
+        espaceInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); addTag('espaces', espaceInput.value.trim(), 'espaces-container'); espaceInput.value=''; } });
+        document.querySelectorAll('#common-spaces button').forEach(btn => btn.addEventListener('click', () => addTag('espaces', btn.dataset.space, 'espaces-container')));
+        
+        // --- FINALISATION ---
+        finishButton.addEventListener('click', function() {
+            const formateursData = Array.from(formateursTableBody.querySelectorAll('tr')).map(r => ({ nom: r.querySelector('.nom').textContent, masse_horaire: r.querySelector('.masse_horaire').value, matricule: r.querySelector('.matricule').value, email: r.querySelector('.email').value }));
+            const espaces = getTagsValues('espaces-container');
+            if (espaces.length === 0) {
+                feedbacks.step4.textContent = "Veuillez ajouter au moins un espace de travail.";
+                feedbacks.step4.classList.remove('hidden');
+                return;
+            }
+            feedbacks.step4.classList.add('hidden');
+
+            const finalData = {
+                excelData: rawExcelData,
+                formateursData,
+                holidays: getTagsValues('holidays-tags'),
+                vacations: getTagsValues('vacations-tags'),
+                espaces
+            };
+            
+            setButtonLoading(this, true, 'Sauvegarde...');
+            
+            // REMPLACER PAR VOTRE APPEL API RÉEL
+            // fetch('../api/setup/complete_setup.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(finalData) })
+            // .then(res => res.json())
+            setTimeout(() => { // Simulation d'appel API
+                const result = { success: true };
+                if (result.success) {
+                    const circle4 = progressCircles[3];
+                    circle4.classList.remove('active');
+                    circle4.classList.add('success');
+                    circle4.innerHTML = ''; // Afficher le checkmark
+                    progressLabels[3].classList.add('completed');
+                    setTimeout(() => {
+                         alert("Configuration terminée avec succès ! Redirection...");
+                         // window.location.href = 'emploi.html';
+                    }, 1200);
+                } else {
+                    feedbacks.step4.textContent = result.message || "Erreur lors de la sauvegarde.";
+                    feedbacks.step4.classList.remove('hidden');
+                    setButtonLoading(this, false, 'Terminer et Sauvegarder');
+                }
+            }, 1500);
+        });
+
+        // --- Fonctions utilitaires ---
+        function setButtonLoading(button, isLoading, loadingText) {
+            if (isLoading) {
+                button.disabled = true;
+                button.dataset.originalText = button.childNodes[0].nodeValue;
+                button.childNodes[0].nodeValue = `${loadingText} `;
+                const spinner = document.createElement('i');
+                spinner.className = 'fas fa-spinner fa-spin';
+                button.appendChild(spinner);
+            } else {
+                button.disabled = false;
+                button.childNodes[0].nodeValue = button.dataset.originalText;
+                if (button.querySelector('.fa-spinner')) {
+                    button.querySelector('.fa-spinner').remove();
+                }
+            }
+        }
+        
+        // --- DÉMARRAGE ---
+        initializeHolidays();
+        goToStep(1);
+    });
+    </script>
+</body>
+</html>

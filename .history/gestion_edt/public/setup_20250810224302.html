@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Configuration Initiale - Calendrier amélioré</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/fr.js"></script>
+    <!-- SheetJS (lecture Excel) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.35s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+
+        .stepper-container { position: relative; padding: 0 3rem; }
+        .progress-line { position: absolute; top: 20px; left: 60px; right: 60px; height: 4px; background: #e5e7eb; z-index: 1; }
+        .progress-line-filled { position: absolute; top: 0; left: 0; height: 100%; background: #3b82f6; width: 0%; transition: width 0.6s cubic-bezier(0.65,0,0.35,1); }
+
+        .stepper-item { position: relative; display:flex; flex-direction:column; align-items:center; z-index:2; }
+        .progress-circle { width:40px; height:40px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#6b7280; transition:all .45s cubic-bezier(.68,-.55,.27,1.55); box-shadow:0 2px 5px rgba(0,0,0,0.08); }
+        .progress-circle.active { background:#3b82f6; color:white; transform:scale(1.12); box-shadow:0 0 0 6px rgba(59,130,246,0.14); }
+        .progress-circle.completed { background:#3b82f6; color:white; }
+        .progress-circle.completed::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight:900; }
+        .progress-circle.success { background:#16a34a; color:white; transform:scale(1.12); box-shadow:0 0 0 6px rgba(22,163,74,0.14); }
+        .progress-label { margin-top:.5rem; font-size:.875rem; font-weight:500; color:#6b7280; text-align:center; transition:all .3s; }
+        .progress-label.active { color:#3b82f6; font-weight:700; }
+        .progress-label.completed { color:#111827; font-weight:600; }
+
+        .tags-container { margin-top:1rem; padding:.5rem; min-height:80px; background:#f9fafb; border-radius:.375rem; border:1px solid #e5e7eb; display:flex; flex-wrap:wrap; gap:.5rem; align-content:flex-start; }
+        .tag { display:inline-flex; align-items:center; background:#e0e7ff; color:#4338ca; padding:4px 10px; border-radius:9999px; font-size:.875rem; font-weight:500; }
+        .tag button { margin-left:8px; background:none; border:none; cursor:pointer; color:#6366f1; font-size:1rem; }
+
+        .calendar { width:100%; border-radius:.5rem; background:white; padding:1rem; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
+        .calendar-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; }
+        .calendar-day { min-height:88px; border-radius:.5rem; padding:6px; position:relative; border:1px solid transparent; cursor:pointer; overflow:hidden; }
+        .calendar-day:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,0.04); }
+        .calendar-day .day-number { position:absolute; top:8px; right:8px; font-weight:600; color:#374151; }
+        .event-pill { display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; padding:4px 8px; border-radius:999px; font-size:0.78rem; margin-top:0.35rem; margin-right:4px; }
+        .holiday { background:#fee2e2; color:#991b1b; }
+        .user-event { background:#dbeafe; color:#1e3a8a; }
+        .vacation { background:#dcfce7; color:#166534; }
+
+        .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; z-index:60; }
+        .modal { width:100%; max-width:540px; background:white; border-radius:8px; padding:16px; box-shadow:0 10px 40px rgba(0,0,0,0.2); }
+
+        /* small helpers */
+        .muted { color:#6b7280; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6 flex items-center justify-center">
+
+    <div class="w-full max-w-5xl bg-white p-6 md:p-8 rounded-xl shadow-lg">
+        <!-- Stepper -->
+        <div class="w-full mb-8 stepper-container">
+            <div class="progress-line"><div id="progress-line-filled" class="progress-line-filled"></div></div>
+            <div class="flex items-start justify-between">
+                <div id="progress-step-1" class="stepper-item">
+                    <div id="progress-circle-1" class="progress-circle">1</div>
+                    <div id="progress-label-1" class="progress-label">Fichier</div>
+                </div>
+                <div id="progress-step-2" class="stepper-item">
+                    <div id="progress-circle-2" class="progress-circle">2</div>
+                    <div id="progress-label-2" class="progress-label">Formateurs</div>
+                </div>
+                <div id="progress-step-3" class="stepper-item">
+                    <div id="progress-circle-3" class="progress-circle">3</div>
+                    <div id="progress-label-3" class="progress-label">Calendrier</div>
+                </div>
+                <div id="progress-step-4" class="stepper-item">
+                    <div id="progress-circle-4" class="progress-circle">4</div>
+                    <div id="progress-label-4" class="progress-label">Espaces</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEPS -->
+        <div id="step1" class="step">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Étape 1 : Importez votre fichier de base</h2>
+            <p class="mb-6 text-gray-600 text-center">Sélectionne le fichier Excel "AvancementProgramme". Le système extraira automatiquement la liste des formateurs.</p>
+
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 hover:bg-gray-100 transition-all duration-300">
+                <input type="file" id="excelFile" class="hidden" accept=".xlsx, .xls">
+                <label for="excelFile" class="cursor-pointer inline-block">
+                    <i class="fas fa-cloud-upload-alt text-5xl text-blue-500 mb-4 inline-block"></i>
+                    <p class="text-lg font-semibold text-gray-700">Cliquez pour choisir un fichier</p>
+                    <p id="fileName" class="text-sm text-gray-500 mt-2 font-medium"></p>
+                </label>
+            </div>
+            <div id="step1-feedback" class="text-red-500 mt-4 text-center font-semibold"></div>
+            <button id="step1NextBtn" class="w-full bg-blue-600 text-white p-3 rounded-lg mt-6 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold transition-all duration-300 btn" disabled>Suivant <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <div id="step2" class="step">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Étape 2 : Vérifiez les informations des formateurs</h2>
+            <p class="mb-6 text-gray-600 text-center">Les e-mails et matricules ont été générés automatiquement. Vérifie et corrige si nécessaire.</p>
+            <div class="overflow-y-auto max-h-[44vh] border rounded-lg shadow-inner">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 sticky top-0">
+                        <tr>
+                            <th class="p-3 font-semibold">Nom du Formateur</th>
+                            <th class="p-3 font-semibold w-48">Masse Horaire Stat.</th>
+                            <th class="p-3 font-semibold w-48">Matricule</th>
+                            <th class="p-3 font-semibold">E-mail</th>
+                        </tr>
+                    </thead>
+                    <tbody id="formateurs-table-body" class="divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button id="step2PrevBtn" class="w-1/3 bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 font-bold transition-all duration-300 btn">Précédent</button>
+                <button id="step2NextBtn" class="w-2/3 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 font-bold flex items-center justify-center gap-2 transition-all duration-300 btn">Suivant <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <div id="step3" class="step">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Étape 3 : Configurez le calendrier de l'année</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Left: mini-controls -->
+                <div>
+                    <label class="block font-medium text-gray-700 mb-2">Afficher</label>
+                    <div class="flex gap-2 mb-4">
+                        <select id="monthSelect" class="w-1/2 p-2 border rounded-md">
+                            <!-- options generate via JS -->
+                        </select>
+                        <input id="yearInput" type="number" min="2000" max="2099" class="w-1/2 p-2 border rounded-md" />
+                    </div>
+
+                    <label class="block font-medium text-gray-700 mb-2">Jours fériés (automatiques)</label>
+                    <p class="text-sm text-gray-500 mb-2">Importés depuis l'API; tu peux aussi les supprimer ou ajouter manuellement.</p>
+                    <div id="holidays-tags" class="tags-container mb-3"></div>
+                    <div class="mb-3">
+                        <div class="date-input-container relative">
+                            <i class="fas fa-calendar-day date-input-icon absolute left-3 top-3 text-gray-400"></i>
+                            <input id="holiday-name-input" placeholder="Nom (ex: Aid al-Fitr)" class="w-full p-2 border border-gray-300 rounded-md pl-10" />
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <input id="holiday-date-picker" placeholder="Date" class="w-2/3 p-2 border border-gray-300 rounded-md date-picker" />
+                            <button id="add-holiday-btn" class="w-1/3 bg-blue-600 text-white p-2 rounded-md btn"><i class="fas fa-plus"></i> Ajouter</button>
+                        </div>
+                        <div id="holiday-feedback" class="text-red-500 text-sm mt-2"></div>
+                    </div>
+
+                    <label class="block font-medium text-gray-700 mb-2">Périodes de vacances</label>
+                    <div class="mb-2">
+                        <input id="vacation-name-input" placeholder="Nom (ex: Vacances d'été)" class="w-full p-2 border border-gray-300 rounded-md mb-2" />
+                        <div class="flex gap-2">
+                            <input id="vacations-picker" class="w-full p-2 border border-gray-300 rounded-md date-picker" placeholder="Sélectionner une période..." />
+                            <button id="add-vacation-btn" class="bg-blue-600 text-white px-4 rounded-md hover:bg-blue-700 transition-colors btn"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div id="vacation-feedback" class="text-red-500 text-sm mt-2"></div>
+                        <div id="vacations-tags" class="tags-container mt-3"></div>
+                    </div>
+                </div>
+
+                <!-- Middle: calendar grid -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <button id="prevMonthBtn" class="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200"><i class="fas fa-chevron-left"></i></button>
+                            <button id="nextMonthBtn" class="px-3 py-2 rounded-md bg-gray-100 hover:bg-gray-200 ml-2"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="text-right">
+                            <div id="calendarTitle" class="font-semibold text-lg"></div>
+                            <div class="text-sm muted">Clique sur un jour pour ajouter / éditer des événements</div>
+                        </div>
+                    </div>
+
+                    <div class="calendar">
+                        <div class="grid grid-cols-7 gap-2 mb-2 text-sm font-semibold text-gray-600">
+                            <div>Dim</div><div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div>
+                        </div>
+
+                        <div id="calendarGrid" class="calendar-grid"></div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h3 class="font-semibold">Événements sélectionnés</h3>
+                        <div id="eventsList" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button id="step3PrevBtn" class="w-1/3 bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 font-bold btn">Précédent</button>
+                <button id="step3NextBtn" class="w-2/3 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 font-bold btn">Suivant <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <div id="step4" class="step">
+            <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Étape 4 : Listez vos espaces de travail</h2>
+            <p class="mb-6 text-gray-600 text-center">Ajoute tes salles, amphis, laboratoires, etc. Inclure "TEAMS" pour les cours à distance.</p>
+
+            <div class="relative">
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="espace-input" class="flex-grow p-3 border border-gray-300 rounded-md shadow-inner" placeholder="Salle A101"/>
+                    <button id="ajouter-espace" class="bg-blue-600 text-white px-4 rounded-md hover:bg-blue-700 transition-colors btn"><i class="fas fa-plus mr-1"></i> Ajouter</button>
+                </div>
+                <div id="suggestions-container" class="hidden absolute bg-white border rounded p-2 w-full"></div>
+            </div>
+
+            <div class="mt-4">
+                <p class="text-sm text-gray-500 mb-2">Salles communes:
+                    <span id="common-spaces" class="inline-flex gap-2 ml-2">
+                        <button class="text-blue-600 hover:text-blue-800 text-sm" data-space="Salle A101">Salle A101</button>
+                        <button class="text-blue-600 hover:text-blue-800 text-sm" data-space="Amphi B">Amphi B</button>
+                        <button class="text-blue-600 hover:text-blue-800 text-sm" data-space="Labo Info">Labo Info</button>
+                        <button class="text-blue-600 hover:text-blue-800 text-sm" data-space="TEAMS">TEAMS</button>
+                    </span>
+                </p>
+            </div>
+
+            <div id="espaces-container" class="tags-container mt-4 min-h-[100px]"></div>
+
+            <div id="step4-feedback" class="text-red-500 mt-4 text-center font-semibold"></div>
+            <div class="flex gap-4 mt-6">
+                <button id="step4PrevBtn" class="w-1/3 bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 font-bold btn">Précédent</button>
+                <button id="finishSetupBtn" class="w-2/3 bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 font-bold flex items-center justify-center gap-2 transition-all duration-300 btn">
+                    Terminer et Sauvegarder <i class="fas fa-check"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour ajouter/éditer événement -->
+    <div id="eventModal" class="hidden modal-bg">
+        <div class="modal">
+            <div class="flex justify-between items-center mb-3">
+                <h3 id="modalTitle" class="text-lg font-semibold">Ajouter un événement</h3>
+                <button id="closeModalBtn" class="text-gray-600 hover:text-gray-900"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium">Date</label>
+                    <input id="modalEventDate" class="w-full p-2 border rounded" readonly/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Titre</label>
+                    <input id="modalEventTitle" class="w-full p-2 border rounded" placeholder="Ex : Réunion formation"/>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-medium">Heure (début)</label>
+                        <input id="modalEventTime" type="time" class="w-full p-2 border rounded"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Type</label>
+                        <select id="modalEventType" class="w-full p-2 border rounded">
+                            <option value="user">Événement</option>
+                            <option value="holiday">Jour férié</option>
+                            <option value="vacation">Vacances</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 justify-end">
+                    <button id="deleteEventBtn" class="bg-red-600 text-white px-4 py-2 rounded hidden">Supprimer</button>
+                    <button id="saveEventBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+/* ============================
+   Logique JavaScript complète
+   ============================ */
+
+document.addEventListener('DOMContentLoaded', checkSessionAndLoad);
+
+async function checkSessionAndLoad() {
+    try {
+        const response = await fetch('../api/auth/verify_session.php');
+        const result = await response.json();
+        if (!result.success) {
+            window.location.href = 'login.html';
+            return;
+        }
+    } catch (err) {
+        // mode démo si API indisponible
+        console.warn("Session API indisponible. Mode démo activé.");
+    }
+    initializeSetupPage();
+}
+
+function initializeSetupPage() {
+    // Steps
+    const steps = [
+        document.getElementById('step1'),
+        document.getElementById('step2'),
+        document.getElementById('step3'),
+        document.getElementById('step4')
+    ];
+    const totalSteps = steps.length;
+
+    // Elements
+    const fileInput = document.getElementById('excelFile');
+    const fileNameLabel = document.getElementById('fileName');
+    const formateursTableBody = document.getElementById('formateurs-table-body');
+    const feedbacks = { step1: document.getElementById('step1-feedback'), step4: document.getElementById('step4-feedback') };
+    let rawExcelData = null;
+
+    const nextButtons = { 1: document.getElementById('step1NextBtn'), 2: document.getElementById('step2NextBtn'), 3: document.getElementById('step3NextBtn') };
+    const prevButtons = { 2: document.getElementById('step2PrevBtn'), 3: document.getElementById('step3PrevBtn'), 4: document.getElementById('step4PrevBtn') };
+    const progressLineFilled = document.getElementById('progress-line-filled');
+
+    // Calendar related
+    const monthSelect = document.getElementById('monthSelect');
+    const yearInput = document.getElementById('yearInput');
+    const prevMonthBtn = document.getElementById('prevMonthBtn');
+    const nextMonthBtn = document.getElementById('nextMonthBtn');
+    const calendarGrid = document.getElementById('calendarGrid');
+    const calendarTitle = document.getElementById('calendarTitle');
+    const holidaysTagsContainer = document.getElementById('holidays-tags');
+    const vacationsTagsContainer = document.getElementById('vacations-tags');
+    const holidayNameInput = document.getElementById('holiday-name-input');
+    const holidayDatePicker = document.getElementById('holiday-date-picker');
+    const addHolidayBtn = document.getElementById('add-holiday-btn');
+    const addVacationBtn = document.getElementById('add-vacation-btn');
+    const vacationsPicker = document.getElementById('vacations-picker');
+    const vacationNameInput = document.getElementById('vacation-name-input');
+    const eventsList = document.getElementById('eventsList');
+
+    // Spaces
+    const espaceInput = document.getElementById('espace-input');
+    const ajouterEspaceBtn = document.getElementById('ajouter-espace');
+    const espacesContainer = document.getElementById('espaces-container');
+    const commonSpacesContainer = document.getElementById('common-spaces');
+    const suggestionsContainer = document.getElementById('suggestions-container');
+
+    // Modal
+    const eventModal = document.getElementById('eventModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalEventDate = document.getElementById('modalEventDate');
+    const modalEventTitle = document.getElementById('modalEventTitle');
+    const modalEventTime = document.getElementById('modalEventTime');
+    const modalEventType = document.getElementById('modalEventType');
+    const saveEventBtn = document.getElementById('saveEventBtn');
+    const deleteEventBtn = document.getElementById('deleteEventBtn');
+
+    // Finish
+    const finishSetupBtn = document.getElementById('finishSetupBtn');
+
+    // State
+    let currentStep = 1;
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth(); // 0-11
+    let calendarEvents = {}; // keyed by 'YYYY-MM-DD' -> array of events {id, title, time, type}
+    let editingEvent = null; // {date, id} when editing
+    let nextEventId = 1;
+
+    // Initialize month select and year
+    for (let m = 0; m < 12; m++) {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = new Date(0, m).toLocaleString('fr-FR', { month: 'long' });
+        monthSelect.appendChild(opt);
+    }
+    yearInput.value = currentYear;
+    monthSelect.value = currentMonth;
+
+    // Flatpickr setup
+    flatpickr("#holiday-date-picker", { dateFormat: "d/m/Y", locale: "fr" });
+    flatpickr("#vacations-picker", { mode: "range", dateFormat: "d/m/Y", locale: "fr" });
+
+    // --- Progress & Step navigation ---
+    function goToStep(stepNumber) {
+        currentStep = stepNumber;
+        steps.forEach((step, index) => step.classList.toggle('active', (index + 1) === stepNumber));
+        updateProgress(stepNumber);
+    }
+
+    function updateProgress(currentStepNumber) {
+        const progressPercentage = ((currentStepNumber - 1) / (totalSteps - 1)) * 100;
+        progressLineFilled.style.width = `${progressPercentage}%`;
+
+        for (let i = 1; i <= totalSteps; i++) {
+            const circle = document.getElementById(`progress-circle-${i}`);
+            const label = document.getElementById(`progress-label-${i}`);
+            circle.classList.remove('active', 'completed', 'success');
+            label.classList.remove('active', 'completed');
+            circle.textContent = i;
+            if (i < currentStepNumber) {
+                circle.classList.add('completed');
+                label.classList.add('completed');
+                circle.innerHTML = '';
+            } else if (i === currentStepNumber) {
+                circle.classList.add('active');
+                label.classList.add('active');
+            }
+        }
+    }
+
+    nextButtons[1].addEventListener('click', handleStep1Next);
+    nextButtons[2].addEventListener('click', () => goToStep(3));
+    nextButtons[3].addEventListener('click', () => {
+        // validation: ensure at least 1 holiday or 1 event or vacations? no strict requirement
+        goToStep(4);
+    });
+    prevButtons[2].addEventListener('click', () => goToStep(1));
+    prevButtons[3].addEventListener('click', () => goToStep(2));
+    prevButtons[4].addEventListener('click', () => goToStep(3));
+
+    // File input change
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            fileNameLabel.textContent = this.files[0].name;
+            nextButtons[1].disabled = false;
+            feedbacks.step1.textContent = "";
+        }
+    });
+
+    // --- Step 1: handle Excel upload & parse with SheetJS ---
+    function handleStep1Next() {
+        const formData = new FormData();
+        if (!fileInput.files[0]) { feedbacks.step1.textContent = "Veuillez sélectionner un fichier."; return; }
+
+        // try client-side parse for instant preview (also send to server in background)
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            try {
+                const workbook = XLSX.read(data, {type:'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                // Try to parse rows into objects; assume first row headers
+                const json = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+                rawExcelData = json;
+                // Map into expected formateurs structure for demo
+                const formateurs = json.map((row, idx) => {
+                    return {
+                        nom: row['Nom'] || row['nom'] || row['Nom du formateur'] || (`Formateur ${idx+1}`),
+                        masse_horaire: row['MasseHoraire'] || row['Masse Horaire'] || row['masse_horaire'] || 0,
+                        matricule: row['Matricule'] || (`MAT${1000+idx}`),
+                        email: row['Email'] || row['E-mail'] || ''
+                    };
+                });
+                populateFormateursTable(formateurs);
+                goToStep(2);
+            } catch (err) {
+                console.error(err);
+                feedbacks.step1.textContent = "Erreur lors de l'analyse du fichier Excel (format).";
+            }
+        };
+        reader.readAsArrayBuffer(file);
+
+        // Also send file to backend parse endpoint if present
+        formData.append('excelFile', file);
+        nextButtons[1].innerHTML = 'Analyse... <i class="fas fa-spinner fa-spin"></i>';
+        nextButtons[1].disabled = true;
+        fetch('../api/setup/parse_formateurs.php', { method:'POST', body: formData })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success && result.formateurs) {
+                    // prefer server result if available
+                    populateFormateursTable(result.formateurs);
+                    rawExcelData = result.rawExcelData || rawExcelData;
+                    goToStep(2);
+                }
+            })
+            .catch(()=>{/* ignore network errors; already handled client-side */})
+            .finally(()=>{ nextButtons[1].innerHTML = 'Suivant <i class="fas fa-arrow-right"></i>'; nextButtons[1].disabled = false; });
+    }
+
+    function populateFormateursTable(formateurs) {
+        formateursTableBody.innerHTML = '';
+        formateurs.forEach(f => {
+            const row = document.createElement('tr');
+            row.className = "hover:bg-gray-50 transition-colors duration-200";
+            row.innerHTML = `
+                <td class="p-3 font-semibold text-gray-800 nom">${escapeHtml(f.nom)}</td>
+                <td class="p-3"><input type="number" class="w-full p-2 border rounded masse_horaire" value="${escapeHtml(f.masse_horaire)}"></td>
+                <td class="p-3"><input type="text" class="w-full p-2 border rounded bg-gray-100 matricule" value="${escapeHtml(f.matricule)}" readonly></td>
+                <td class="p-3"><input type="email" class="w-full p-2 border rounded email" value="${escapeHtml(f.email)}" placeholder="E-mail personnel si vacataire"></td>
+            `;
+            formateursTableBody.appendChild(row);
+        });
+    }
+
+    // helpful escaping
+    function escapeHtml(s) { if (s === null || s === undefined) return ''; return (''+s).replace(/[<>&"]/g, c=> ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'})[c]); }
+
+    // --- Calendar core functions ---
+    function formatDateKey(d) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth()+1).padStart(2,'0');
+        const day = String(d.getDate()).padStart(2,'0');
+        return `${y}-${m}-${day}`;
+    }
+
+    function renderCalendar(month, year) {
+        calendarGrid.innerHTML = '';
+        const first = new Date(year, month, 1);
+        const last = new Date(year, month + 1, 0);
+        const startWeekday = first.getDay(); // 0-6 where 0 = Sunday (we use that order)
+        const daysInMonth = last.getDate();
+
+        calendarTitle.textContent = `${first.toLocaleString('fr-FR', { month:'long' })} ${year}`;
+        monthSelect.value = month;
+        yearInput.value = year;
+
+        // add blank days for previous month
+        for (let i = 0; i < startWeekday; i++) {
+            const el = document.createElement('div');
+            el.className = 'calendar-day bg-gray-50';
+            el.innerHTML = '';
+            calendarGrid.appendChild(el);
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateObj = new Date(year, month, d);
+            const key = formatDateKey(dateObj);
+            const el = document.createElement('div');
+            el.className = 'calendar-day bg-white';
+            el.dataset.date = key;
+
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = d;
+            el.appendChild(dayNumber);
+
+            // list events
+            const events = calendarEvents[key] || [];
+            events.slice(0,3).forEach(evt=>{
+                const pill = document.createElement('span');
+                pill.className = 'event-pill ' + (evt.type === 'holiday' ? 'holiday' : (evt.type === 'vacation' ? 'vacation' : 'user-event'));
+                pill.textContent = (evt.time? (evt.time + ' ') : '') + evt.title;
+                el.appendChild(pill);
+            });
+
+            // if more events, show "+N"
+            if (events.length > 3) {
+                const more = document.createElement('div');
+                more.className = 'text-sm muted mt-1';
+                more.textContent = `+ ${events.length - 3} autres`;
+                el.appendChild(more);
+            }
+
+            el.addEventListener('click', ()=> openEventModal(key));
+            calendarGrid.appendChild(el);
+        }
+
+        // fill trailing blanks to keep grid shape
+        const totalCells = calendarGrid.children.length;
+        const remainder = totalCells % 7;
+        if (remainder !== 0) {
+            const toAdd = 7 - remainder;
+            for (let i = 0; i < toAdd; i++) {
+                const el = document.createElement('div');
+                el.className = 'calendar-day bg-gray-50';
+                calendarGrid.appendChild(el);
+            }
+        }
+
+        renderEventsList();
+    }
+
+    function getEventsForDate(dateKey) {
+        return calendarEvents[dateKey] || [];
+    }
+
+    function addEvent(dateKey, {title, time, type}) {
+        const event = { id: nextEventId++, title: (title||'Sans titre'), time: time||'', type: type||'user' };
+        if (!calendarEvents[dateKey]) calendarEvents[dateKey]=[];
+        calendarEvents[dateKey].push(event);
+        renderCalendar(currentMonth, currentYear);
+    }
+
+    function updateEvent(dateKey, eventId, payload) {
+        const arr = calendarEvents[dateKey] || [];
+        const idx = arr.findIndex(e=>e.id===eventId);
+        if (idx >= 0) {
+            arr[idx] = { ...arr[idx], ...payload };
+            renderCalendar(currentMonth, currentYear);
+        }
+    }
+
+    function deleteEvent(dateKey, eventId) {
+        if (!calendarEvents[dateKey]) return;
+        calendarEvents[dateKey] = calendarEvents[dateKey].filter(e=>e.id!==eventId);
+        if (calendarEvents[dateKey].length === 0) delete calendarEvents[dateKey];
+        renderCalendar(currentMonth, currentYear);
+    }
+
+    function renderEventsList() {
+        eventsList.innerHTML = '';
+        // show next 30 days events sorted
+        const keys = Object.keys(calendarEvents).sort();
+        if (keys.length === 0) {
+            eventsList.innerHTML = '<div class="muted">Aucun événement planifié.</div>';
+            return;
+        }
+        keys.forEach(k=>{
+            const header = document.createElement('div');
+            header.className = 'font-semibold mt-2';
+            header.textContent = (new Date(k)).toLocaleDateString('fr-FR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+            eventsList.appendChild(header);
+            calendarEvents[k].forEach(evt=>{
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between gap-4 p-2 border rounded mt-1';
+                row.innerHTML = `<div><div class="font-medium">${escapeHtml(evt.title)}</div><div class="text-sm muted">${evt.time || ''} • ${evt.type}</div></div>
+                                 <div class="flex gap-2">
+                                    <button class="px-2 py-1 text-sm bg-gray-100 rounded edit-evt-btn" data-date="${k}" data-id="${evt.id}"><i class="fas fa-pen"></i></button>
+                                    <button class="px-2 py-1 text-sm bg-red-100 rounded del-evt-btn" data-date="${k}" data-id="${evt.id}"><i class="fas fa-trash"></i></button>
+                                 </div>`;
+                eventsList.appendChild(row);
+            });
+        });
+
+        // hook edit/del
+        eventsList.querySelectorAll('.edit-evt-btn').forEach(btn=>{
+            btn.addEventListener('click', ()=> openEventModal(btn.dataset.date, Number(btn.dataset.id)));
+        });
+        eventsList.querySelectorAll('.del-evt-btn').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                if (confirm('Supprimer cet événement ?')) deleteEvent(btn.dataset.date, Number(btn.dataset.id));
+            });
+        });
+    }
+
+    // Open modal for dateKey, optional eventId to edit
+    function openEventModal(dateKey, eventId) {
+        editingEvent = null;
+        modalEventDate.value = (new Date(dateKey)).toLocaleDateString('fr-FR');
+        modalEventTitle.value = '';
+        modalEventTime.value = '';
+        modalEventType.value = 'user';
+        deleteEventBtn.classList.add('hidden');
+
+        if (eventId) {
+            const evt = (calendarEvents[dateKey] || []).find(e=>e.id===eventId);
+            if (evt) {
+                editingEvent = { date: dateKey, id: eventId };
+                modalEventTitle.value = evt.title;
+                modalEventTime.value = evt.time || '';
+                modalEventType.value = evt.type || 'user';
+                deleteEventBtn.classList.remove('hidden');
+            }
+        }
+        showModal(true);
+    }
+
+    function showModal(show) {
+        if (show) {
+            eventModal.classList.remove('hidden');
+            eventModal.classList.add('flex');
+        } else {
+            eventModal.classList.add('hidden');
+            eventModal.classList.remove('flex');
+        }
+    }
+
+    closeModalBtn.addEventListener('click', ()=> showModal(false));
+    eventModal.addEventListener('click', (e)=> { if (e.target === eventModal) showModal(false); });
+
+    saveEventBtn.addEventListener('click', ()=>{
+        const dateStr = modalEventDate.value.split('/').reverse().join('-'); // dd/mm/YYYY -> YYYY-mm-dd
+        // normalize
+        const parts = modalEventDate.value.split('/');
+        if (parts.length !== 3) return;
+        const d = new Date(parts[2], Number(parts[1])-1, parts[0]);
+        const key = formatDateKey(d);
+        const payload = { title: modalEventTitle.value.trim(), time: modalEventTime.value, type: modalEventType.value };
+        if (editingEvent) {
+            updateEvent(editingEvent.date, editingEvent.id, payload);
+        } else {
+            addEvent(key, payload);
+        }
+        showModal(false);
+    });
+
+    deleteEventBtn.addEventListener('click', ()=>{
+        if (!editingEvent) return;
+        if (confirm('Confirmer la suppression ?')) {
+            deleteEvent(editingEvent.date, editingEvent.id);
+            showModal(false);
+        }
+    });
+
+    // --- Holidays import from API (with name) ---
+    async function fetchAndInsertHolidays(year) {
+        try {
+            const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/MA`);
+            if (!res.ok) throw new Error('no-api');
+            const holidays = await res.json(); // array with {date: 'YYYY-MM-DD', localName, name, countryCode, ...}
+            holidays.forEach(h => {
+                const key = h.date;
+                const title = h.localName || h.name || 'Jour férié';
+                // add holiday event
+                if (!calendarEvents[key]) calendarEvents[key]=[];
+                // avoid duplicates (same title)
+                const exists = (calendarEvents[key]||[]).some(e=>e.title===title && e.type==='holiday');
+                if (!exists) {
+                    calendarEvents[key].push({ id: nextEventId++, title, time:'', type:'holiday' });
+                }
+                // add tag UI
+                addTagToContainer('holidays', `${h.date} | ${title}`, false);
+            });
+            renderCalendar(currentMonth, currentYear);
+        } catch (err) {
+            console.warn('Impossible de charger les jours fériés automatiques :', err);
+        }
+    }
+
+    // Add a visual tag to container (holidays or vacations). If updateCalendar true, also add event(s)
+    function addTagToContainer(type, value, updateCalendar = true) {
+        const container = (type === 'holidays') ? holidaysTagsContainer : vacationsTagsContainer;
+        // dedupe by value
+        if (Array.from(container.querySelectorAll('.tag')).some(t => t.dataset.value === value)) return;
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.dataset.value = value;
+        if (type === 'holidays') {
+            // value format attempt: "YYYY-MM-DD | Nom"
+            const parts = value.split('|').map(s=>s.trim());
+            const text = parts[1] || parts[0];
+            tag.innerHTML = `${escapeHtml(text)} <button type="button" title="Supprimer">×</button>`;
+            tag.querySelector('button').onclick = () => {
+                // remove event from calendar if exists
+                const dateKey = parts[0];
+                if (calendarEvents[dateKey]) {
+                    calendarEvents[dateKey] = calendarEvents[dateKey].filter(e=>e.type !== 'holiday' || e.title !== text);
+                    if (calendarEvents[dateKey].length === 0) delete calendarEvents[dateKey];
+                }
+                tag.remove();
+                renderCalendar(currentMonth, currentYear);
+            };
+            container.appendChild(tag);
+
+            if (updateCalendar && parts[0]) {
+                // add event
+                addEvent(parts[0], { title: parts[1]||parts[0], type:'holiday' });
+            }
+        } else {
+            // vacations: value => "Nom | dd/mm/YYYY - dd/mm/YYYY"
+            tag.innerHTML = `${escapeHtml(value)} <button type="button" title="Supprimer">×</button>`;
+            tag.querySelector('button').onclick = () => {
+                // try to remove vacation events by searching for title
+                const prefix = value.split('|')[0].trim();
+                Object.keys(calendarEvents).forEach(k=>{
+                    calendarEvents[k] = calendarEvents[k].filter(e => !(e.type==='vacation' && e.title===prefix));
+                    if (calendarEvents[k].length===0) delete calendarEvents[k];
+                });
+                tag.remove();
+                renderCalendar(currentMonth, currentYear);
+            };
+            container.appendChild(tag);
+        }
+    }
+
+    // add holiday button / manual
+    addHolidayBtn.addEventListener('click', ()=>{
+        const name = holidayNameInput.value.trim();
+        const dateRaw = holidayDatePicker.value;
+        if (!name || !dateRaw) { document.getElementById('holiday-feedback').textContent = 'Nom et date requis.'; return; }
+        document.getElementById('holiday-feedback').textContent = '';
+        // convert dd/mm/YYYY => YYYY-MM-DD
+        const parts = dateRaw.split('/');
+        const key = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+        addTagToContainer('holidays', `${key} | ${name}`, true);
+        holidayNameInput.value = '';
+        flatpickr("#holiday-date-picker").clear();
+    });
+
+    // vacations button
+    addVacationBtn.addEventListener('click', ()=>{
+        const name = vacationNameInput.value.trim();
+        const range = vacationsPicker._flatpickr ? vacationsPicker._flatpickr.selectedDates : [];
+        if (!name || !range || range.length !== 2) { document.getElementById('vacation-feedback').textContent = 'Nom et plage requis.'; return; }
+        document.getElementById('vacation-feedback').textContent = '';
+        const start = range[0]; const end = range[1];
+        // add events for each day in range marked as vacation
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+            const key = formatDateKey(new Date(d));
+            addEvent(key, { title: name, type: 'vacation' });
+        }
+        addTagToContainer('vacations', `${name} | ${formatDateRange(start,end)}`, false);
+        vacationNameInput.value = '';
+        vacationsPicker._flatpickr.clear();
+    });
+
+    function formatDateRange(a,b) {
+        return `${a.toLocaleDateString('fr-FR')} - ${b.toLocaleDateString('fr-FR')}`;
+    }
+
+    // init: fetch holidays for currentYear automatically
+    fetchAndInsertHolidays(currentYear);
+
+    // month navigation
+    prevMonthBtn.addEventListener('click', ()=> {
+        if (currentMonth === 0) { currentMonth = 11; currentYear--; } else currentMonth--;
+        renderCalendar(currentMonth, currentYear);
+    });
+    nextMonthBtn.addEventListener('click', ()=> {
+        if (currentMonth === 11) { currentMonth = 0; currentYear++; } else currentMonth++;
+        renderCalendar(currentMonth, currentYear);
+    });
+    monthSelect.addEventListener('change', ()=> {
+        currentMonth = Number(monthSelect.value);
+        renderCalendar(currentMonth, currentYear);
+    });
+    yearInput.addEventListener('change', ()=> {
+        const val = Number(yearInput.value) || (new Date().getFullYear());
+        currentYear = val;
+        // re-fetch holidays for this year (optional)
+        fetchAndInsertHolidays(currentYear);
+        renderCalendar(currentMonth, currentYear);
+    });
+
+    // --- Spaces (step 4) ---
+    const commonSpaces = ['Salle A101', 'Amphi A', 'Labo Informatique', 'TEAMS', 'ZOOM'];
+    commonSpacesContainer.querySelectorAll('button').forEach(btn=> btn.addEventListener('click', (e)=> ajouterEspace(e.target.dataset.space)));
+    ajouterEspaceBtn.addEventListener('click', ()=> ajouterEspace(espaceInput.value));
+    espaceInput.addEventListener('keypress', (e)=> { if (e.key === 'Enter') { e.preventDefault(); ajouterEspace(espaceInput.value); } });
+
+    function ajouterEspace(espace) {
+        espace = espace.trim();
+        if (!espace) return;
+        if (Array.from(espacesContainer.querySelectorAll('.tag')).some(t => t.dataset.value === espace)) {
+            espaceInput.value = '';
+            return;
+        }
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.dataset.value = espace;
+        tag.innerHTML = `${escapeHtml(espace)} <button type="button" title="Supprimer"><i class="fas fa-times"></i></button>`;
+        tag.querySelector('button').onclick = () => tag.remove();
+        espacesContainer.appendChild(tag);
+        espaceInput.value = '';
+    }
+
+    // --- Finish button: gather data and send to API ---
+    finishSetupBtn.addEventListener('click', function() {
+        const formateursData = Array.from(formateursTableBody.querySelectorAll('tr')).map(r => ({
+            nom: r.querySelector('.nom').textContent,
+            masse_horaire: r.querySelector('.masse_horaire').value,
+            matricule: r.querySelector('.matricule').value,
+            email: r.querySelector('.email').value
+        }));
+        const espaces = Array.from(document.getElementById('espaces-container').querySelectorAll('.tag')).map(t => t.dataset.value);
+        if (espaces.length === 0) { feedbacks.step4.textContent = "Veuillez ajouter au moins un espace."; return; }
+
+        // holidays and vacations string lists
+        const holidays = Array.from(holidaysTagsContainer.querySelectorAll('.tag')).map(t => t.dataset.value);
+        const vacations = Array.from(vacationsTagsContainer.querySelectorAll('.tag')).map(t => t.dataset.value);
+
+        const finalData = {
+            excelData: rawExcelData,
+            formateursData,
+            holidays,
+            vacations,
+            espaces,
+            calendarEvents // full event dump
+        };
+
+        this.innerHTML = 'Sauvegarde... <i class="fas fa-spinner fa-spin"></i>';
+        this.disabled = true;
+
+        fetch('../api/setup/complete_setup.php', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(finalData) })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    const circle4 = document.getElementById('progress-circle-4');
+                    const label4 = document.getElementById('progress-label-4');
+                    circle4.classList.remove('active'); circle4.classList.add('success'); label4.classList.add('completed'); circle4.innerHTML = '';
+                    setTimeout(()=> { window.location.href = 'emploi.html'; }, 1200);
+                } else {
+                    feedbacks.step4.textContent = result.message || "Erreur de sauvegarde.";
+                    this.innerHTML = 'Terminer et Sauvegarder <i class="fas fa-check"></i>';
+                    this.disabled = false;
+                }
+            })
+            .catch(()=> { feedbacks.step4.textContent = "Erreur de communication serveur."; this.innerHTML = 'Terminer et Sauvegarder <i class="fas fa-check"></i>'; this.disabled = false; });
+    });
+
+    // initialize first step
+    goToStep(1);
+    renderCalendar(currentMonth, currentYear);
+
+    // helper to convert dd/mm/YYYY to YYYY-mm-dd etc (already used)
+    // End initialize
+}
+
+/* ============================
+   Fin du script
+   ============================ */
+</script>
+</body>
+</html>

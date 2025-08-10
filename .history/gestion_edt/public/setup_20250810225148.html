@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Assistant Configuration</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(120deg, #f9f9f9, #eef3f7);
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        max-width: 800px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    h2 { text-align: center; }
+    .progress-container {
+        display: flex;
+        align-items: center;
+        position: relative;
+        margin-bottom: 30px;
+    }
+    .progress {
+        position: absolute;
+        height: 4px;
+        background: #4CAF50;
+        top: 50%;
+        left: 0;
+        transition: width 0.3s ease;
+        z-index: 0;
+    }
+    .circle {
+        width: 30px; height: 30px;
+        border-radius: 50%;
+        background: #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        position: relative;
+        z-index: 1;
+    }
+    .circle.active {
+        background: #4CAF50;
+        box-shadow: 0 0 10px rgba(76,175,80,0.7);
+    }
+    .form-step { display: none; }
+    .form-step.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+    .buttons { text-align: center; margin-top: 20px; }
+    button {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        background: #4CAF50;
+        color: white;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    button:hover { background: #45a049; }
+    .tags-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+    .tag {
+        background: #4CAF50;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        animation: pop 0.2s ease;
+    }
+    .remove-tag {
+        margin-left: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    @keyframes pop {
+        from {transform: scale(0.8); opacity: 0;}
+        to {transform: scale(1); opacity: 1;}
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    td, th { border: 1px solid #ddd; padding: 8px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Assistant de configuration</h2>
+
+    <div class="progress-container">
+        <div class="progress"></div>
+        <div class="circle active">1</div>
+        <div class="circle">2</div>
+        <div class="circle">3</div>
+    </div>
+
+    <!-- Étape 1 -->
+    <div class="form-step active">
+        <h3>Étape 1 : Informations générales</h3>
+        <label>Pays :</label>
+        <select id="countrySelect">
+            <option value="FR">France</option>
+            <option value="BE">Belgique</option>
+            <option value="CA">Canada</option>
+        </select>
+        <div id="holidaysList" style="margin-top:15px;">
+            <em>Chargement des jours fériés...</em>
+        </div>
+    </div>
+
+    <!-- Étape 2 -->
+    <div class="form-step">
+        <h3>Étape 2 : Import Excel</h3>
+        <input type="file" id="excelFile" accept=".xlsx,.xls">
+        <table id="excelDataTable"></table>
+    </div>
+
+    <!-- Étape 3 -->
+    <div class="form-step">
+        <h3>Étape 3 : Paramètres</h3>
+        <label>Fournisseurs :</label>
+        <input type="text" id="supplierInput">
+        <button class="add-tag" data-type="suppliers">Ajouter</button>
+        <div id="suppliersTags" class="tags-container"></div>
+
+        <label>Catégories :</label>
+        <input type="text" id="categoryInput">
+        <button class="add-tag" data-type="categories">Ajouter</button>
+        <div id="categoriesTags" class="tags-container"></div>
+    </div>
+
+    <div class="buttons">
+        <button id="prevBtn" disabled>Précédent</button>
+        <button id="nextBtn">Suivant</button>
+        <button id="finishSetupBtn" style="display:none;">Terminer</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let currentStep = 1;
+    let tags = { suppliers: [], categories: [] };
+    let rawExcelData = [];
+
+    const steps = document.querySelectorAll('.form-step');
+    const circles = document.querySelectorAll('.circle');
+    const progressBar = document.querySelector('.progress');
+
+    function goToStep(step) {
+        steps.forEach((s, index) => s.classList.toggle('active', index === step - 1));
+        circles.forEach((c, index) => c.classList.toggle('active', index < step));
+        progressBar.style.width = `${((step - 1) / (steps.length - 1)) * 100}%`;
+        document.getElementById('prevBtn').disabled = step === 1;
+        document.getElementById('nextBtn').style.display = step === steps.length ? 'none' : 'inline-block';
+        document.getElementById('finishSetupBtn').style.display = step === steps.length ? 'inline-block' : 'none';
+        currentStep = step;
+    }
+
+    function addTag(type, value) {
+        value = value.trim();
+        if (!value || tags[type].includes(value)) return;
+        tags[type].push(value);
+        const tag = document.createElement('span');
+        tag.classList.add('tag');
+        tag.textContent = value;
+        const removeBtn = document.createElement('span');
+        removeBtn.classList.add('remove-tag');
+        removeBtn.textContent = '×';
+        removeBtn.onclick = () => {
+            tags[type] = tags[type].filter(v => v !== value);
+            tag.remove();
+        };
+        tag.appendChild(removeBtn);
+        document.getElementById(`${type}Tags`).appendChild(tag);
+    }
+
+    document.querySelectorAll('.add-tag').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const type = btn.dataset.type;
+            const input = document.getElementById(type === 'suppliers' ? 'supplierInput' : 'categoryInput');
+            addTag(type, input.value);
+            input.value = '';
+        });
+    });
+
+    document.getElementById('prevBtn').addEventListener('click', () => goToStep(currentStep - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        if (currentStep === 1 && !document.getElementById('countrySelect').value) {
+            alert('Veuillez sélectionner un pays.');
+            return;
+        }
+        goToStep(currentStep + 1);
+    });
+
+    document.getElementById('finishSetupBtn').addEventListener('click', () => {
+        console.log("Fournisseurs :", tags.suppliers);
+        console.log("Catégories :", tags.categories);
+        console.log("Excel :", rawExcelData);
+        alert('Configuration terminée ✅');
+    });
+
+    // Lecture Excel
+    document.getElementById('excelFile').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            rawExcelData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            const table = document.getElementById('excelDataTable');
+            table.innerHTML = '';
+            rawExcelData.forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell ?? '';
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    // API jours fériés Nager.Date
+    async function loadHolidays(country) {
+        const year = new Date().getFullYear();
+        const list = document.getElementById('holidaysList');
+        list.innerHTML = '<em>Chargement...</em>';
+        try {
+            const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${country}`);
+            const data = await res.json();
+            list.innerHTML = '<ul>' + data.map(h => `<li>${h.date} - ${h.localName}</li>`).join('') + '</ul>';
+        } catch (err) {
+            list.innerHTML = '<span style="color:red;">Erreur lors du chargement</span>';
+        }
+    }
+
+    document.getElementById('countrySelect').addEventListener('change', e => {
+        loadHolidays(e.target.value);
+    });
+
+    // Initialisation
+    loadHolidays(document.getElementById('countrySelect').value);
+    goToStep(1);
+});
+</script>
+
+</body>
+</html>

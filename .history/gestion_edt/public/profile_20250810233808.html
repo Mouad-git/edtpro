@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil & Paramètres</title>
+    <!-- Utilisation d'une police plus moderne et ajout de Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        /* === PALETTE DE COULEURS & STYLE DE BASE === */
+        :root {
+            --primary: #4f46e5; /* Indigo */
+            --primary-light: #e0e7ff;
+            --dark-surface: #111827; /* Gris très foncé pour la sidebar */
+            --dark-surface-light: #1f2937; /* Pour les hover dans la sidebar */
+            --light-surface: #f9fafb; /* Fond du contenu principal */
+            --surface-card: #ffffff; /* Fond des cartes */
+            --text-on-dark: #e5e7eb; /* Texte clair sur fond sombre */
+            --text-on-light: #111827; /* Texte foncé sur fond clair */
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            background-color: var(--light-surface);
+            font-family: 'Inter', system-ui, sans-serif;
+            color: var(--text-on-light);
+            margin: 0;
+            padding-top: 64px; /* Hauteur de la barre de navigation */
+        }
+
+        /* === BARRE DE NAVIGATION SUPÉRIEURE === */
+        nav {
+            position: fixed; top: 0; left: 0; width: 100%;
+            height: 64px;
+            background-color: var(--surface-card);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; z-index: 1000;
+            padding: 0 2rem;
+            justify-content: space-between;
+        }
+        /* Styles pour le menu déroulant du profil (conservés de votre version originale) */
+        .profile-menu-container { position: relative; }
+        .profile-button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background-color: var(--primary-light); color: var(--primary); border: none; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .profile-dropdown { display: none; position: absolute; top: calc(100% + 12px); right: 0; width: 280px; background-color: var(--surface-card); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 1010; overflow: hidden; animation: scale-up-and-fade-in 0.2s ease-out; }
+        .profile-dropdown.show { display: block; }
+        @keyframes scale-up-and-fade-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .dropdown-profile-header { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid var(--border-color); }
+        .profile-pic { width: 48px; height: 48px; border-radius: 50%; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #6b7280; }
+        .profile-info strong { display: block; font-size: 1rem; font-weight: 600; color: #111827; }
+        .profile-info small { font-size: 0.875rem; color: #6b7280; }
+        .dropdown-menu-list { list-style: none; padding: 8px; margin: 0; }
+        .dropdown-link { display: flex; align-items: center; width: 100%; padding: 10px 12px; border-radius: 8px; text-decoration: none; color: #374151; font-weight: 500; transition: background-color 0.2s, color 0.2s; }
+        .dropdown-link:hover { background-color: #f3f4f6; }
+        .dropdown-link .icon { width: 32px; font-size: 16px; color: #6b7280; }
+        .dropdown-divider { margin: 0 8px; border: none; border-top: 1px solid var(--border-color); }
+        .dropdown-link.logout { margin: 8px; width: calc(100% - 16px); color: #ef4444; }
+        .dropdown-link.logout:hover { background-color: #fee2e2; }
+        
+        /* === MISE EN PAGE PRINCIPALE === */
+        .page-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+        }
+        
+        /* === BARRE LATÉRALE SOMBRE === */
+        .sidebar {
+            position: fixed;
+            top: 64px; left: 0;
+            width: 280px; height: calc(100vh - 64px);
+            background: var(--dark-surface);
+            color: var(--text-on-dark);
+            padding: 1.5rem;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--dark-surface);
+        }
+        .profile-header { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid var(--dark-surface-light); }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.25rem; font-weight: 500; margin: 0 auto 1rem; }
+        #profile-page-name { font-size: 1.25rem; font-weight: 600; color: white; }
+        #profile-page-etablissement { font-size: 0.9rem; color: #9ca3af; margin-top: 0.25rem; }
+        .sidebar-links { margin-top: 1.5rem; }
+        .sidebar-link { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem; margin-bottom: 0.5rem; border-radius: 8px; font-weight: 500; color: var(--text-on-dark); text-decoration: none; transition: all 0.2s; border-left: 3px solid transparent; }
+        .sidebar-link:hover { background-color: var(--dark-surface-light); }
+        .sidebar-link.active { color: white; background-color: var(--primary); border-left-color: #a5b4fc; }
+        .sidebar-link i { width: 20px; text-align: center; font-size: 1rem; color: #9ca3af; transition: color 0.2s; }
+        .sidebar-link:hover i, .sidebar-link.active i { color: white; }
+
+        /* === CONTENU PRINCIPAL === */
+        .content { padding: 2.5rem; }
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--surface-card); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .card-header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .card-header h2 { font-size: 1.5rem; font-weight: 600; }
+        .card-header p { color: var(--text-secondary); margin-top: 0.5rem; font-size: 1rem; }
+        .card-body { padding: 2rem; }
+        .card-footer { padding: 1rem 2rem; background: var(--light-surface); border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; align-items: center; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 0.75rem; font-size: 0.9rem; }
+        
+        .input-wrapper { position: relative; }
+        .input-wrapper .icon { position: absolute; top: 50%; transform: translateY(-50%); left: 1rem; color: #9ca3af; }
+        .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s; }
+        .input-wrapper .form-control { padding-left: 3rem; }
+        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .form-info { padding: 0.75rem 1rem; background-color: #f3f4f6; border-radius: 8px; color: #4b5563; border: 1px solid #d1d5db; }
+        textarea.form-control { min-height: 150px; padding: 1rem; }
+        
+        .btn { padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: #4338ca; }
+        .btn-secondary { background: white; border-color: #d1d5db; color: var(--text-on-light); }
+        .btn-secondary:hover { background: #f3f4f6; }
+
+        .feedback-message { min-height: 24px; font-size: 0.9rem; font-weight: 500; margin-right: 1.5rem; }
+        .feedback-success { color: #16a34a; }
+        .feedback-error { color: #dc2626; }
+        
+        /* Styles pour les composants spécifiques */
+        .info-box { background-color: #eef2ff; border-left: 4px solid var(--primary); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; color: #3b82f6; font-size: 0.9rem; }
+        .table-container { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .table th { background-color: var(--light-surface); font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); }
+        .table tr:last-child td { border-bottom: none; }
+        .tag-container { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 8px; background-color: white; cursor: text; }
+        .tag-container:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .tag { display: inline-flex; align-items: center; gap: 0.5rem; background-color: var(--primary-light); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 16px; font-size: 0.875rem; font-weight: 500; }
+        .tag .tag-remove { cursor: pointer; font-weight: bold; }
+        .tag-input { flex-grow: 1; border: none; outline: none; padding: 0.25rem; background-color: transparent; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <img src="assets/images/logo_edtpro.png" style="height: 80px; width: auto;" id="logo" alt="Logo">
+        <div class="profile-menu-container" id="profile-menu-container">
+            <button id="profile-button" class="profile-button">
+                <span id="profile-initials">--</span>
+            </button>
+            <div id="profile-dropdown" class="profile-dropdown">
+                <div class="dropdown-profile-header">
+                    <div class="profile-pic"><i class="fas fa-user"></i></div>
+                    <div class="profile-info">
+                        <strong id="dropdown-user-name">Chargement...</strong>
+                        <small id="dropdown-user-email">...</small>
+                    </div>
+                </div>
+                <ul class="dropdown-menu-list">
+                    <li><a href="profile.html" class="dropdown-link"><i class="fas fa-user-edit icon"></i><span class="text">Mon Profil</span></a></li>
+                </ul>
+                <hr class="dropdown-divider">
+                <a href="../api/auth/logout.php" class="dropdown-link logout"><i class="fas fa-sign-out-alt icon"></i><span class="text">Déconnexion</span></a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="page-container">
+        <aside class="sidebar">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profile-page-initials">--</div>
+                <h2 id="profile-page-name">Chargement...</h2>
+                <p id="profile-page-etablissement">...</p>
+            </div>
+            
+            <nav class="sidebar-links">
+                <a class="sidebar-link active" data-target="panel-account"><i class="fas fa-user-cog fa-fw"></i>Profil</a>
+                <a class="sidebar-link" data-target="panel-password"><i class="fas fa-key fa-fw"></i>Mot de passe</a>
+                <a class="sidebar-link" data-target="panel-espaces"><i class="fas fa-building fa-fw"></i>Espaces</a>
+                <a class="sidebar-link" data-target="panel-calendar"><i class="fas fa-calendar-alt fa-fw"></i>Calendrier</a>
+                <a class="sidebar-link" data-target="panel-formateurs"><i class="fas fa-users fa-fw"></i>Formateurs</a>
+            </nav>
+        </aside>
+    
+        <main class="content">
+            <!-- Panneau Compte -->
+            <div id="panel-account" class="panel active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Paramètres du Compte</h2>
+                        <p>Mettez à jour vos informations personnelles et professionnelles.</p>
+                    </div>
+                    <form id="userInfoForm">
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="form-group"><label for="nom_complet">Nom & Prénom</label><div class="input-wrapper"><i class="icon fas fa-user"></i><input type="text" id="nom_complet" name="nom_complet" class="form-control"></div></div>
+                                <div class="form-group"><label for="email">Email</label><div class="input-wrapper"><i class="icon fas fa-envelope"></i><input type="email" id="email" name="email" class="form-control"></div></div>
+                                <div class="form-group"><label>Établissement</label><div class="form-info" id="etablissement_name"></div></div>
+                                <div class="form-group"><label>Complexe</label><div class="form-info" id="complexe_name"></div></div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div id="userInfoFeedback" class="feedback-message"></div>
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Panneau Mot de passe -->
+            <div id="panel-password" class="panel">
+                <div class="card">
+                     <div class="card-header">
+                        <h2>Changer le Mot de Passe</h2>
+                        <p>Choisissez un mot de passe fort pour sécuriser votre compte.</p>
+                    </div>
+                    <form id="passwordForm">
+                        <div class="card-body">
+                             <div class="form-group full-width"><label for="new_password">Nouveau mot de passe</label><div class="input-wrapper"><i class="icon fas fa-lock"></i><input type="password" id="new_password" name="new_password" class="form-control" required></div></div>
+                             <div class="form-group full-width"><label for="confirm_new_password">Confirmer le nouveau mot de passe</label><div class="input-wrapper"><i class="icon fas fa-lock"></i><input type="password" id="confirm_new_password" name="confirm_new_password" class="form-control" required></div></div>
+                        </div>
+                        <div class="card-footer">
+                            <div id="passwordFeedback" class="feedback-message"></div>
+                            <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Panneau Espaces -->
+            <div id="panel-espaces" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Gestion des Espaces de Travail</h2>
+                        <p>Ajoutez ou supprimez les salles de cours, amphis et autres lieux disponibles.</p>
+                    </div>
+                    <form id="espacesForm">
+                        <div class="card-body">
+                             <div class="form-group full-width">
+                                <label for="espaces-input">Salles, amphis, etc. (appuyez sur Entrée pour ajouter)</label>
+                                <div id="espaces-tag-container" class="tag-container">
+                                    <input type="text" id="espaces-input" class="tag-input" placeholder="Ajouter un espace et valider...">
+                                </div>
+                                <textarea id="espaces" name="espaces" rows="1" style="display: none;"></textarea>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div id="espacesFeedback" class="feedback-message"></div>
+                            <button type="submit" class="btn btn-primary">Sauvegarder les Espaces</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Panneau Calendrier -->
+            <div id="panel-calendar" class="panel">
+                 <div class="card">
+                    <div class="card-header">
+                        <h2>Calendrier Annuel</h2>
+                        <p>Définissez les jours non ouvrés pour une planification précise.</p>
+                    </div>
+                    <form id="calendarForm">
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="form-group"><label for="holidays">Jours fériés (un par ligne, format JJ/MM/AAAA)</label><textarea id="holidays" name="holidays" class="form-control"></textarea></div>
+                                <div class="form-group"><label for="vacations">Périodes de vacances (une par ligne, format JJ/MM/AAAA-JJ/MM/AAAA)</label><textarea id="vacations" name="vacations" class="form-control"></textarea></div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div id="calendarFeedback" class="feedback-message"></div>
+                            <button type="submit" class="btn btn-primary">Sauvegarder le Calendrier</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Panneau Formateurs -->
+            <div id="panel-formateurs" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Liste des Formateurs</h2>
+                        <p>Gérez les informations de contact et la charge horaire des formateurs.</p>
+                    </div>
+                    <form id="formateursForm">
+                        <div class="card-body">
+                            <div class="info-box"><i class="fas fa-info-circle" style="margin-right: 8px;"></i>Pour ajouter ou supprimer des formateurs, une réimportation du fichier de base est nécessaire.</div>
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead><tr><th>Nom</th><th>Matricule</th><th>Masse Horaire</th><th>Email</th></tr></thead>
+                                    <tbody id="formateurs-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div id="formateursFeedback" class="feedback-message"></div>
+                            <button type="submit" class="btn btn-primary">Sauvegarder les Modifications</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // LE SCRIPT EST CELUI D'ORIGINE ET RESTE ENTIÈREMENT FONCTIONNEL
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSessionAndLoad();
+            setupEspacesTagInput();
+        });
+
+        async function checkSessionAndLoad() {
+            try {
+                const response = await fetch('../api/auth/verify_session.php');
+                const result = await response.json();
+                if (!result.success) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                populateUserInfo(result.userData);
+                setupProfileMenu();
+                loadPageData();
+                setupTabNavigation();
+                setupFormSubmissions();
+            } catch (error) {
+                console.error('Erreur de session:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        function getInitials(name) {
+            if (!name || typeof name !== 'string') return '--';
+            const words = name.trim().split(' ').filter(Boolean);
+            if (words.length === 0) return '--';
+            if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+            return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+        }
+
+        function populateUserInfo(userData) {
+            if (!userData) return;
+            const displayName = userData.nom_complet || userData.nom;
+
+            // Barre de nav
+            document.getElementById('profile-initials').textContent = getInitials(displayName);
+            document.getElementById('dropdown-user-name').textContent = displayName;
+            document.getElementById('dropdown-user-email').textContent = userData.email;
+            
+            // Sidebar
+            document.getElementById('profile-page-initials').textContent = getInitials(displayName);
+            document.getElementById('profile-page-name').textContent = displayName;
+            document.getElementById('profile-page-etablissement').textContent = userData.nom_etablissement || '';
+        }
+
+        function setupProfileMenu() {
+            const profileButton = document.getElementById('profile-button');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            if (!profileButton || !profileDropdown) return;
+
+            profileButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('show');
+            });
+            window.addEventListener('click', () => {
+                if (profileDropdown.classList.contains('show')) {
+                    profileDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        function loadPageData() {
+            fetch('../api/profile/get_profile_data.php')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const data = result.data;
+                        
+                        document.getElementById('nom_complet').value = data.user.nom_complet || '';
+                        document.getElementById('email').value = data.user.email || '';
+                        document.getElementById('etablissement_name').textContent = data.user.nom_etablissement || '';
+                        document.getElementById('complexe_name').textContent = data.user.complexe || '';
+                        
+                        const espaces = data.espaces || [];
+                        const tagContainer = document.getElementById('espaces-tag-container');
+                        tagContainer.querySelectorAll('.tag').forEach(tag => tag.remove());
+                        espaces.forEach(createEspaceTag);
+                        updateHiddenEspacesTextarea();
+                        
+                        document.getElementById('holidays').value = data.calendar.holidays || '';
+                        document.getElementById('vacations').value = data.calendar.vacations || '';
+                        
+                        const formateursTbody = document.getElementById('formateurs-table-body');
+                        formateursTbody.innerHTML = '';
+                        (data.formateurs || []).forEach(f => {
+                            const row = `<tr><td>${f.nom || ''}</td><td>${f.matricule || ''}</td><td><input name="formateurs[${f.matricule}][masse_horaire]" type="number" class="form-control" value="${f.masse_horaire || ''}"></td><td><input name="formateurs[${f.matricule}][email]" type="email" class="form-control" value="${f.email || ''}"></td><input type="hidden" name="formateurs[${f.matricule}][nom]" value="${f.nom || ''}"><input type="hidden" name="formateurs[${f.matricule}][matricule]" value="${f.matricule || ''}"></tr>`;
+                            formateursTbody.innerHTML += row;
+                        });
+                    } else {
+                        alert("Erreur: Impossible de charger les données du profil.");
+                    }
+                }).catch(error => {
+                    console.error('Erreur lors du chargement des données:', error);
+                });
+        }
+
+        function setupEspacesTagInput() {
+            const tagContainer = document.getElementById('espaces-tag-container');
+            const input = document.getElementById('espaces-input');
+            tagContainer.addEventListener('click', () => input.focus());
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const value = input.value.trim();
+                    if (value) {
+                        createEspaceTag(value);
+                        input.value = '';
+                        updateHiddenEspacesTextarea();
+                    }
+                }
+            });
+        }
+
+        function createEspaceTag(label) {
+            const tagContainer = document.getElementById('espaces-tag-container');
+            const input = document.getElementById('espaces-input');
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.innerHTML = `<span>${label}</span><span class="tag-remove" onclick="removeTag(this)">×</span>`;
+            tagContainer.insertBefore(tag, input);
+        }
+        
+        function removeTag(element) {
+            element.parentElement.remove();
+            updateHiddenEspacesTextarea();
+        }
+
+        function updateHiddenEspacesTextarea() {
+            const tags = document.querySelectorAll('#espaces-tag-container .tag span:first-child');
+            document.getElementById('espaces').value = Array.from(tags).map(span => span.textContent).join('\n');
+        }
+
+        function setupTabNavigation() {
+            const tabLinks = document.querySelectorAll('.sidebar-link');
+            const contentPanels = document.querySelectorAll('.panel');
+            tabLinks.forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    tabLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    const targetId = link.dataset.target;
+                    contentPanels.forEach(panel => panel.classList.remove('active'));
+                    document.getElementById(targetId)?.classList.add('active');
+                });
+            });
+        }
+
+        function showFeedback(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            el.textContent = message;
+            el.className = isSuccess ? 'feedback-message feedback-success' : 'feedback-message feedback-error';
+            setTimeout(() => { el.textContent = ''; }, 4000);
+        }
+
+        function setupFormSubmissions() {
+            const forms = [
+                { id: 'userInfoForm', url: '../api/profile/update_user_info.php', feedback: 'userInfoFeedback', dataBuilder: form => ({ nom_complet: form.nom_complet.value, email: form.email.value }) },
+                { id: 'passwordForm', url: '../api/profile/update_password.php', feedback: 'passwordFeedback', dataBuilder: form => {
+                    if (form.new_password.value !== form.confirm_new_password.value) {
+                        showFeedback('passwordFeedback', 'Les mots de passe ne correspondent pas.', false);
+                        return null;
+                    }
+                    return { new_password: form.new_password.value, confirm_new_password: form.confirm_new_password.value };
+                }},
+                { id: 'espacesForm', url: '../api/profile/update_establishment_info.php', feedback: 'espacesFeedback', dataBuilder: form => ({ espaces: form.espaces.value.split('\n').map(s => s.trim()).filter(Boolean) }) },
+                { id: 'calendarForm', url: '../api/profile/update_establishment_info.php', feedback: 'calendarFeedback', dataBuilder: form => ({ holidays: form.holidays.value, vacations: form.vacations.value }) },
+                { id: 'formateursForm', url: '../api/profile/update_formateurs.php', feedback: 'formateursFeedback', dataBuilder: form => {
+                    const formData = new FormData(form);
+                    const formateursMap = {};
+                    for (let [key, value] of formData.entries()) {
+                        const match = key.match(/formateurs\[(.+?)]\[(.+?)]/);
+                        if (match) {
+                            const [_, matricule, property] = match;
+                            if (!formateursMap[matricule]) formateursMap[matricule] = {};
+                            formateursMap[matricule][property] = value;
+                        }
+                    }
+                    return { formateurs: Object.values(formateursMap) };
+                }}
+            ];
+
+            forms.forEach(f => {
+                const formElement = document.getElementById(f.id);
+                if (formElement) {
+                    formElement.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const data = f.dataBuilder(this);
+                        if (data === null) return; // Validation failed
+                        
+                        fetch(f.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                        .then(res => res.json())
+                        .then(result => {
+                            showFeedback(f.feedback, result.message, result.success);
+                            if (result.success) {
+                                if (f.id === 'passwordForm') this.reset();
+                                if (f.id === 'userInfoForm') {
+                                    populateUserInfo({ nom: data.nom_complet, email: data.email, nom_complet: data.nom_complet, nom_etablissement: document.getElementById('etablissement_name').textContent });
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
