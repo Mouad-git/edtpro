@@ -46,13 +46,11 @@
         .btn-success:hover { background-color: #15803d; }
         .btn-danger { background-color: var(--danger); color: white; }
         .btn-danger:hover { background-color: #b91c1c; }
+        .btn-warning { background-color: var(--warning); color: white; }
+        .btn-warning:hover { background-color: #b45309; }
         .btn-outline { background-color: transparent; border: 1px solid #cbd5e1; color: #475569; }
         .btn-outline:hover { background-color: #f1f5f9; border-color: #94a3b8; }
         
-        .status-badge { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
-        .badge-approved { background-color: #dcfce7; color: #166534; }
-        
-        .header-gradient { background: linear-gradient(135deg, #0f172a, #1e40af); color: white; }
         .empty-state { padding: 3rem; text-align: center; color: #94a3b8; }
         .empty-state i { font-size: 3rem; margin-bottom: 1rem; color: #e2e8f0; }
         
@@ -63,35 +61,12 @@
         .pending .icon { background: #fffbeb; color: #d97706; }
         .approved .icon { background: #f0fdf4; color: #16a34a; }
         .rejected .icon { background: #fef2f2; color: #dc2626; }
+        .blocked .icon { background: #f1f5f9; color: #475569; }
 
-        nav{
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .logout-btn {
-            color: #64748b;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
-            border: 1px solid #e2e8f0;
-            background-color: white;
-        }
-        
-        .logout-btn:hover {
-            color: #dc2626;
-            background-color: #fef2f2;
-            border-color: #fecaca;
-            text-decoration: none;
-        }
-        
-        .logout-btn i {
-            font-size: 0.875rem;
-        }
+        nav { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .logout-btn { color: #64748b; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; border: 1px solid #e2e8f0; background-color: white; }
+        .logout-btn:hover { color: #dc2626; background-color: #fef2f2; border-color: #fecaca; text-decoration: none; }
+        .logout-btn i { font-size: 0.875rem; }
     </style>
 </head>
 <body>
@@ -110,8 +85,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
             <div class="stats-card pending"><div class="icon"><i class="fas fa-clock text-xl"></i></div><div id="stat-pending" class="value text-amber-600">0</div><div class="title">En Attente</div></div>
             <div class="stats-card approved"><div class="icon"><i class="fas fa-check-circle text-xl"></i></div><div id="stat-approved" class="value text-green-600">0</div><div class="title">Approuvés</div></div>
-            <div class="stats-card"><div class="icon bg-blue-50 text-blue-600"><i class="fas fa-users text-xl"></i></div><div id="stat-total" class="value text-blue-600">0</div><div class="title">Total Directeurs</div></div>
             <div class="stats-card rejected"><div class="icon"><i class="fas fa-times-circle text-xl"></i></div><div id="stat-rejected" class="value text-red-600">0</div><div class="title">Rejetés</div></div>
+            <div class="stats-card blocked"><div class="icon"><i class="fas fa-ban text-xl"></i></div><div id="stat-blocked" class="value text-slate-600">0</div><div class="title">Bloqués</div></div>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm mb-6">
@@ -119,6 +94,7 @@
                 <button class="tab-button active" data-target="panel-pending">En Attente<span id="badge-pending" class="badge">0</span></button>
                 <button class="tab-button" data-target="panel-approved">Approuvés<span id="badge-approved" class="badge">0</span></button>
                 <button class="tab-button" data-target="panel-rejected">Rejetés<span id="badge-rejected" class="badge">0</span></button>
+                <button class="tab-button" data-target="panel-blocked">Bloqués<span id="badge-blocked" class="badge">0</span></button>
             </div>
         </div>
 
@@ -131,7 +107,7 @@
             </div>
             <div id="panel-approved" class="tab-content">
                 <div class="card"><div class="overflow-x-auto"><table class="table">
-                    <thead><tr><th>Nom</th><th>Email</th><th>Établissement</th><th class="text-center">Statut</th></tr></thead>
+                    <thead><tr><th>Nom</th><th>Email</th><th>Établissement</th><th class="text-center">Actions</th></tr></thead>
                     <tbody id="approved-users-table"></tbody>
                 </table></div></div>
             </div>
@@ -139,6 +115,12 @@
                 <div class="card"><div class="overflow-x-auto"><table class="table">
                     <thead><tr><th>Nom</th><th>Email</th><th>Établissement</th><th class="text-center">Actions</th></tr></thead>
                     <tbody id="rejected-users-table"></tbody>
+                </table></div></div>
+            </div>
+             <div id="panel-blocked" class="tab-content">
+                <div class="card"><div class="overflow-x-auto"><table class="table">
+                    <thead><tr><th>Nom</th><th>Email</th><th>Établissement</th><th class="text-center">Actions</th></tr></thead>
+                    <tbody id="blocked-users-table"></tbody>
                 </table></div></div>
             </div>
         </div>
@@ -161,11 +143,10 @@
                 pending: document.getElementById('pending-users-table'),
                 approved: document.getElementById('approved-users-table'),
                 rejected: document.getElementById('rejected-users-table'),
+                blocked: document.getElementById('blocked-users-table'),
             };
-            const loadingRow = (cols) => `<tr><td colspan="${cols}" class="px-6 py-4 text-center">Chargement...</td></tr>`;
-            tables.pending.innerHTML = loadingRow(4);
-            tables.approved.innerHTML = loadingRow(4);
-            tables.rejected.innerHTML = loadingRow(4);
+            const loadingRow = (cols) => `<tr><td colspan="${cols}" class="text-center py-10 text-slate-500">Chargement...</td></tr>`;
+            Object.values(tables).forEach(t => t.innerHTML = loadingRow(4));
 
             try {
                 const response = await fetch('../api/admin/get_all_users.php');
@@ -175,80 +156,98 @@
                     const pending = result.data.filter(u => u.status === 'pending');
                     const approved = result.data.filter(u => u.status === 'approved');
                     const rejected = result.data.filter(u => u.status === 'rejected');
+                    const blocked = result.data.filter(u => u.status === 'blocked');
                     
-                    updateStatsAndBadges(pending, approved, rejected);
+                    updateStatsAndBadges(pending, approved, rejected, blocked);
                     renderPendingTable(pending);
                     renderApprovedTable(approved);
                     renderRejectedTable(rejected);
+                    renderBlockedTable(blocked);
                 } else { throw new Error(result.message); }
             } catch (error) {
-                const errorRow = `<tr><td colspan="4" class="px-6 py-4 text-center text-red-500">Erreur: ${error.message}</td></tr>`;
+                const errorRow = `<tr><td colspan="4" class="text-center py-10 text-red-500">Erreur: ${error.message}</td></tr>`;
                 Object.values(tables).forEach(t => t.innerHTML = errorRow);
             }
         }
 
-        function updateStatsAndBadges(pending, approved, rejected) {
+        function updateStatsAndBadges(pending, approved, rejected, blocked) {
             document.getElementById('stat-pending').textContent = pending.length;
             document.getElementById('stat-approved').textContent = approved.length;
             document.getElementById('stat-rejected').textContent = rejected.length;
-            document.getElementById('stat-total').textContent = pending.length + approved.length + rejected.length;
+            document.getElementById('stat-blocked').textContent = blocked.length;
             
             document.getElementById('badge-pending').textContent = pending.length;
             document.getElementById('badge-approved').textContent = approved.length;
             document.getElementById('badge-rejected').textContent = rejected.length;
+            document.getElementById('badge-blocked').textContent = blocked.length;
+        }
+
+        function renderEmptyState(icon, message) {
+            return `<tr><td colspan="4" class="empty-state"><i class="fas fa-${icon}"></i><p>${message}</p></td></tr>`;
         }
 
         function renderPendingTable(users) {
             const tableBody = document.getElementById('pending-users-table');
-            if (users.length === 0) { tableBody.innerHTML = '<tr><td colspan="4" class="empty-state"><i class="fas fa-inbox"></i><p>Aucune demande en attente.</p></td></tr>'; return; }
-            tableBody.innerHTML = '';
-            users.forEach(user => {
-                const row = `
-                    <tr class="hover:bg-gray-50">
-                        <td class="font-medium">${user.nom_complet}</td><td>${user.email}</td><td>${user.nom_etablissement}</td>
-                        <td class="text-center"><div class="flex justify-center space-x-2">
-                            <button onclick="updateUserStatus(${user.id}, 'approved')" class="btn btn-success"><i class="fas fa-check mr-1"></i>Approuver</button>
-                            <button onclick="updateUserStatus(${user.id}, 'rejected')" class="btn btn-danger"><i class="fas fa-times mr-1"></i>Rejeter</button>
-                        </div></td>
-                    </tr>`;
-                tableBody.innerHTML += row;
-            });
+            if (users.length === 0) { tableBody.innerHTML = renderEmptyState('inbox', 'Aucune demande en attente.'); return; }
+            tableBody.innerHTML = users.map(user => `
+                <tr>
+                    <td class="font-medium">${user.nom_complet}</td><td>${user.email}</td><td>${user.nom_etablissement}</td>
+                    <td class="text-center"><div class="flex justify-center gap-2">
+                        <button onclick="updateUserStatus(${user.id}, 'approved')" class="btn btn-success"><i class="fas fa-check"></i>Approuver</button>
+                        <button onclick="updateUserStatus(${user.id}, 'rejected')" class="btn btn-danger"><i class="fas fa-times"></i>Rejeter</button>
+                    </div></td>
+                </tr>`).join('');
         }
         
         function renderApprovedTable(users) {
              const tableBody = document.getElementById('approved-users-table');
-             if (users.length === 0) { tableBody.innerHTML = '<tr><td colspan="4" class="empty-state"><i class="fas fa-user-check"></i><p>Aucun directeur approuvé.</p></td></tr>'; return; }
-             tableBody.innerHTML = '';
-             users.forEach(user => {
-                const row = `
-                    <tr>
-                        <td class="font-medium">${user.nom_complet}</td><td>${user.email}</td><td>${user.nom_etablissement}</td>
-                        <td class="text-center"><span class="status-badge badge-approved"><i class="fas fa-check-circle mr-1"></i>Approuvé</span></td>
-                    </tr>`;
-                tableBody.innerHTML += row;
-             });
+             if (users.length === 0) { tableBody.innerHTML = renderEmptyState('user-check', 'Aucun directeur approuvé.'); return; }
+             tableBody.innerHTML = users.map(user => `
+                <tr>
+                    <td class="font-medium">${user.nom_complet}</td><td>${user.email}</td><td>${user.nom_etablissement}</td>
+                    <td class="text-center"><div class="flex justify-center gap-2">
+                        <button onclick="updateUserStatus(${user.id}, 'blocked')" class="btn btn-warning"><i class="fas fa-ban"></i>Bloquer</button>
+                        <button onclick="updateUserStatus(${user.id}, 'deleted')" class="btn btn-outline"><i class="fas fa-trash-alt"></i>Supprimer</button>
+                    </div></td>
+                </tr>`).join('');
         }
 
         function renderRejectedTable(users) {
             const tableBody = document.getElementById('rejected-users-table');
-            if (users.length === 0) { tableBody.innerHTML = '<tr><td colspan="4" class="empty-state"><i class="fas fa-user-times"></i><p>Aucune inscription rejetée.</p></td></tr>'; return; }
-            tableBody.innerHTML = '';
-            users.forEach(user => {
-                const row = `
-                     <tr>
-                        <td class="font-medium">${user.nom_complet}</td><td>${user.email}</td><td>${user.nom_etablissement}</td>
-                        <td class="text-center"><div class="flex justify-center space-x-2">
-                            <button onclick="updateUserStatus(${user.id}, 'approved')" class="btn btn-success"><i class="fas fa-redo-alt mr-1"></i>Ré-approuver</button>
-                            <button onclick="updateUserStatus(${user.id}, 'deleted')" class="btn btn-outline"><i class="fas fa-trash-alt mr-1"></i>Supprimer</button>
-                        </div></td>
-                    </tr>`;
-                tableBody.innerHTML += row;
-            });
+            if (users.length === 0) { tableBody.innerHTML = renderEmptyState('user-times', 'Aucune inscription rejetée.'); return; }
+            tableBody.innerHTML = users.map(user => `
+                 <tr>
+                    <td class="font-medium">${user.nom_complet}</td><td>${user.email}</td><td>${user.nom_etablissement}</td>
+                    <td class="text-center"><div class="flex justify-center gap-2">
+                        <button onclick="updateUserStatus(${user.id}, 'approved')" class="btn btn-success"><i class="fas fa-redo-alt"></i>Ré-approuver</button>
+                        <button onclick="updateUserStatus(${user.id}, 'deleted')" class="btn btn-outline"><i class="fas fa-trash-alt"></i>Supprimer</button>
+                    </div></td>
+                </tr>`).join('');
+        }
+
+        function renderBlockedTable(users) {
+            const tableBody = document.getElementById('blocked-users-table');
+            if (users.length === 0) { tableBody.innerHTML = renderEmptyState('user-slash', 'Aucun directeur bloqué.'); return; }
+            tableBody.innerHTML = users.map(user => `
+                 <tr>
+                    <td class="font-medium">${user.nom_complet}</td><td>${user.email}</td><td>${user.nom_etablissement}</td>
+                    <td class="text-center"><div class="flex justify-center gap-2">
+                        <button onclick="updateUserStatus(${user.id}, 'approved')" class="btn btn-success"><i class="fas fa-check-circle"></i>Débloquer</button>
+                        <button onclick="updateUserStatus(${user.id}, 'deleted')" class="btn btn-danger"><i class="fas fa-trash-alt"></i>Supprimer</button>
+                    </div></td>
+                </tr>`).join('');
         }
         
         async function updateUserStatus(userId, status) {
-            const actions = { 'approved': 'approuver', 'rejected': 'rejeter', 'deleted': 'supprimer définitivement' };
-            if (!confirm(`Êtes-vous sûr de vouloir ${actions[status]} cet utilisateur ?`)) return;
+            const actions = { 
+                'approved': 'approuver', 
+                'rejected': 'rejeter', 
+                'deleted': 'supprimer définitivement',
+                'blocked': 'bloquer'
+            };
+            const verb = actions[status] || 'mettre à jour';
+            if (!confirm(`Êtes-vous sûr de vouloir ${verb} cet utilisateur ?`)) return;
+
             try {
                 const response = await fetch('../api/admin/update_user_status.php', {
                     method: 'POST',
@@ -257,12 +256,15 @@
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert(`Utilisateur ${status === 'deleted' ? 'supprimé' : actions[status]} avec succès.`);
+                    // Affiche une alerte plus simple et recharge les données
+                    alert(`L'utilisateur a été ${verb} avec succès.`);
                     loadAllUsers();
                 } else {
-                    alert("Erreur: " + (result.message || "Impossible de mettre à jour le statut."));
+                    throw new Error(result.message || "Impossible de mettre à jour le statut.");
                 }
-            } catch (error) { alert("Une erreur de communication est survenue."); }
+            } catch (error) { 
+                alert("Une erreur de communication est survenue: " + error.message); 
+            }
         }
         
         function setupTabNavigation() {
