@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Initiale Avancée</title>
+    
+    <!-- Polices et Bibliothèques Externes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bibliothèque pour le Calendrier Interactif -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    
+    <style>
+        /* CSS COMPLET BASÉ SUR VOTRE INSPIRATION */
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #ffffff; /* light gray background */
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        /* --- Stepper Styles --- */
+        .stepper-container {
+            position: relative;
+            padding: 2.5rem;
+            background: #ffffff;
+        }
+        .progress-line {
+            position: absolute;
+            top: calc(2.5rem + 22px);
+            left: 5%;
+            right: 5%;
+            height: 4px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+        .progress-line-filled {
+            position: absolute; top: 0; left: 0; height: 100%;
+            background: #3b82f6; width: 0%;
+            transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+        .stepper-item {
+            position: relative; display: flex; flex-direction: column;
+            align-items: center; z-index: 2; flex: 1;
+        }
+        .progress-circle {
+            width: 45px; height: 45px; border-radius: 50%;
+            background: white; display: flex; align-items: center;
+            justify-content: center; font-weight: 700; color: #64748b;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); font-size: 18px;
+        }
+        .progress-circle.active {
+            background: #3b82f6; color: white; transform: scale(1.05);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.2);
+        }
+        .progress-circle.completed {
+            background: #3b82f6; color: white; border-color: #3b82f6;
+        }
+        .progress-circle.completed::after {
+            content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+        }
+        .progress-circle.success {
+            background: #10b981; color: white; border-color: #10b981;
+            box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.2);
+        }
+        .progress-label {
+            margin-top: 12px; font-size: 14px; font-weight: 600;
+            color: #64748b; text-align: center; transition: all 0.4s ease;
+        }
+        .progress-label.active { color: #1e40af; }
+        .progress-label.completed { color: #1e293b; }
+        
+        /* --- Step Content Styles --- */
+        .step { display: none; padding: 32px 48px; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .step.active { display: block; }
+        
+        .step-header { text-align: center; margin-bottom: 32px; }
+        .step-title { font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
+        .step-subtitle { font-size: 16px; color: #64748b; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+        
+        .form-card {
+            background: white; border-radius: 12px;
+            border: 1px solid #e2e8f0; padding: 32px;
+            max-width: 800px; margin: 0 auto;
+        }
+        
+        /* --- Element Styles (Buttons, Inputs, etc.) --- */
+        .upload-area {
+            border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px 20px;
+            text-align: center; cursor: pointer; transition: all 0.3s ease; background: #fdfdff;
+        }
+        .upload-area:hover { border-color: #3b82f6; background: #f7faff; }
+        .upload-icon { font-size: 48px; color: #3b82f6; margin-bottom: 16px; }
+        
+        .btn {
+            padding: 12px 24px; border-radius: 8px; font-weight: 600;
+            font-size: 16px; cursor: pointer; transition: all 0.3s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .btn:active { transform: translateY(0); }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-outline { background: white; color: #475569; border: 1px solid #cbd5e1; }
+        .btn-outline:hover { background: #f8fafc; border-color: #94a3b8; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+        
+        .btn-group { display: flex; gap: 16px; margin-top: 32px; justify-content: flex-end; }
+        
+        .form-table { width: 100%; border-collapse: collapse; }
+        .form-table th {
+            background: #f1f5f9; padding: 12px 16px; text-align: left;
+            font-weight: 600; color: #334155; font-size: 14px;
+        }
+        .form-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; color: #334155; }
+        .form-table tr:last-child td { border-bottom: none; }
+        .form-table tr:hover { background: #f8fafc; }
+        
+        .form-input {
+            width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1;
+            border-radius: 8px; font-size: 14px; transition: all 0.2s;
+        }
+        .form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        
+        .feedback { text-align: center; padding: 12px; border-radius: 8px; font-weight: 500; margin-top: 24px; }
+        .feedback-error { background: #fee2e2; color: #b91c1c; }
+        
+        .tag {
+            display: inline-flex; align-items: center; background-color: #e0e7ff;
+            color: #3730a3; padding: 6px 16px; border-radius: 20px;
+            font-size: 14px; font-weight: 500; animation: popIn 0.3s ease-out;
+        }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .tag button { margin-left: 8px; background: none; border: none; cursor: pointer; color: #4f46e5; opacity: 0.7; }
+        .tag button:hover { opacity: 1; }
+        .tags-container { margin-top: 1rem; padding: 12px; min-height: 120px; background-color: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb; display: flex; flex-wrap: wrap; gap: 0.75rem; align-content: flex-start; }
+        
+        .common-space-btn {
+             background-color: #eef2ff; color: #4338ca; cursor: pointer;
+        }
+        .common-space-btn:hover { background-color: #e0e7ff; }
+        
+        #calendar-container {
+            border-radius: 0.5rem; padding-top: 1rem;
+        }
+        .fc .fc-toolbar-title { font-size: 1.25em; font-weight: 700; color: #1e293b;}
+        .fc .fc-button { background: white !important; color: #334155 !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; }
+        .fc .fc-button-primary:not(:disabled).fc-button-active { background: #3b82f6 !important; color: white !important; border-color: #3b82f6 !important;}
+        .fc .fc-daygrid-day.fc-day-today { background-color: rgba(59, 130, 246, 0.07); }
+        .holiday-event { color: #c2410c; font-weight: 500; }
+        .vacation-event { cursor: pointer; }
+
+        /* ——— Responsivité ——— */
+        @media (max-width: 1024px) {
+            .step { padding: 24px; }
+            .form-card { padding: 24px; }
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 0.5rem !important; }
+            .stepper-container { padding: 1rem; }
+            .progress-line { display: none; }
+            .stepper-container > .flex { flex-wrap: wrap; gap: 8px; justify-content: center; }
+            .stepper-item { flex: 0 0 auto; }
+            .progress-circle { width: 36px; height: 36px; font-size: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+            .progress-label { display: none; }
+            .progress-label.active { display: block; font-size: 12px; margin-top: 8px; }
+
+            .step { padding: 16px; }
+            .step-title { font-size: 20px; }
+            .step-subtitle { font-size: 14px; padding: 0 8px; }
+
+            .form-card { padding: 16px; }
+            .upload-area { padding: 24px 12px; }
+            .upload-icon { font-size: 36px; }
+
+            .btn-group { flex-direction: column; align-items: stretch; gap: 10px; }
+            .btn-group .btn { width: 100%; }
+
+            .form-table th, .form-table td { padding: 10px 12px; font-size: 13px; }
+            .form-table thead th.w-48, .form-table thead th.w-40 { width: auto; }
+
+            #calendar-container { padding-top: 0.5rem; }
+            .fc .fc-toolbar { flex-wrap: wrap; gap: 8px; }
+            .fc .fc-toolbar-title { font-size: 1em; }
+        }
+
+        @media (max-width: 400px) {
+            .progress-circle { width: 32px; height: 32px; font-size: 12px; }
+            .step-title { font-size: 18px; }
+            .step-subtitle { font-size: 13px; }
+            .form-card { padding: 12px; }
+        }
+
+        /* Éléments fluides en largeur */
+        img, svg, canvas, video { max-width: 100%; height: auto; }
+        #calendar, #calendar-container, .form-container, .form-card { width: 100%; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="form-container w-full max-w-5xl">
+        
+        <!-- Barre de progression -->
+        <div class="stepper-container">
+            <div class="progress-line"><div class="progress-line-filled" id="progress-line-filled"></div></div>
+            <div class="flex items-start justify-between">
+                <div class="stepper-item"><div id="progress-circle-1" class="progress-circle">1</div><div id="progress-label-1" class="progress-label">Fichier</div></div>
+                <div class="stepper-item"><div id="progress-circle-2" class="progress-circle">2</div><div id="progress-label-2" class="progress-label">Formateurs</div></div>
+                <div class="stepper-item"><div id="progress-circle-3" class="progress-circle">3</div><div id="progress-label-3" class="progress-label">Calendrier</div></div>
+                <div class="stepper-item"><div id="progress-circle-4" class="progress-circle">4</div><div id="progress-label-4" class="progress-label">Espaces</div></div>
+            </div>
+        </div>
+        
+        <!-- Étape 1 : Import du fichier -->
+        <div id="step1" class="step active">
+            <div class="step-header">
+                <h2 class="step-title">Étape 1 : Importez votre fichier de base</h2>
+                <p class="step-subtitle">Veuillez sélectionner le fichier Excel "AvancementProgramme" fourni. Le système extraira automatiquement la liste de vos formateurs.</p>
+            </div>
+            
+            <div class="form-card">
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-700">Cliquez pour choisir un fichier</p>
+                    <p id="fileName" class="text-gray-500 mt-2 font-medium"></p>
+                </div>
+                <input type="file" id="excelFile" class="file-input" accept=".xlsx, .xls" style="display: none;">
+                
+                <div id="step1-feedback" class="feedback feedback-error hidden"></div>
+                
+                <div class="btn-group">
+                    <button id="step1NextBtn" class="btn btn-primary flex-1" disabled>
+                        Suivant <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étape 2 : Vérification des formateurs -->
+        <div id="step2" class="step">
+            <div class="step-header">
+                <h2 class="step-title">Étape 2 : Vérifiez les informations des formateurs</h2>
+                <p class="step-subtitle">Les e-mails et matricules ont été générés. Vérifiez et corrigez les informations avant de continuer.</p>
+            </div>
+            <div class="form-card">
+                <div class="overflow-x-auto border rounded-lg max-h-[55vh]">
+                    <table class="form-table">
+                        <thead><tr><th>Nom du Formateur</th><th class="w-40">Masse Horaire</th><th class="w-48">Matricule</th><th>E-mail</th></tr></thead>
+                        <tbody id="formateurs-table-body"></tbody>
+                    </table>
+                </div>
+                <div class="btn-group">
+                    <button id="step2PrevBtn" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Précédent</button>
+                    <button id="step2NextBtn" class="btn btn-primary">Suivant <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étape 3 : Configuration du calendrier -->
+        <div id="step3" class="step">
+            <div class="step-header">
+                <h2 class="step-title">Étape 3 : Configurez le calendrier de l'année</h2>
+                <p class="step-subtitle">Les jours fériés sont chargés automatiquement. Pour ajouter des vacances, cliquez et glissez sur les dates souhaitées.</p>
+            </div>
+            <div class="form-card">
+                <div id="calendar-container">
+                    <div id='calendar'></div>
+                </div>
+                <div class="btn-group">
+                    <button id="step3PrevBtn" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Précédent</button>
+                    <button id="step3NextBtn" class="btn btn-primary">Suivant <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étape 4 : Espaces de travail -->
+        <div id="step4" class="step">
+            <div class="step-header">
+                <h2 class="step-title">Étape 4 : Listez vos espaces de travail</h2>
+                <p class="step-subtitle">Ajoutez vos salles. N'oubliez pas "TEAMS" ou "ZOOM" pour les cours à distance.</p>
+            </div>
+            <div class="form-card">
+                <div class="flex gap-2">
+                    <input type="text" id="espace-input" class="form-input flex-grow" placeholder="Entrez un nom d'espace...">
+                    <button id="ajouter-espace" class="btn btn-primary">Ajouter</button>
+                </div>
+                <div class="mt-4 mb-2">
+                    <p class="text-sm font-medium text-slate-600">Suggestions communes :</p>
+                    <div class="flex flex-wrap gap-2 mt-2" id="common-spaces">
+                        <button class="tag common-space-btn" data-space="Salle A101">Salle A101</button>
+                        <button class="tag common-space-btn" data-space="Salle A102">Salle A102</button>
+                        <button class="tag common-space-btn" data-space="Amphi B">Amphi B</button>
+                        <button class="tag common-space-btn" data-space="Labo Info">Labo Info</button>
+                        <button class="tag common-space-btn" data-space="TEAMS">TEAMS</button>
+                    </div>
+                </div>
+                <div id="espaces-container" class="tags-container"></div>
+                <div id="step4-feedback" class="feedback feedback-error hidden"></div>
+                <div class="btn-group">
+                    <button id="step4PrevBtn" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Précédent</button>
+                    <button id="finishSetupBtn" class="btn btn-success">Terminer et Sauvegarder <i class="fas fa-check"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', initializeSetupPage);
+
+    function initializeSetupPage() {
+        // --- Références aux éléments DOM ---
+        const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3'), document.getElementById('step4')];
+        const fileInput = document.getElementById('excelFile');
+        const uploadArea = document.getElementById('upload-area');
+        const fileNameLabel = document.getElementById('fileName');
+        const formateursTableBody = document.getElementById('formateurs-table-body');
+        const feedbacks = { step1: document.getElementById('step1-feedback'), step4: document.getElementById('step4-feedback') };
+        const nextButtons = { 1: document.getElementById('step1NextBtn'), 2: document.getElementById('step2NextBtn'), 3: document.getElementById('step3NextBtn') };
+        const prevButtons = { 2: document.getElementById('step2PrevBtn'), 3: document.getElementById('step3PrevBtn'), 4: document.getElementById('step4PrevBtn') };
+        const finishSetupBtn = document.getElementById('finishSetupBtn');
+        const progressLineFilled = document.getElementById('progress-line-filled');
+        
+        // --- Variables d'état ---
+        let rawExcelData = null;
+        let calendar = null;
+
+        // --- Fonctions principales de navigation et de progression ---
+        function goToStep(stepNumber) {
+            steps.forEach(step => step.classList.remove('active'));
+            steps[stepNumber - 1].classList.add('active');
+            updateProgress(stepNumber);
+            if (stepNumber === 3 && !calendar) {
+                initializeCalendar();
+            }
+        }
+
+        function updateProgress(currentStep) {
+            const totalSteps = steps.length;
+            progressLineFilled.style.width = `${((currentStep - 1) / (totalSteps - 1)) * 100}%`;
+            
+            for (let i = 1; i <= totalSteps; i++) {
+                const circle = document.getElementById(`progress-circle-${i}`);
+                const label = document.getElementById(`progress-label-${i}`);
+                circle.classList.remove('active', 'completed', 'success');
+                label.classList.remove('active', 'completed');
+
+                if (i < currentStep) {
+                    circle.classList.add('completed');
+                    label.classList.add('completed');
+                    circle.innerHTML = '';
+                } else if (i === currentStep) {
+                    circle.classList.add('active');
+                    label.classList.add('active');
+                    circle.textContent = i;
+                } else {
+                    circle.textContent = i;
+                }
+            }
+        }
+        
+        // --- Logique de l'Étape 3 : Calendrier ---
+        function initializeCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            const currentYear = new Date().getFullYear();
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'fr',
+                initialView: 'dayGridMonth',
+                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listYear' },
+                editable: true, selectable: true, selectMirror: true,
+                select: info => {
+                    const title = prompt('Entrez un nom pour cette période de vacances :');
+                    if (title) {
+                        calendar.addEvent({
+                            title, start: info.start, end: info.end, allDay: true,
+                            backgroundColor: '#3b82f6', borderColor: '#3b82f6', classNames: ['vacation-event']
+                        });
+                    }
+                    calendar.unselect();
+                },
+                eventClick: info => {
+                    if (info.event.classNames.includes('vacation-event') && confirm(`Supprimer la période "${info.event.title}" ?`)) {
+                        info.event.remove();
+                    }
+                },
+                events: (fetchInfo, successCallback, failureCallback) => {
+                    fetchMoroccanHolidays(currentYear)
+                        .then(holidays => successCallback(holidays))
+                        .catch(error => failureCallback(error));
+                }
+            });
+            calendar.render();
+        }
+
+        async function fetchMoroccanHolidays(year) {
+    try {
+        const response = await fetch(`../api/data/morocco_holidays.php?year=${year}`);
+        if (!response.ok) {
+            console.warn(`Erreur API personnalisée jours fériés : ${response.status}`);
+            return [];
+        }
+        const holidays = await response.json();
+
+        return holidays.map(h => ({
+            title: h.title,
+            start: h.date,
+            allDay: true,
+            editable: false,
+            display: 'background',
+            backgroundColor: 'rgba(251, 146, 60, 0.2)',
+            classNames: ['holiday-event']
+        }));
+
+    } catch (error) {
+        console.error("Erreur de récupération des jours fériés depuis API personnalisée:", error);
+        return [];
+    }
+}
+
+
+        // --- Logique des Étapes 1, 2 et 4 ---
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileNameLabel.textContent = this.files[0].name;
+                nextButtons[1].disabled = false;
+                feedbacks.step1.classList.add('hidden');
+            }
+        });
+
+        function handleStep1Next() {
+            if (!fileInput.files[0]) {
+                feedbacks.step1.textContent = "Veuillez sélectionner un fichier.";
+                feedbacks.step1.classList.remove('hidden');
+                return;
+            }
+            nextButtons[1].innerHTML = 'Analyse... <i class="fas fa-spinner fa-spin"></i>';
+            nextButtons[1].disabled = true;
+
+            const formData = new FormData();
+            formData.append('excelFile', fileInput.files[0]);
+
+            // VÉRITABLE APPEL API POUR L'ANALYSE DU FICHIER
+            fetch('../api/setup/parse_formateurs.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) { throw new Error(`Erreur HTTP: ${res.status}`); }
+                return res.json();
+            })
+            .then(result => {
+                if (result.success) {
+                    rawExcelData = result.rawExcelData; // Stocker les données brutes si nécessaire
+                    populateFormateursTable(result.formateurs);
+                    goToStep(2);
+                } else {
+                    feedbacks.step1.textContent = result.message || "Une erreur est survenue lors de l'analyse du fichier.";
+                    feedbacks.step1.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error("Erreur lors de l'appel à parse_formateurs.php:", error);
+                feedbacks.step1.textContent = "Erreur de communication avec le serveur. Veuillez réessayer.";
+                feedbacks.step1.classList.remove('hidden');
+            })
+            .finally(() => {
+                nextButtons[1].innerHTML = 'Suivant <i class="fas fa-arrow-right"></i>';
+                nextButtons[1].disabled = false;
+            });
+        }
+
+        function populateFormateursTable(formateurs) {
+            formateursTableBody.innerHTML = '';
+            formateurs.forEach(f => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td class="font-semibold nom">${f.nom}</td><td><input type="number" class="form-input text-center masse_horaire" value="${f.masse_horaire}"></td><td><input type="text" class="form-input bg-slate-50 matricule" value="${f.matricule}" readonly></td><td><input type="email" class="form-input email" value="${f.email}"></td>`;
+                formateursTableBody.appendChild(row);
+            });
+        }
+        
+        const espaceInput = document.getElementById('espace-input');
+        const ajouterEspaceBtn = document.getElementById('ajouter-espace');
+        const espacesContainer = document.getElementById('espaces-container');
+        const commonSpacesContainer = document.getElementById('common-spaces');
+
+        function ajouterEspace(espace) {
+            espace = espace.trim();
+            if (!espace || Array.from(espacesContainer.querySelectorAll('.tag')).some(t => t.dataset.value.toLowerCase() === espace.toLowerCase())) {
+                return;
+            }
+            const tag = document.createElement('span');
+            tag.className = 'tag'; tag.dataset.value = espace;
+            tag.innerHTML = `${espace} <button type="button" title="Supprimer"><i class="fas fa-times"></i></button>`;
+            tag.querySelector('button').onclick = () => tag.remove();
+            espacesContainer.appendChild(tag);
+            espaceInput.value = '';
+            feedbacks.step4.classList.add('hidden');
+        }
+        
+        ajouterEspaceBtn.addEventListener('click', () => ajouterEspace(espaceInput.value));
+        espaceInput.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); ajouterEspace(e.target.value); }});
+
+        commonSpacesContainer.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                ajouterEspace(e.currentTarget.dataset.space);
+            });
+        });
+
+        finishSetupBtn.addEventListener('click', function() {
+            const formateursData = Array.from(formateursTableBody.querySelectorAll('tr')).map(r => ({ nom: r.querySelector('.nom').textContent, masse_horaire: r.querySelector('.masse_horaire').value, matricule: r.querySelector('.matricule').value, email: r.querySelector('.email').value }));
+            const espaces = Array.from(espacesContainer.querySelectorAll('.tag')).map(t => t.dataset.value);
+            if (espaces.length === 0) {
+                feedbacks.step4.textContent = "Veuillez ajouter au moins un espace de travail.";
+                feedbacks.step4.classList.remove('hidden');
+                return;
+            }
+
+            const allEvents = calendar.getEvents();
+            const holidaysData = allEvents.filter(e => e.classNames.includes('holiday-event')).map(e => ({ nom: e.title, date: e.startStr.substring(0, 10) }));
+            const vacationsData = allEvents.filter(e => e.classNames.includes('vacation-event')).map(e => ({ nom: e.title, debut: e.startStr.substring(0, 10), fin: e.endStr ? e.endStr.substring(0, 10) : e.startStr.substring(0, 10) }));
+
+            const finalData = { excelData: rawExcelData, formateursData, holidays: holidaysData, vacations: vacationsData, espaces };
+            
+            this.innerHTML = 'Sauvegarde... <i class="fas fa-spinner fa-spin"></i>';
+            this.disabled = true;
+
+            // VÉRITABLE APPEL API POUR LA SAUVEGARDE FINALE
+            fetch('../api/setup/complete_setup.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(finalData)
+            })
+            .then(res => {
+                if (!res.ok) { throw new Error(`Erreur HTTP: ${res.status}`); }
+                return res.json();
+            })
+            .then(result => {
+                if (result.success) {
+                    const circle4 = document.getElementById('progress-circle-4');
+                    circle4.classList.remove('active');
+                    circle4.classList.add('success');
+                    circle4.innerHTML = "";
+                    updateProgress(4);
+                    
+                    alert("Configuration terminée avec succès !");
+                     
+                     setTimeout(() => { window.location.href = 'emploi.html'; }, 1500);
+                } else {
+                    feedbacks.step4.textContent = result.message || 'Une erreur est survenue lors de la sauvegarde.';
+                    feedbacks.step4.classList.remove('hidden');
+                    this.innerHTML = 'Terminer et Sauvegarder <i class="fas fa-check"></i>';
+                    this.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error("Erreur lors de l'appel à complete_setup.php:", error);
+                feedbacks.step4.textContent = 'Erreur de communication avec le serveur. Veuillez réessayer.';
+                feedbacks.step4.classList.remove('hidden');
+                this.innerHTML = 'Terminer et Sauvegarder <i class="fas fa-check"></i>';
+                this.disabled = false;
+            });
+        });
+
+        // --- Initialisation ---
+        nextButtons[1].addEventListener('click', handleStep1Next);
+        nextButtons[2].addEventListener('click', () => goToStep(3));
+        nextButtons[3].addEventListener('click', () => goToStep(4));
+        prevButtons[2].addEventListener('click', () => goToStep(1));
+        prevButtons[3].addEventListener('click', () => goToStep(2));
+        prevButtons[4].addEventListener('click', () => goToStep(3));
+        
+        goToStep(1);
+    }
+    </script>
+</body>
+</html>

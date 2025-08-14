@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil & Paramètres</title>
+    
+    <!-- Polices et Bibliothèques Externes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bibliothèque pour le Calendrier Interactif -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    
+    <style>
+        /* CSS Global */
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 60px; /* Espace pour la barre de navigation fixe */
+        }
+        
+        /* Barre de navigation principale */
+        nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            padding: 10px 20px; background:#fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex; align-items: center; justify-content: space-between;
+            z-index: 700;
+        }
+        nav a { text-decoration: none; color: #333; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        nav a:hover, nav a.active { background-color: #f0f4ff; color: #1d4ed8; font-weight: 600; }
+        .nav-links { display: flex; align-items: center; gap: 10px; }
+        
+        /* Menu Profil Dropdown */
+        .profile-menu-container { position: relative; }
+        .profile-button {
+            display: flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px; border-radius: 50%;
+            background-color: #e0eaff; color: #1d4ed8;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .profile-dropdown {
+            display: none; position: absolute; top: calc(100% + 12px); right: 0;
+            width: 280px; background-color: white; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 1010;
+            overflow: hidden; animation: scale-up-and-fade-in 0.2s ease-out;
+        }
+        .profile-dropdown.show { display: block; }
+        @keyframes scale-up-and-fade-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .dropdown-profile-header { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid #f3f4f6; }
+        .profile-pic { width: 48px; height: 48px; border-radius: 50%; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #6b7280; }
+        .profile-info strong { display: block; font-size: 1rem; font-weight: 600; color: #111827; }
+        .profile-info small { font-size: 0.875rem; color: #6b7280; }
+        .dropdown-link { display: flex; align-items: center; width: 100%; padding: 10px 12px; border-radius: 8px; text-decoration: none; color: #374151; font-weight: 500; transition: all 0.2s; }
+        .dropdown-link:hover { background-color: #f3f4f6; }
+        .dropdown-link .icon { width: 32px; font-size: 16px; color: #6b7280; }
+        .dropdown-divider { margin: 8px 0; border-top: 1px solid #f3f4f6; }
+        .dropdown-link.logout { color: #ef4444; }
+        .dropdown-link.logout .icon { color: #ef4444; }
+        .dropdown-link.logout:hover { background-color: #fee2e2; }
+        
+        /* Barre Latérale et Contenu */
+        .sidebar { position: fixed; top: 60px; left: 0; width: 260px; height: calc(100vh - 60px); background: white; border-right: 1px solid #e9ecef; padding: 24px 12px; z-index: 600; }
+        .profile-header { text-align: center; padding-bottom: 16px; border-bottom: 1px solid #e9ecef; margin-bottom: 16px; }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background-color: #e0eaff; color: #1d4ed8; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; margin: 0 auto; }
+        .sidebar-links { padding: 0 12px; }
+        .sidebar-link { display: block; padding: 12px 16px; border-radius: 6px; font-weight: 500; color: #495057; text-decoration: none; transition: all 0.2s; cursor: pointer; margin-bottom: 8px; }
+        .sidebar-link:hover { background-color: #f1f3f5; }
+        .sidebar-link.active { background-color: #0d6efd; color: white; }
+        .content { margin-left: 260px; padding: 24px; width: calc(100% - 260px); }
+        .panel { background: white; border-radius: 8px; border: 1px solid #e9ecef; display: none; margin-bottom: 24px; }
+        .panel.active { display: block; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .panel-header { padding: 24px; border-bottom: 1px solid #e9ecef; }
+        .panel-header h2 { font-size: 22px; font-weight: 600; color: #212529; }
+        .panel-body { padding: 24px; }
+        
+        /* Styles des formulaires */
+        .form-grid { display: block; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #495057; font-size: 14px; }
+        .form-control { width: 100%; padding: 10px 14px; border: 1px solid #ced4da; border-radius: 6px; font-size: 15px; }
+        .form-control:focus { outline: none; border-color: #86b7fe; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2); }
+        .form-info { padding: 11px 14px; background-color: #e9ecef; border-radius: 6px; color: #495057; }
+        .form-footer { display: flex; justify-content: flex-start; padding: 20px 24px; border-top: 1px solid #e9ecef; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 24px; font-size: 15px; font-weight: 500; border-radius: 6px; cursor: pointer; border: 1px solid transparent; }
+        .btn-primary { background-color: #0d6efd; color: white; }
+        .btn-primary:hover { background-color: #0b5ed7; }
+        .feedback-message { padding: 0 24px 16px 24px; font-weight: 500; height: 1.25rem; }
+        .feedback-success { color: #198754; }
+        .feedback-error { color: #dc3545; }
+        .info-box { background-color: #eef2ff; border-left: 4px solid #0d6efd; padding: 16px; margin-bottom: 20px; font-size: 14px; }
+        .table-container { overflow-x: auto; border: 1px solid #dee2e6; border-radius: 8px; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { background-color: #f8f9fa; padding: 12px 16px; text-align: left; font-weight: 600; font-size: 12px; }
+        .table td { padding: 12px 16px; border-top: 1px solid #dee2e6; font-size: 14px; }
+
+        /* Tags pour les espaces */
+        .tag-container { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 1px solid #ced4da; border-radius: 6px; cursor: text; }
+        .tag-container:focus-within { border-color: #86b7fe; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2); }
+        .tag { display: inline-flex; align-items: center; gap: 8px; background-color: #DBEAFE; color: #1D4ED8; border-radius: 16px; padding: 4px 10px; border-radius: 16px; font-size: 14px; }
+        .tag-remove { cursor: pointer; }
+        .tag-input { flex-grow: 1; border: none; outline: none; background: transparent; }
+        
+        /* Styles pour FullCalendar */
+        .fc .fc-toolbar-title { font-size: 1.25em; font-weight: 600; color: #212529;}
+        .fc .fc-button { background-color: #fff !important; color: #495057 !important; border: 1px solid #ced4da !important; box-shadow: none !important; }
+        .fc .fc-button-primary:not(:disabled).fc-button-active { background-color: #0d6efd !important; color: white !important; border-color: #0d6efd !important;}
+        .fc .fc-daygrid-day.fc-day-today { background-color: rgba(13, 110, 253, 0.1); }
+        .holiday-event { color: #fd7e14; font-weight: 500; }
+        .vacation-event { cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <img src="assets/images/logo_edtpro.png" style="height: 80px; width: auto;" alt="Logo">
+        <div class="nav-links">
+            <a href="emploi.html">Emploi globale</a>
+            <a href="edition.html">Edition</a>
+            <a href="avancement.html">Avancement</a>
+            <div class="profile-menu-container">
+                <button id="profile-button" class="profile-button">
+                    <span id="profile-initials">--</span>
+                </button>
+                <div id="profile-dropdown" class="profile-dropdown">
+                    <div class="dropdown-profile-header">
+                        <div class="profile-pic"><i class="fas fa-user"></i></div>
+                        <div class="profile-info">
+                            <strong id="dropdown-user-name">Chargement...</strong>
+                            <small id="dropdown-user-email">...</small>
+                        </div>
+                    </div>
+                    <ul class="dropdown-menu-list" style="padding: 8px; margin: 0; list-style: none;">
+                        <li><a href="profile.html" class="dropdown-link"><i class="fas fa-user-edit icon"></i> Mon Profil</a></li>
+                    </ul>
+                    <hr class="dropdown-divider">
+                    <a href="../api/auth/logout.php" class="dropdown-link logout" style="margin: 8px; width: calc(100% - 16px);"><i class="fas fa-sign-out-alt icon"></i> Déconnexion</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="sidebar">
+        <div class="profile-header">
+            <div class="profile-avatar" id="profile-page-initials">--</div>
+        </div>
+        <div class="sidebar-links">
+            <a class="sidebar-link active" data-target="panel-account">Profil</a>
+            <a class="sidebar-link" data-target="panel-password">Mot de passe</a>
+            <a class="sidebar-link" data-target="panel-espaces">Espaces</a>
+            <a class="sidebar-link" data-target="panel-calendar">Calendrier Annuel</a>
+            <a class="sidebar-link" data-target="panel-formateurs">Formateurs</a>
+            <a class="sidebar-link" data-target="panel-stages">Stages</a>
+        </div>
+    </aside>
+    
+    <main class="content">
+        <div id="panel-account" class="panel active">
+             <div class="panel-header"><h2>Paramètres du Compte</h2></div>
+            <form id="userInfoForm">
+                <div class="panel-body">
+                    <div class="form-grid">
+                        <div class="form-group"><label for="nom_complet">Nom & Prénom</label><input type="text" id="nom_complet" class="form-control"></div>
+                        <div class="form-group"><label for="email">Email</label><input type="email" id="email" class="form-control"></div>
+                        <div class="form-group"><label>Établissement</label><div class="form-info" id="etablissement_name"></div></div>
+                        <div class="form-group"><label>Complexe</label><div class="form-info" id="complexe_name"></div></div>
+                    </div>
+                </div>
+                <div id="userInfoFeedback" class="feedback-message"></div>
+                <div class="form-footer"><button type="submit" class="btn btn-primary">Mettre à jour</button></div>
+            </form>
+        </div>
+        
+        <div id="panel-password" class="panel">
+            <div class="panel-header"><h2>Changer le Mot de Passe</h2></div>
+            <form id="passwordForm">
+                <div class="panel-body">
+                    <div class="form-group"><label for="new_password">Nouveau mot de passe</label><input type="password" id="new_password" class="form-control" required></div>
+                    <div class="form-group"><label for="confirm_new_password">Confirmer le nouveau mot de passe</label><input type="password" id="confirm_new_password" class="form-control" required></div>
+                </div>
+                <div id="passwordFeedback" class="feedback-message"></div>
+                <div class="form-footer"><button type="submit" class="btn btn-primary">Changer le mot de passe</button></div>
+            </form>
+        </div>
+
+        <div id="panel-espaces" class="panel">
+            <div class="panel-header"><h2>Gestion des Espaces</h2></div>
+            <form id="espacesForm">
+                <div class="panel-body">
+                     <div class="form-group">
+                        <label for="espaces-input">Liste des salles, amphis, etc.</label>
+                        <div id="espaces-tag-container" class="tag-container">
+                            <input type="text" id="espaces-input" class="tag-input" placeholder="Ajouter un espace et appuyez sur Entrée...">
+                        </div>
+                        <textarea id="espaces" name="espaces" style="display: none;"></textarea>
+                    </div>
+                </div>
+                <div id="espacesFeedback" class="feedback-message"></div>
+                <div class="form-footer"><button type="submit" class="btn btn-primary">Sauvegarder les Espaces</button></div>
+            </form>
+        </div>
+
+        <div id="panel-calendar" class="panel">
+            <div class="panel-header"><h2>Calendrier Annuel</h2></div>
+            <form id="calendarForm">
+                <div class="panel-body">
+                    <p class="form-group" style="font-size: 15px; color: #6c757d;">Cliquez et glissez pour définir une période de vacances. Cliquez sur une période pour la supprimer.</p>
+                    <div id="profile-calendar" style="margin-top: 1rem;"></div>
+                </div>
+                <div id="calendarFeedback" class="feedback-message"></div>
+                <div class="form-footer"><button type="submit" class="btn btn-primary">Sauvegarder le Calendrier</button></div>
+            </form>
+        </div>
+        
+        <div id="panel-formateurs" class="panel">
+            <div class="panel-header"><h2>Liste des Formateurs</h2></div>
+            <form id="formateursForm">
+                <div class="panel-body">
+                    <div class="info-box">Pour ajouter/supprimer des formateurs, une réimportation du fichier de base est nécessaire via la configuration initiale.</div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead><tr><th>Nom</th><th>Matricule</th><th>Masse Horaire</th><th>Email</th></tr></thead>
+                            <tbody id="formateurs-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="formateursFeedback" class="feedback-message"></div>
+                <div class="form-footer"><button type="submit" class="btn btn-primary">Sauvegarder les Modifications</button></div>
+            </form>
+        </div>
+
+        <div id="panel-stages" class="panel">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-2xl font-bold mb-2">Planification des Stages</h2>
+                <p class="text-gray-500 mb-6">Sélectionnez les groupes, définissez la période, puis cliquez sur "Planifier".</p>
+                
+                <form id="stagesForm" class="border rounded-lg p-4">
+                    <!-- Section 1: Tableau de sélection des groupes -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block text-lg font-semibold text-gray-800">1. Sélectionnez les Groupes</label>
+                            <div class="flex items-center gap-2 text-sm">
+                                <span class="text-gray-600">Filtrer par mode:</span>
+                                <select id="stage-mode-filter" class="border rounded-md px-2 py-1">
+                                    <option value="all">Tous</option>
+                                    <option value="Résidentiel">Résidentiel</option>
+                                    <option value="Alterné">Alterné</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="max-h-64 overflow-y-auto border rounded-md">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-100 sticky top-0">
+                                    <tr>
+                                        <th class="p-2 w-10 text-center">
+                                            <input type="checkbox" id="selectAllGroupes" title="Sélectionner tout">
+                                        </th>
+                                        <th class="p-2 text-left">Nom du Groupe</th>
+                                        <th class="p-2 text-left">Mode</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stage-groupes-table-body">
+                                    <!-- La liste des groupes sera chargée ici -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+        
+                    <!-- Section 2: Sélection de la période (améliorée) -->
+                    <div class="mb-4">
+                         <label class="block text-lg font-semibold text-gray-800 mb-3">2. Définissez la Période</label>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Semaine (ISO)</label>
+                                <input type="week" id="stage-week" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="stage-debut" class="block text-sm font-medium text-gray-700">Date de début</label>
+                                    <input type="date" id="stage-debut" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label for="stage-fin" class="block text-sm font-medium text-gray-700">Date de fin</label>
+                                    <input type="date" id="stage-fin" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Astuce: sélectionnez une semaine pour pré-remplir du lundi au vendredi. Vous pouvez ensuite ajuster les dates.</p>
+                    </div>
+        
+                    <!-- Section 3: Bouton d'action -->
+                    <div class="text-right mt-6 border-t pt-4">
+                        <button type="submit" id="addStageBtn" class="bg-blue-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-blue-700 transition">
+                            <i class="fas fa-calendar-plus mr-2"></i>Planifier pour les groupes sélectionnés
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-8">
+        
+                <h3 class="text-xl font-semibold mb-4">Stages déjà planifiés</h3>
+                <div class="overflow-x-auto">
+                    <table class="table w-full">
+                        <thead><tr><th>Groupe</th><th>Date de début</th><th>Date de fin</th><th class="text-center">Action</th></tr></thead>
+                        <tbody id="stages-list-table"></tbody>
+                    </table>
+                </div>
+                <div id="stagesFeedback" class="feedback-message mt-4"></div>
+            </div>
+        </div>
+        <!-- ======================================================================= -->
+    </main>
+
+    <script>
+        let profileCalendar = null;
+        let establishmentCalendarData = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSessionAndLoad();
+            setupEspacesTagInput();
+        });
+
+        async function checkSessionAndLoad() {
+            try {
+                const response = await fetch('../api/auth/verify_session.php');
+                const result = await response.json();
+                if (!result.success) { window.location.href = 'login.html'; return; }
+                
+                populateUserInfo(result.userData);
+                setupProfileMenu();
+                await loadPageData(); // Attendre que les données soient chargées
+                setupTabNavigation();
+                setupFormSubmissions();
+            } catch (error) { 
+                console.error('Erreur de session:', error);
+                window.location.href = 'login.html'; 
+            }
+        }
+
+        function getInitials(name) {
+            if (!name) return '--';
+            const words = name.trim().split(' ');
+            return words.length > 1 ? (words[0][0] + words[words.length - 1][0]).toUpperCase() : words[0].substring(0, 2).toUpperCase();
+        }
+
+        function populateUserInfo(userData) {
+            const displayName = userData.nom_complet || userData.nom;
+            document.getElementById('profile-initials').textContent = getInitials(displayName);
+            document.getElementById('dropdown-user-name').textContent = displayName;
+            document.getElementById('dropdown-user-email').textContent = userData.email;
+            document.getElementById('profile-page-initials').textContent = getInitials(displayName);
+        }
+
+        function setupProfileMenu() {
+            const btn = document.getElementById('profile-button');
+            const menu = document.getElementById('profile-dropdown');
+            btn.addEventListener('click', (e) => { e.stopPropagation(); menu.classList.toggle('show'); });
+            window.addEventListener('click', () => menu.classList.remove('show'));
+        }
+
+        async function loadPageData() {
+            try {
+                const response = await fetch('../api/profile/get_profile_data.php');
+                const result = await response.json();
+                if (result.success) {
+                    const data = result.data;
+                    document.getElementById('nom_complet').value = data.user.nom_complet || '';
+                    document.getElementById('email').value = data.user.email || '';
+                    document.getElementById('etablissement_name').textContent = data.user.nom_etablissement || '';
+                    document.getElementById('complexe_name').textContent = data.user.complexe || '';
+                    
+                    const tableBody = document.getElementById('stage-groupes-table-body');
+                    const modeFilter = document.getElementById('stage-mode-filter');
+                    const groupModes = data.groupe_modes || {};
+                    // Assurer une clé exacte en supprimant espaces superflus
+                    Object.keys(groupModes).forEach(k => {
+                        const trimmed = (k || '').trim();
+                        if (trimmed !== k) {
+                            groupModes[trimmed] = groupModes[k];
+                            delete groupModes[k];
+                        }
+                    });
+                    function renderGroupRows(filterValue) {
+                        tableBody.innerHTML = '';
+                        (data.groupes || []).forEach(groupe => {
+                            const mode = groupModes[groupe] || '';
+                            if (filterValue && filterValue !== 'all' && mode !== filterValue) return;
+                            const row = `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="p-2 text-center">
+                                        <input type="checkbox" class="groupe-stage-checkbox" value="${groupe}">
+                                    </td>
+                                    <td class="p-2">${groupe}</td>
+                                    <td class="p-2">${mode}</td>
+                                </tr>`;
+                            tableBody.innerHTML += row;
+                        });
+                    }
+                    renderGroupRows('all');
+                    if (modeFilter) {
+                        modeFilter.addEventListener('change', () => renderGroupRows(modeFilter.value));
+                    }
+                
+                renderStagesTable(data.stages || []);
+
+                    document.getElementById('espaces').value = (data.espaces || []).join('\n');
+                    (data.espaces || []).forEach(createEspaceTag);
+                    updateHiddenEspacesTextarea();
+                    
+                    establishmentCalendarData = data.calendar || { holidays: '', vacations: '' };
+                    
+                    const formateursTbody = document.getElementById('formateurs-table-body');
+                    formateursTbody.innerHTML = (data.formateurs || []).map(f => `
+                        <tr>
+                            <td>${f.nom || ''}</td><td>${f.matricule || ''}</td>
+                            <td><input name="formateurs[${f.matricule}][masse_horaire]" type="number" class="form-control" value="${f.masse_horaire || ''}"></td>
+                            <td><input name="formateurs[${f.matricule}][email]" type="email" class="form-control" value="${f.email || ''}"></td>
+                            <input type="hidden" name="formateurs[${f.matricule}][nom]" value="${f.nom || ''}"><input type="hidden" name="formateurs[${f.matricule}][matricule]" value="${f.matricule || ''}">
+                        </tr>`).join('');
+                } else { throw new Error(result.message); }
+            } catch (error) {
+                console.error('Erreur de chargement des données:', error);
+                alert("Impossible de charger les données du profil.");
+            }
+        }
+
+        function setupEspacesTagInput() {
+            const container = document.getElementById('espaces-tag-container');
+            const input = document.getElementById('espaces-input');
+            container.addEventListener('click', () => input.focus());
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (input.value.trim()) {
+                        createEspaceTag(input.value.trim());
+                        input.value = '';
+                        updateHiddenEspacesTextarea();
+                    }
+                }
+            });
+        }
+
+        function createEspaceTag(label) {
+            const container = document.getElementById('espaces-tag-container');
+            const input = document.getElementById('espaces-input');
+            if (Array.from(container.querySelectorAll('.tag span:first-child')).some(span => span.textContent === label)) return;
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.innerHTML = `<span>${label}</span><span class="tag-remove" title="Supprimer">&times;</span>`;
+            tag.querySelector('.tag-remove').addEventListener('click', () => {
+                tag.remove();
+                updateHiddenEspacesTextarea();
+            });
+            container.insertBefore(tag, input);
+        }
+
+        function updateHiddenEspacesTextarea() {
+            const tags = document.querySelectorAll('#espaces-tag-container .tag span:first-child');
+            document.getElementById('espaces').value = Array.from(tags).map(t => t.textContent).join('\n');
+        }
+
+        function setupTabNavigation() {
+            const links = document.querySelectorAll('.sidebar-link');
+            const panels = document.querySelectorAll('.panel');
+            links.forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    links.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    const targetId = link.dataset.target;
+                    panels.forEach(p => p.classList.remove('active'));
+                    const targetPanel = document.getElementById(targetId);
+                    targetPanel.classList.add('active');
+                    if (targetId === 'panel-calendar' && !profileCalendar) {
+                        initializeProfileCalendar();
+                    }
+                });
+            });
+        }
+
+        async function initializeProfileCalendar() {
+            const calendarEl = document.getElementById('profile-calendar');
+            if (!calendarEl || !establishmentCalendarData) return;
+
+            const apiHolidays = await fetchMoroccanHolidays(new Date().getFullYear());
+            const dbVacations = parseDbVacations(establishmentCalendarData.vacations);
+
+            profileCalendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'fr',
+                initialView: 'dayGridMonth',
+                aspectRatio: 1.6,
+                height: 'auto',
+                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth' },
+                editable: true, selectable: true,
+                events: [...apiHolidays, ...dbVacations],
+                select: info => {
+                    const title = prompt('Nom de la période de vacances:', 'Vacances');
+                    if (title) {
+                        profileCalendar.addEvent({
+                            title, start: info.start, end: info.end, allDay: true,
+                            backgroundColor: '#0d6efd', borderColor: '#0d6efd',
+                            classNames: ['vacation-event'], extendedProps: { isEditable: true }
+                        });
+                    }
+                    profileCalendar.unselect();
+                },
+                eventClick: info => {
+                    if (info.event.extendedProps.isEditable && confirm(`Supprimer la période "${info.event.title}" ?`)) {
+                        info.event.remove();
+                    }
+                }
+            });
+            profileCalendar.render();
+        }
+
+        async function fetchMoroccanHolidays(year) {
+    try {
+        const response = await fetch(`../api/data/morocco_holidays.php?year=${year}`);
+        if (!response.ok) {
+            console.warn(`Erreur API personnalisée jours fériés : ${response.status}`);
+            return [];
+        }
+        const holidays = await response.json();
+
+        return holidays.map(h => ({
+            title: h.title,
+            start: h.date,
+            allDay: true,
+            editable: false,
+            display: 'background',
+            backgroundColor: 'rgba(251, 146, 60, 0.2)',
+            classNames: ['holiday-event']
+        }));
+
+    } catch (error) {
+        console.error("Erreur de récupération des jours fériés depuis API personnalisée:", error);
+        return [];
+    }
+}
+
+        function parseDbVacations(vacationsData) {
+            // Accepte plusieurs formats: string (lignes JJ/MM/AAAA - JJ/MM/AAAA),
+            // tableau de chaînes, ou tableau d'objets {nom, debut, fin}
+            if (!vacationsData) return [];
+
+            const toIso = (dStr) => {
+                // Supporte déjà JJ/MM/AAAA et ISO
+                if (!dStr) return '';
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) return dStr;
+                const parts = dStr.split('/');
+                if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                return dStr;
+            };
+
+            let items = [];
+            if (typeof vacationsData === 'string') {
+                items = vacationsData.split('\n').filter(Boolean).map(line => {
+                    const [startStr, endStr] = line.split('-').map(s => s.trim());
+                    return { start: toIso(startStr), end: toIso(endStr), title: 'Vacances' };
+                });
+            } else if (Array.isArray(vacationsData)) {
+                items = vacationsData.map(v => {
+                    if (typeof v === 'string') {
+                        const [startStr, endStr] = v.split('-').map(s => s.trim());
+                        return { start: toIso(startStr), end: toIso(endStr), title: 'Vacances' };
+                    }
+                    // Objet { nom, debut, fin }
+                    return { start: toIso(v.debut || v.start), end: toIso(v.fin || v.end), title: v.nom || 'Vacances' };
+                });
+            } else if (typeof vacationsData === 'object') {
+                // objet unique {nom, debut, fin}
+                items = [{ start: toIso(vacationsData.debut), end: toIso(vacationsData.fin), title: vacationsData.nom || 'Vacances' }];
+            }
+
+            return items.filter(it => it.start).map(it => ({
+                title: it.title,
+                start: it.start,
+                end: it.end,
+                allDay: true,
+                backgroundColor: '#0d6efd',
+                borderColor: '#0d6efd',
+                classNames: ['vacation-event'],
+                extendedProps: { isEditable: true }
+            }));
+        }
+
+        function showFeedback(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = isSuccess ? 'feedback-message feedback-success' : 'feedback-message feedback-error';
+            setTimeout(() => el.textContent = '', 4000);
+        }
+
+        // AJOUTEZ CES DEUX FONCTIONS DANS VOTRE <script> de profile.html
+
+/**
+ * Affiche la liste des stages déjà planifiés dans leur tableau.
+ * @param {Array} stages - La liste des objets stage venant de l'API.
+ */
+function renderStagesTable(stages) {
+    const tableBody = document.getElementById('stages-list-table');
+    if (!stages || stages.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">Aucun stage planifié.</td></tr>';
+        return;
+    }
+    tableBody.innerHTML = '';
+    stages.forEach(stage => {
+        // Formater les dates pour un affichage lisible
+        const dateDebut = new Date(stage.date_debut + 'T00:00:00').toLocaleDateString('fr-FR');
+        const dateFin = new Date(stage.date_fin + 'T00:00:00').toLocaleDateString('fr-FR');
+
+        const row = `
+            <tr data-stage-id="${stage.id}">
+                <td class="p-2">${stage.groupe_nom}</td>
+                <td class="p-2">${dateDebut}</td>
+                <td class="p-2">${dateFin}</td>
+                <td class="text-center">
+                    <button onclick="deleteStage(${stage.id})" class="text-red-500 hover:text-red-700 transition" title="Supprimer ce stage">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>`;
+        tableBody.innerHTML += row;
+    });
+}
+
+/**
+ * Appelle l'API pour supprimer une période de stage spécifique.
+ * @param {number} stageId - L'ID du stage à supprimer.
+ */
+function deleteStage(stageId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette période de stage ?')) return;
+
+    fetch('../api/profile/update_stages.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', stage_id: stageId })
+    })
+    .then(res => res.json())
+    .then(result => {
+        showFeedback('stagesFeedback', result.message, result.success);
+        if (result.success) {
+            // On supprime la ligne du tableau sans recharger toute la page
+            const rowToRemove = document.querySelector(`tr[data-stage-id='${stageId}']`);
+            if (rowToRemove) {
+                rowToRemove.remove();
+            }
+        }
+    });
+}
+
+        function setupFormSubmissions() {
+            document.getElementById('userInfoForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const data = { nom_complet: document.getElementById('nom_complet').value, email: document.getElementById('email').value };
+                fetch('../api/profile/update_user_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                    .then(res => res.json()).then(result => {
+                        showFeedback('userInfoFeedback', result.message, result.success);
+                        if (result.success) populateUserInfo({ ...data, nom: data.nom_complet });
+                    });
+            });
+
+            document.getElementById('passwordForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const form = e.target;
+                const data = Object.fromEntries(new FormData(form).entries());
+                if (data.new_password !== data.confirm_new_password) {
+                    showFeedback('passwordFeedback', 'Les mots de passe ne correspondent pas.', false); return;
+                }
+                fetch('../api/profile/update_password.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                    .then(res => res.json()).then(result => {
+                        showFeedback('passwordFeedback', result.message, result.success);
+                        if (result.success) form.reset();
+                    });
+            });
+            
+            document.getElementById('espacesForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const data = { espaces: document.getElementById('espaces').value.split('\n').filter(Boolean) };
+                fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                    .then(res => res.json()).then(result => showFeedback('espacesFeedback', result.message, result.success));
+            });
+            
+            document.getElementById('calendarForm').addEventListener('submit', e => {
+                e.preventDefault();
+                if (!profileCalendar) { showFeedback('calendarFeedback', 'Calendrier non initialisé.', false); return; }
+                const toFrDate = (date) => date.toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                const vacations = profileCalendar.getEvents()
+                    .filter(event => event.extendedProps.isEditable)
+                    .map(event => {
+                        const end = new Date(event.end.valueOf() - 86400000); // Rendre la date de fin inclusive
+                        return `${toFrDate(event.start)} - ${toFrDate(end)}`;
+                    }).join('\n');
+                
+                const data = { vacations, holidays: '' }; // On ne sauvegarde que les vacances modifiables.
+                fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                    .then(res => res.json()).then(result => showFeedback('calendarFeedback', result.message, result.success));
+            });
+            
+            document.getElementById('formateursForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const formateurs = Array.from(new FormData(e.target).entries()).reduce((acc, [key, val]) => {
+                    const [, matricule, prop] = key.match(/formateurs\[(.+?)\]\[(.+?)\]/);
+                    if (!acc[matricule]) acc[matricule] = {};
+                    acc[matricule][prop] = val;
+                    return acc;
+                }, {});
+                const data = { formateurs: Object.values(formateurs) };
+                fetch('../api/profile/update_formateurs.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                    .then(res => res.json()).then(result => showFeedback('formateursFeedback', result.message, result.success));
+            });
+
+            // Saisie semaine -> dates automatiques (lundi-vendredi)
+            const weekInput = document.getElementById('stage-week');
+            if (weekInput) {
+                const toMonday = (year, week) => {
+                    const simple = new Date(year, 0, 1 + (week - 1) * 7);
+                    const dow = simple.getDay() || 7; // 1..7 (lundi..dimanche)
+                    const monday = new Date(simple);
+                    monday.setDate(simple.getDate() + (1 - dow));
+                    return monday;
+                };
+                weekInput.addEventListener('change', () => {
+                    const [yearStr, weekStr] = weekInput.value.split('-W');
+                    const year = parseInt(yearStr, 10);
+                    const week = parseInt(weekStr, 10);
+                    if (!isNaN(year) && !isNaN(week)) {
+                        const monday = toMonday(year, week);
+                        const friday = new Date(monday);
+                        friday.setDate(monday.getDate() + 4);
+                        const fmt = d => d.toISOString().slice(0,10);
+                        document.getElementById('stage-debut').value = fmt(monday);
+                        document.getElementById('stage-fin').value = fmt(friday);
+                    }
+                });
+            }
+
+            document.getElementById('stagesForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // On récupère les groupes cochés dans le tableau
+        const selectedGroupes = Array.from(document.querySelectorAll('.groupe-stage-checkbox:checked')).map(cb => cb.value);
+        const dateDebut = document.getElementById('stage-debut').value;
+        const dateFin = document.getElementById('stage-fin').value;
+
+        if (selectedGroupes.length === 0 || !dateDebut || !dateFin) {
+            showFeedback('stagesFeedback', 'Veuillez sélectionner au moins un groupe et une période complète.', false);
+            return;
+        }
+
+        const data = {
+            groupes: selectedGroupes,
+            date_debut: dateDebut,
+            date_fin: dateFin
+        };
+
+        fetch('../api/profile/update_stages.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'add', data: data })
+        })
+        .then(res => res.json())
+        .then(result => {
+            showFeedback('stagesFeedback', result.message, result.success);
+            if (result.success) {
+                loadPageData(); // Rafraîchir toute la page pour voir la nouvelle liste
+            }
+        });
+    });
+    
+    // Logique pour la case à cocher "Sélectionner tout"
+    document.getElementById('selectAllGroupes').addEventListener('change', function() {
+        document.querySelectorAll('.groupe-stage-checkbox').forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+        }
+
+        
+    </script>
+</body>
+</html>

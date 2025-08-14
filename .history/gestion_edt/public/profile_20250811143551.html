@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil & Paramètres</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        /* Styles pour la barre de navigation principale */
+        nav { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px; padding: 10px 20px; 
+            background: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+            display: flex; align-items: center; z-index: 1000; justify-content: space-between; 
+        }
+        .nav-links { display: flex; align-items: center; gap: 10px; }
+        .nav-links a { text-decoration: none; color: #333; padding: 8px 16px; border-radius: 8px; transition: background-color 0.3s; font-weight: 500;}
+        .nav-links a.active, .dropdown-link.active { background-color: #e0eaff; color: #1d4ed8; font-weight: 600; }
+        .nav-links a:hover { background-color: #f0f4ff; }
+
+        /* Styles pour le menu profil dans la barre de nav principale */
+        .profile-menu-container { position: relative; }
+        .profile-button { width: 42px; height: 42px; border-radius: 50%; background-color: #e0eaff; color: #1d4ed8; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .profile-dropdown { display: none; position: absolute; top: calc(100% + 8px); right: 0; width: 250px; background-color: white; border-radius: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); z-index: 1010; overflow: hidden; }
+        .profile-dropdown.show { display: block; }
+        .dropdown-profile-header { display: flex; align-items: center; gap: 12px; padding: 16px; }
+        .profile-pic { width: 48px; height: 48px; border-radius: 50%; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #6b7280; }
+        .profile-info strong { display: block; font-size: 1rem; font-weight: 600; color: #111827; }
+        .profile-info small { font-size: 0.875rem; color: #6b7280; }
+        .dropdown-menu-list { list-style: none; padding: 8px; margin: 0; }
+        .dropdown-divider { margin: 0 8px; border: none; border-top: 1px solid #f3f4f6; }
+        .dropdown-link, .dropdown-logout-link { display: flex; align-items: center; gap: 10px; padding: 12px 15px; text-decoration: none; color: #333; transition: background-color 0.2s; font-weight: 500; border-radius: 8px; }
+        .dropdown-link .text { flex-grow: 1; }
+        .dropdown-link .chevron { font-size: 12px; color: #9ca3af; }
+        .dropdown-logout-link { color: #d9534f; margin: 8px; width: calc(100% - 16px); }
+        .dropdown-link:hover, .dropdown-logout-link:hover { background-color: #f3f4f6; }
+        .dropdown-link i, .dropdown-logout-link i { width: 16px; text-align: center; color: #6c757d; }
+        
+        /* Styles spécifiques à la page de profil */
+        .sidebar-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 500; color: #4b5563; transition: all 0.2s ease-in-out; cursor: pointer; }
+        .sidebar-link:hover { background-color: #f3f4f6; color: #1f2937; }
+        .sidebar-link.active { background-color: #3b82f6; color: white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .sidebar-link.active i { color: white; }
+        .content-panel { display: none; }
+        .content-panel.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .feedback-message { text-align: right; margin-top: 0.5rem; font-weight: 600; font-size: 0.875rem; height: 1.25rem; }
+        .feedback-success { color: #16a34a; }
+        .feedback-error { color: #dc2626; }
+        
+        /* NOUVEAUX STYLES POUR LA SÉLECTION DE GROUPES EN MASSE */
+        #group-search-container { position: relative; }
+        #group-autocomplete-list {
+            position: absolute; top: 100%; left: 0; right: 0;
+            max-height: 200px; overflow-y: auto; background: white;
+            border: 1px solid #e2e8f0; border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            z-index: 50;
+        }
+        .autocomplete-item { padding: 0.75rem 1rem; cursor: pointer; }
+        .autocomplete-item:hover { background-color: #f3f4f6; }
+        .group-tag-container {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.5rem;
+            border: 1px solid #d1d5db; border-radius: 0.5rem;
+            min-height: 8rem; background-color: #f9fafb;
+        }
+        .group-tag {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background-color: #DBEAFE; color: #1D4ED8;
+            border-radius: 9999px; padding: 0.25rem 0.75rem;
+            font-size: 0.875rem; font-weight: 500;
+        }
+        .group-tag-remove { cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <nav>
+        <img src="assets/images/logo_edt.png" style="height: 50px; width: auto;" alt="Logo">
+        <div class="nav-links">
+            <a href="admin.html">Emploi du temps</a>
+            <a href="edition.html">Édition</a>
+            <a href="avancement.html">Avancement</a>
+            <div class="profile-menu-container">
+                <button id="profile-button" class="profile-button"><span id="profile-initials">--</span></button>
+                <div id="profile-dropdown" class="profile-dropdown">
+                    <div class="dropdown-profile-header">
+                        <div class="profile-pic"><i class="fas fa-user"></i></div>
+                        <div class="profile-info">
+                            <strong id="dropdown-user-name">Chargement...</strong>
+                            <small id="dropdown-user-email">...</small>
+                        </div>
+                    </div>
+                    <ul class="dropdown-menu-list">
+                        <li><a href="profile.html" class="dropdown-link active"><i class="fas fa-user-edit icon"></i><span class="text">Mon Profil</span><i class="fas fa-chevron-right chevron"></i></a></li>
+                    </ul>
+                    <hr class="dropdown-divider">
+                    <a href="../api/auth/logout.php" class="dropdown-link logout"><i class="fas fa-sign-out-alt icon"></i><span class="text">Déconnexion</span></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" style="padding-top: 80px;">
+        <div class="md:flex md:gap-8">
+            <aside class="md:w-1/4 lg:w-1/5 mb-8 md:mb-0">
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="flex items-center gap-4 border-b pb-4 mb-4">
+                        <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-blue-600" id="profile-page-initials">--</div>
+                        <div>
+                            <h2 class="font-bold text-lg" id="profile-page-name">Chargement...</h2>
+                            <p class="text-sm text-gray-500" id="profile-page-etablissement"></p>
+                        </div>
+                    </div>
+                    <nav class="space-y-2">
+                        <a class="sidebar-link active" data-target="panel-account"><i class="fas fa-user-circle w-6 text-center"></i> Profil</a>
+                        <a class="sidebar-link" data-target="panel-password"><i class="fas fa-key w-6 text-center"></i> Mot de passe</a>
+                        <a class="sidebar-link" data-target="panel-espaces"><i class="fas fa-door-open w-6 text-center"></i> Espaces</a>
+                        <a class="sidebar-link" data-target="panel-calendar"><i class="fas fa-calendar-alt w-6 text-center"></i> Calendrier Annuel</a>
+                        <a class="sidebar-link" data-target="panel-formateurs"><i class="fas fa-chalkboard-teacher w-6 text-center"></i> Formateurs</a>
+                        <a class="sidebar-link" data-target="panel-stages"><i class="fas fa-industry w-6 text-center"></i> Stages</a>
+                    </nav>
+                </div>
+            </aside>
+
+            <main class="md:w-3/4 lg:w-4/5">
+                <div id="panel-account" class="content-panel active">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-2xl font-bold mb-6">Paramètres du Compte</h2>
+                        <form id="userInfoForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div><label for="nom_complet" class="block text-sm font-medium text-gray-700">Nom & Prénom</label><input type="text" id="nom_complet" name="nom_complet" class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></div>
+                            <div><label for="email" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="email" name="email" class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></div>
+                            <div><label class="block text-sm font-medium text-gray-700">Établissement</label><p id="etablissement_name" class="mt-1 text-lg font-medium text-gray-900 p-2 bg-gray-100 rounded-md"></p></div>
+                             <div><label class="block text-sm font-medium text-gray-700">Complexe</label><p id="complexe_name" class="mt-1 text-lg font-medium text-gray-900 p-2 bg-gray-100 rounded-md"></p></div>
+                            <div class="md:col-span-2 text-right border-t pt-4"><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Mettre à jour le Profil</button></div>
+                            <div id="userInfoFeedback" class="md:col-span-2 feedback-message"></div>
+                        </form>
+                    </div>
+                </div>
+                <div id="panel-password" class="content-panel"><div class="bg-white p-6 rounded-lg shadow-sm"><h2 class="text-2xl font-bold mb-6">Changer le Mot de Passe</h2><form id="passwordForm" class="space-y-6 max-w-md"><div><label for="new_password" class="block text-sm font-medium text-gray-700">Nouveau mot de passe</label><input type="password" id="new_password" name="new_password" class="mt-1 block w-full p-2 border rounded-md" required></div><div><label for="confirm_new_password" class="block text-sm font-medium text-gray-700">Confirmer le nouveau mot de passe</label><input type="password" id="confirm_new_password" name="confirm_new_password" class="mt-1 block w-full p-2 border rounded-md" required></div><div class="text-right"><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Changer le Mot de Passe</button></div><div id="passwordFeedback" class="feedback-message"></div></form></div></div>
+                <div id="panel-espaces" class="content-panel"><div class="bg-white p-6 rounded-lg shadow-sm"><h2 class="text-2xl font-bold mb-6">Gestion des Espaces de Travail</h2><form id="espacesForm"><label for="espaces" class="block text-sm font-medium text-gray-700 mb-2">Liste des salles, amphis, etc. (un par ligne)</label><textarea id="espaces" name="espaces" rows="12" class="block w-full p-2 border border-gray-300 rounded-md"></textarea><div class="text-right mt-4"><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Sauvegarder les Espaces</button></div><div id="espacesFeedback" class="feedback-message"></div></form></div></div>
+                <div id="panel-calendar" class="content-panel"><div class="bg-white p-6 rounded-lg shadow-sm"><h2 class="text-2xl font-bold mb-6">Calendrier Annuel</h2><form id="calendarForm" class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label for="holidays" class="block text-sm font-medium text-gray-700">Jours fériés (un par ligne, format JJ/MM/AAAA)</label><textarea id="holidays" name="holidays" rows="8" class="mt-1 block w-full p-2 border rounded-md"></textarea></div><div><label for="vacations" class="block text-sm font-medium text-gray-700">Périodes de vacances (une par ligne, format JJ/MM/AAAA-JJ/MM/AAAA)</label><textarea id="vacations" name="vacations" rows="8" class="mt-1 block w-full p-2 border rounded-md"></textarea></div><div class="md:col-span-2 text-right"><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Sauvegarder le Calendrier</button></div><div id="calendarFeedback" class="md:col-span-2 feedback-message"></div></form></div></div>
+                <div id="panel-formateurs" class="content-panel"><div class="bg-white p-6 rounded-lg shadow-sm"><h2 class="text-2xl font-bold mb-6">Liste des Formateurs</h2><p class="text-sm text-gray-500 mb-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">Pour ajouter ou supprimer des formateurs, vous devez réimporter un fichier de base via le processus de configuration initiale.</p><form id="formateursForm"><div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-2">Nom</th><th class="p-2">Matricule</th><th class="p-2">Masse Horaire</th><th class="p-2">Email</th></tr></thead><tbody id="formateurs-table-body"></tbody></table></div><div class="text-right mt-4"><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Sauvegarder les Modifications</button></div><div id="formateursFeedback" class="feedback-message"></div></form></div></div>
+                <div id="panel-stages" class="content-panel"><div class="bg-white p-6 rounded-lg shadow-sm"><h2 class="text-2xl font-bold mb-6">Planification des Stages</h2><form id="stagesForm"><div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start"><div><label for="group-search-input" class="block text-sm font-medium text-gray-700 mb-2">1. Recherchez et sélectionnez les groupes</label><div id="group-search-container"><input type="text" id="group-search-input" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Taper le nom d'un groupe..."><div id="group-autocomplete-list" class="hidden"></div></div><div class="mt-4"><p class="text-sm font-medium text-gray-700 mb-2">Groupes sélectionnés :</p><div id="group-tag-container" class="group-tag-container"></div></div></div><div><label class="block text-sm font-medium text-gray-700 mb-2">2. Définissez la période du stage</label><div class="space-y-4"><div><label for="stage-debut" class="block text-xs font-medium text-gray-500">Date de début</label><input type="date" id="stage-debut" class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></div><div><label for="stage-fin" class="block text-xs font-medium text-gray-500">Date de fin</label><input type="date" id="stage-fin" class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></div></div><div class="text-right mt-6"><button type="button" id="addStageBtn" class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition"><i class="fas fa-plus mr-2"></i>Ajouter cette période</button></div></div></div></form><hr class="my-8"><h3 class="text-xl font-semibold mb-4">Stages déjà planifiés</h3><div class="overflow-x-auto"><table class="table w-full"><thead><tr><th>Groupe</th><th>Date de début</th><th>Date de fin</th><th class="text-center">Action</th></tr></thead><tbody id="stages-list-table"></tbody></table></div><div id="stagesFeedback" class="feedback-message mt-4"></div></div></div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        let allGroups = [];
+        document.addEventListener('DOMContentLoaded', checkSessionAndLoad);
+
+        async function checkSessionAndLoad() {
+            try {
+                const response = await fetch('../api/auth/verify_session.php');
+                const result = await response.json();
+                if (!result.success) { window.location.href = 'login.html'; return; }
+                
+                populateUserInfo(result.userData);
+                setupProfileMenu();
+                loadPageData();
+                setupTabNavigation();
+                setupFormSubmissions();
+            } catch (error) { window.location.href = 'login.html'; }
+        }
+
+        function getInitials(name) {
+            if (!name || typeof name !== 'string') return '--';
+            const words = name.trim().split(' ');
+            if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+            return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+        }
+
+        function populateUserInfo(userData) {
+            if (!userData) return;
+            const initialsEl = document.getElementById('profile-initials');
+            const nameEl = document.getElementById('dropdown-user-name');
+            const emailEl = document.getElementById('dropdown-user-email');
+            if (initialsEl) initialsEl.textContent = getInitials(userData.nom);
+            if (nameEl) nameEl.textContent = userData.nom;
+            if (emailEl) emailEl.textContent = userData.email;
+        }
+
+        function setupProfileMenu() {
+            const profileButton = document.getElementById('profile-button');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            if (profileButton && profileDropdown) {
+                profileButton.addEventListener('click', (e) => { e.stopPropagation(); profileDropdown.classList.toggle('show'); });
+            }
+            window.addEventListener('click', () => { if (profileDropdown && profileDropdown.classList.contains('show')) profileDropdown.classList.remove('show'); });
+        }
+
+        function loadPageData() {
+            fetch('../api/profile/get_profile_data.php')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const data = result.data;
+                        document.getElementById('profile-page-initials').textContent = getInitials(data.user.nom_complet);
+                        document.getElementById('profile-page-name').textContent = data.user.nom_complet;
+                        document.getElementById('profile-page-etablissement').textContent = data.user.nom_etablissement;
+                        document.getElementById('nom_complet').value = data.user.nom_complet;
+                        document.getElementById('email').value = data.user.email;
+                        document.getElementById('etablissement_name').textContent = data.user.nom_etablissement;
+                        document.getElementById('complexe_name').textContent = data.user.complexe;
+                        document.getElementById('espaces').value = (data.espaces || []).join('\n');
+                        document.getElementById('holidays').value = data.calendar.holidays || '';
+                        document.getElementById('vacations').value = data.calendar.vacations || '';
+                        
+                        allGroups = data.groupes || [];
+                        renderStagesTable(data.stages || []);
+                        setupGroupSearch();
+
+                        const formateursTbody = document.getElementById('formateurs-table-body');
+                        formateursTbody.innerHTML = '';
+                        (data.formateurs || []).forEach(f => {
+                            const row = `<tr>
+                                    <td class="p-2 font-semibold">${f.nom}</td>
+                                    <td class="p-2">${f.matricule}</td>
+                                    <td class="p-2"><input name="formateurs[${f.matricule}][masse_horaire]" type="number" class="w-24 p-1 border rounded" value="${f.masse_horaire}"></td>
+                                    <td class="p-2"><input name="formateurs[${f.matricule}][email]" type="email" class="w-full p-1 border rounded" value="${f.email}"></td>
+                                    <input name="formateurs[${f.matricule}][nom]" type="hidden" value="${f.nom}">
+                                    <input name="formateurs[${f.matricule}][matricule]" type="hidden" value="${f.matricule}">
+                                </tr>`;
+                            formateursTbody.innerHTML += row;
+                        });
+                    } else { alert("Erreur: Impossible de charger les données du profil."); }
+                });
+        }
+
+        function setupTabNavigation() {
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const contentPanels = document.querySelectorAll('.content-panel');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    const targetId = link.dataset.target;
+                    contentPanels.forEach(panel => panel.classList.toggle('active', panel.id === targetId));
+                });
+            });
+        }
+
+        function setupGroupSearch() {
+            const searchInput = document.getElementById('group-search-input');
+            const autocompleteList = document.getElementById('group-autocomplete-list');
+            const tagContainer = document.getElementById('group-tag-container');
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase();
+                autocompleteList.innerHTML = '';
+                if (!query) { autocompleteList.classList.add('hidden'); return; }
+                const selectedGroups = Array.from(tagContainer.querySelectorAll('.group-tag')).map(tag => tag.dataset.group);
+                const filteredGroups = allGroups.filter(group => group.toLowerCase().includes(query) && !selectedGroups.includes(group)).slice(0, 5);
+                if (filteredGroups.length > 0) {
+                    autocompleteList.classList.remove('hidden');
+                    filteredGroups.forEach(group => {
+                        const item = document.createElement('div');
+                        item.className = 'autocomplete-item';
+                        item.textContent = group;
+                        item.addEventListener('click', () => { addGroupTag(group); searchInput.value = ''; autocompleteList.classList.add('hidden'); });
+                        autocompleteList.appendChild(item);
+                    });
+                } else { autocompleteList.classList.add('hidden'); }
+            });
+            document.addEventListener('click', e => { if (!document.getElementById('group-search-container').contains(e.target)) autocompleteList.classList.add('hidden'); });
+        }
+
+        function addGroupTag(groupName) {
+            const tagContainer = document.getElementById('group-tag-container');
+            const tag = document.createElement('div');
+            tag.className = 'group-tag';
+            tag.dataset.group = groupName;
+            tag.innerHTML = `<span>${groupName}</span><span class="group-tag-remove" title="Retirer">&times;</span>`;
+            tag.querySelector('.group-tag-remove').addEventListener('click', () => tag.remove());
+            tagContainer.appendChild(tag);
+        }
+
+        function renderStagesTable(stages) {
+            const tableBody = document.getElementById('stages-list-table');
+            if (!stages || stages.length === 0) { tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">Aucun stage planifié.</td></tr>'; return; }
+            tableBody.innerHTML = '';
+            stages.forEach(stage => {
+                const row = `<tr data-stage-id="${stage.id}">
+                        <td>${stage.groupe_nom}</td>
+                        <td>${new Date(stage.date_debut).toLocaleDateString('fr-FR')}</td>
+                        <td>${new Date(stage.date_fin).toLocaleDateString('fr-FR')}</td>
+                        <td class="text-center"><button onclick="deleteStage(${stage.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash-alt"></i></button></td>
+                    </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function deleteStage(stageId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette période de stage ?')) return;
+            fetch('../api/profile/update_stages.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', stage_id: stageId }) })
+            .then(res => res.json()).then(result => {
+                showFeedback('stagesFeedback', result.message, result.success);
+                if (result.success) document.querySelector(`tr[data-stage-id='${stageId}']`).remove();
+            });
+        }
+
+        function showFeedback(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = isSuccess ? 'feedback-message feedback-success' : 'feedback-message feedback-error';
+            setTimeout(() => { el.textContent = ''; }, 4000);
+        }
+
+        function setupFormSubmissions() {
+            document.getElementById('userInfoForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const data = Object.fromEntries(new FormData(e.target).entries());
+                fetch('../api/profile/update_user_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                .then(res => res.json()).then(result => {
+                    showFeedback('userInfoFeedback', result.message, result.success);
+                    if (result.success) { populateUserInfo({ nom: data.nom_complet, email: data.email }); document.getElementById('profile-page-name').textContent = data.nom_complet; }
+                });
+            });
+            
+            document.getElementById('passwordForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const form = e.target; const data = Object.fromEntries(new FormData(form).entries());
+                if(data.new_password !== data.confirm_new_password) { showFeedback('passwordFeedback', 'Les mots de passe ne correspondent pas.', false); return; }
+                fetch('../api/profile/update_password.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                .then(res => res.json()).then(result => { showFeedback('passwordFeedback', result.message, result.success); if (result.success) form.reset(); });
+            });
+            
+            document.getElementById('espacesForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const data = { espaces: document.getElementById('espaces').value.split('\n').map(s => s.trim()).filter(Boolean) };
+                fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                .then(res => res.json()).then(result => showFeedback('espacesFeedback', result.message, result.success));
+            });
+            
+            document.getElementById('calendarForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const data = Object.fromEntries(new FormData(e.target).entries());
+                fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                .then(res => res.json()).then(result => showFeedback('calendarFeedback', result.message, result.success));
+            });
+
+            document.getElementById('formateursForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const formateursMap = {};
+                new FormData(e.target).forEach((value, key) => {
+                    const match = key.match(/formateurs\[(.+?)\]\[(.+?)\]/);
+                    if (match) {
+                        const matricule = match[1]; const property = match[2];
+                        if (!formateursMap[matricule]) formateursMap[matricule] = {};
+                        formateursMap[matricule][property] = value;
+                    }
+                });
+                const data = { formateurs: Object.values(formateursMap) };
+                fetch('../api/profile/update_formateurs.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                .then(res => res.json()).then(result => showFeedback('formateursFeedback', result.message, result.success));
+            });
+
+            document.getElementById('addStageBtn').addEventListener('click', () => {
+                const selectedGroupTags = document.querySelectorAll('#group-tag-container .group-tag');
+                const selectedGroupes = Array.from(selectedGroupTags).map(tag => tag.dataset.group);
+                const dateDebut = document.getElementById('stage-debut').value;
+                const dateFin = document.getElementById('stage-fin').value;
+                if (selectedGroupes.length === 0 || !dateDebut || !dateFin) {
+                    showFeedback('stagesFeedback', 'Veuillez sélectionner au moins un groupe et une période complète.', false); return;
+                }
+                const data = { groupes: selectedGroupes, date_debut: dateDebut, date_fin: dateFin };
+                fetch('../api/profile/update_stages.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'add', data: data }) })
+                .then(res => res.json()).then(result => {
+                    showFeedback('stagesFeedback', result.message, result.success);
+                    if (result.success) {
+                        loadPageData();
+                        document.getElementById('group-tag-container').innerHTML = '';
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

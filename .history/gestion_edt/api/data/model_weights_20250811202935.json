@@ -1,0 +1,12 @@
+{
+  "bias": 0.0,
+  "adjacencyPrev": 1.2,
+  "adjacencyNext": 1.2,
+  "sameDayHasOther": 0.4,
+  "groupBalance": 0.6,
+  "isTeams": -0.15,
+  "withinTeamsQuota": 0.5,
+  "hoursLoad": -0.25
+}
+
+
