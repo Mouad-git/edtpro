@@ -14,15 +14,39 @@ if (!isset($data['formateurs']) || !is_array($data['formateurs'])) {
 }
 
 try {
-    // On met simplement à jour le bloc JSON complet des formateurs.
-    // C'est la méthode la plus simple et la plus fiable.
-    $stmt = $pdo->prepare(
-        "INSERT INTO donnees_de_base (etablissement_id, type_donnee, donnees_json) VALUES (?, 'formateur', ?)
-         ON DUPLICATE KEY UPDATE donnees_json = VALUES(donnees_json)"
+    // Mettre à jour `formateurs_details` formateur par formateur
+    $upsert = $pdo->prepare(
+        "INSERT INTO formateurs_details (etablissement_id, nom_formateur, matricule, email, masse_horaire_statutaire)
+         VALUES (:etab_id, :nom, :matricule, :email, :masse)
+         ON DUPLICATE KEY UPDATE matricule = VALUES(matricule), email = VALUES(email), masse_horaire_statutaire = VALUES(masse_horaire_statutaire)"
     );
-    $stmt->execute([$etablissement_id, json_encode($data['formateurs'])]);
 
-    echo json_encode(['success' => true, 'message' => 'Informations des formateurs mises à jour.']);
+    $names = [];
+    foreach ($data['formateurs'] as $f) {
+        $nom = isset($f['nom']) ? trim($f['nom']) : '';
+        if ($nom === '') { // ignorer les entrées vides
+            continue;
+        }
+        $matricule = isset($f['matricule']) ? trim((string)$f['matricule']) : '';
+        $email = isset($f['email']) ? trim($f['email']) : '';
+        $masse = isset($f['masse_horaire']) ? (int)$f['masse_horaire'] : 0;
+        $upsert->execute([
+            ':etab_id' => $etablissement_id,
+            ':nom' => $nom,
+            ':matricule' => $matricule,
+            ':email' => $email,
+            ':masse' => $masse,
+        ]);
+        $names[] = $nom;
+    }
+
+    // Maintenir la liste simple des noms dans `donnees_de_base` (utile ailleurs)
+    if (!empty($names)) {
+        $pdo->prepare("INSERT INTO donnees_de_base (etablissement_id, type_donnee, donnees_json) VALUES (?, 'formateur', ?) ON DUPLICATE KEY UPDATE donnees_json = VALUES(donnees_json)")
+            ->execute([$etablissement_id, json_encode(array_values(array_unique($names)))]);
+    }
+
+    echo json_encode(['success' => true, 'message' => "Formateurs mis à jour."]);
 
 } catch (Exception $e) {
     http_response_code(500);

@@ -1,34 +1,53 @@
 <?php
-//require_once '../../config/security.php'; // Toujours en premier !
 // api/auth/verify_session.php
 session_start(); // Toujours au début
 
-// On vérifie UNIQUEMENT si l'utilisateur est authentifié.
+require_once '../../config/database.php';
+header('Content-Type: application/json');
+
+// Étape 1 : Vérifier si la variable de session existe
 if (!isset($_SESSION['utilisateur_id'])) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Session invalide.']);
+    http_response_code(401); // 401 Unauthorized est plus approprié
+    echo json_encode(['success' => false, 'message' => 'Session invalide ou expirée.']);
     exit;
 }
 
-// Si l'utilisateur est authentifié, on renvoie ses données.
-// Les pages JavaScript (admin.html, setup.html) pourront utiliser ces infos.
-require_once '../../config/database.php';
-
+// Étape 2 : Vérifier le statut de l'utilisateur en base de données
 try {
-    $stmt = $pdo->prepare("SELECT nom_complet, email FROM utilisateurs WHERE id = ?");
-    $stmt->execute([$_SESSION['utilisateur_id']]);
+    $userId = $_SESSION['utilisateur_id'];
+
+    // LA MODIFICATION CLÉ EST ICI : On sélectionne AUSSI la colonne 'status'
+    $stmt = $pdo->prepare("SELECT nom_complet, email, status FROM utilisateurs WHERE id = ?");
+    $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$user) { throw new Exception("Utilisateur de session non trouvé."); }
-    
-    echo json_encode([
-        'success' => true,
-        'userData' => ['nom' => $user['nom_complet'], 'email' => $user['email']]
-    ]);
+    // VÉRIFICATION DU STATUT EN PLUS DE L'EXISTENCE
+    if ($user && $user['status'] === 'approved') {
+        // Le statut est bon, on peut continuer
+        echo json_encode([
+            'success' => true,
+            'userData' => [
+                'nom' => $user['nom_complet'], 
+                'email' => $user['email']
+            ]
+        ]);
+    } else {
+        // Le statut n'est PAS 'approved' (il est 'blocked', 'rejected', ou l'utilisateur a été supprimé)
+        // On doit forcer la déconnexion.
+        
+        // On détruit la session côté serveur
+        session_unset();
+        session_destroy();
+        
+        // On renvoie une erreur pour que le client (JavaScript) redirige vers la page de connexion
+        http_response_code(403); // 403 Forbidden est approprié ici
+        echo json_encode(['success' => false, 'message' => 'Votre compte a été désactivé ou bloqué.']);
+    }
 
 } catch (Exception $e) {
-    http_response_code(403);
-    session_destroy();
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    http_response_code(500);
+    session_destroy(); // Détruire la session en cas d'erreur serveur aussi
+    error_log($e->getMessage()); // Enregistrer l'erreur pour le développeur
+    echo json_encode(['success' => false, 'message' => 'Erreur serveur lors de la vérification de la session.']);
 }
 ?>

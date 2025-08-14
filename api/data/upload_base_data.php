@@ -1,6 +1,13 @@
 <?php
-// api/data/upload_base_data.php
+/**
+ * API pour la Mise à Jour des Données de Base depuis un Fichier Excel
+ *
+ * Ce script est appelé depuis la page principale (emploi.html).
+ * Il met à jour les données volatiles (groupes, affectations, modes) et les données d'avancement.
+ * Il utilise une logique UPSERT pour la ligne 'groupe_mode' afin d'éviter les doublons.
+ */
 
+// On utilise le gardien strict, car cette page n'est accessible qu'après configuration.
 require_once '../auth/session_check.php';
 require_once '../../config/database.php';
 require_once '../../vendor/autoload.php';
@@ -13,7 +20,7 @@ $etablissement_id = $_SESSION['etablissement_id'];
 
 if (!isset($_FILES['excelFile']) || $_FILES['excelFile']['error'] !== UPLOAD_ERR_OK) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Erreur lors de l\'upload du fichier.']);
+    echo json_encode(['success' => false, 'message' => 'Aucun fichier reçu ou erreur d\'upload.']);
     exit;
 }
 
@@ -21,33 +28,50 @@ $filePath = $_FILES['excelFile']['tmp_name'];
 $fileName = basename($_FILES['excelFile']['name']);
 
 try {
+    // --- ÉTAPE 1 : LIRE ET VALIDER LE FICHIER EXCEL ---
     $spreadsheet = IOFactory::load($filePath);
     $sheet = $spreadsheet->getSheetByName('AvancementProgramme');
     if (!$sheet) {
         throw new Exception("La feuille 'AvancementProgramme' est introuvable.");
     }
     
-    // On lit avec les index numériques pour plus de robustesse
-    $allRows = $sheet->toArray(null, true, false, true);
-    $header = array_map('trim', array_shift($allRows));
-    $dataRows = $allRows;
+    // Nettoyage des lignes vides pour obtenir un tableau de données propre
+    $allData = $sheet->toArray(null, true, false, false);
+    $cleanedRows = [];
+    foreach ($allData as $row) {
+        if (!empty(array_filter($row))) {
+            $cleanedRows[] = $row;
+        }
+    }
+    if (count($cleanedRows) < 2) {
+        throw new Exception("Le fichier Excel semble vide ou ne contient pas de données valides.");
+    }
+    
+    $header = array_map('trim', array_shift($cleanedRows));
+    $dataRows = $cleanedRows;
 
-    // --- Détection des colonnes par leur nom ---
+    // --- ÉTAPE 2 : EXTRACTION DES DONNÉES ---
+    // Définition des index de colonnes par leur nom
     $groupeIndex = array_search('Groupe', $header);
     $fusionGroupeIndex = array_search('FusionGroupe', $header);
     $moduleIndex = array_search('Code Module', $header);
     $nomFormateurIndex = array_search('Formateur Affecté Présentiel Actif', $header);
     $nomFormateurSyncIndex = array_search('Formateur Affecté Syn Actif', $header);
-    $estRegionalIndex = array_search('Régional', $header); // Assurez-vous que le titre est EXACTEMENT "EST_REGIONAL"
-    $s1HeuresIndex = array_search('MHP S1 DRIF', $header);  // Assurez-vous que le titre est EXACTEMENT "MH affectée S1"
-    $s2HeuresIndex = array_search('MHP S2 DRIF', $header);  // Assurez-vous que le titre est EXACTEMENT "MH affectée S2"
+    $modeIndex = array_search('Mode', $header);
+    $estRegionalIndex = array_search('Régional', $header);
+    $s1HeuresIndex = array_search('MHP S1 DRIF', $header);
+    $s2HeuresIndex = array_search('MHP S2 DRIF', $header);
 
     // Validation des colonnes essentielles
-    if ($groupeIndex === false || $moduleIndex === false || $nomFormateurIndex === false || $estRegionalIndex === false || $s1HeuresIndex === false || $s2HeuresIndex === false) {
-        throw new Exception("Une ou plusieurs colonnes requises sont manquantes dans l'en-tête du fichier Excel (Groupe, Code Module, Formateur Affecté..., EST_REGIONAL, MH affectée S1/S2).");
+    if ($groupeIndex === false || $moduleIndex === false || $nomFormateurIndex === false) {
+        throw new Exception("Les colonnes 'Groupe', 'Code Module' ou 'Formateur Affecté Présentiel Actif' sont manquantes.");
     }
 
-    $groupes = []; $fusionGroupes = []; $affectations = [];
+    $groupes = []; 
+    $fusionGroupes = []; 
+    $affectations = [];
+    $groupeModes = [];
+    $formateursListRaw = [];
 
     function getFormattedName($name) {
         if (!$name || !is_string($name)) return '';
@@ -67,59 +91,86 @@ try {
         
         $fusionGroupe = ($fusionGroupeIndex !== false) ? trim($row[$fusionGroupeIndex] ?? '') : '';
         if ($fusionGroupe) $fusionGroupes[] = $fusionGroupe;
+
+        if ($groupe && $modeIndex !== false) {
+            $modeRaw = trim((string)($row[$modeIndex] ?? ''));
+            if ($modeRaw !== '') {
+                $groupeModes[$groupe] = (stripos($modeRaw, 'ALT') !== false) ? 'Alterné' : 'Résidentiel';
+            }
+        }
         
         $formateurP = getFormattedName($row[$nomFormateurIndex] ?? null);
-        $formateurS = getFormattedName($row[$nomFormateurSyncIndex] ?? null);
+        $formateurS = ($nomFormateurSyncIndex !== false) ? getFormattedName($row[$nomFormateurSyncIndex] ?? null) : '';
         $module = trim($row[$moduleIndex] ?? '');
 
-        // --- Extraction des nouvelles données ---
-        $colS_value = trim($row[$estRegionalIndex] ?? '');
-        $est_regional = (strtoupper($colS_value) === 'O');
-        $s1_heures = isset($row[$s1HeuresIndex]) ? floatval(str_replace(',', '.', $row[$s1HeuresIndex])) : 0;
-        $s2_heures = isset($row[$s2HeuresIndex]) ? floatval(str_replace(',', '.', $row[$s2HeuresIndex])) : 0;
+        $est_regional = ($estRegionalIndex !== false) ? (strtoupper(trim($row[$estRegionalIndex] ?? '')) === 'O') : false;
+        $s1_heures = ($s1HeuresIndex !== false) ? floatval(str_replace(',', '.', $row[$s1HeuresIndex] ?? '0')) : 0;
+        $s2_heures = ($s2HeuresIndex !== false) ? floatval(str_replace(',', '.', $row[$s2HeuresIndex] ?? '0')) : 0;
         
-        // On ajoute les nouvelles données dans le tableau d'affectations
         if ($formateurP && $groupe && $module) {
-            $affectations[] = [
-                'formateur' => $formateurP, 'groupe' => $groupe, 'module' => $module, 'type' => 'presentiel',
-                's1_heures' => $s1_heures, 's2_heures' => $s2_heures, 'est_regional' => $est_regional
-            ];
+            $affectations[] = ['formateur' => $formateurP, 'groupe' => $groupe, 'module' => $module, 'type' => 'presentiel', 's1_heures' => $s1_heures, 's2_heures' => $s2_heures, 'est_regional' => $est_regional];
         }
         if ($formateurS && $fusionGroupe && $module) {
-            $affectations[] = [
-                'formateur' => $formateurS, 'groupe' => $fusionGroupe, 'module' => $module, 'type' => 'synchrone',
-                's1_heures' => $s1_heures, 's2_heures' => $s2_heures, 'est_regional' => $est_regional
-            ];
+            $affectations[] = ['formateur' => $formateurS, 'groupe' => $fusionGroupe, 'module' => $module, 'type' => 'synchrone', 's1_heures' => $s1_heures, 's2_heures' => $s2_heures, 'est_regional' => $est_regional];
         }
+
+        // Construire la liste simple des formateurs (présentiel + synchrone)
+        if ($formateurP) { $formateursListRaw[] = $formateurP; }
+        if ($formateurS) { $formateursListRaw[] = $formateurS; }
     }
     
     $groupesList = array_values(array_unique($groupes)); sort($groupesList);
     $fusionGroupesList = array_values(array_unique($fusionGroupes)); sort($fusionGroupesList);
+    $formateursList = array_values(array_unique(array_filter($formateursListRaw)));
+    sort($formateursList);
     
     $pdo->beginTransaction();
 
-    // --- MODIFICATION MAJEURE : On ne supprime que les données volatiles ---
+    // --- ÉTAPE 3 : SAUVEGARDE DES DONNÉES (LOGIQUE CORRIGÉE) ---
+    
+    // a) On supprime les anciennes données volatiles qui doivent être entièrement reconstruites
     $pdo->prepare("DELETE FROM donnees_de_base WHERE etablissement_id = ? AND type_donnee IN ('groupe', 'fusion_groupe', 'affectation')")
         ->execute([$etablissement_id]);
     
-    // On insère les nouvelles données volatiles
+    // b) On insère les nouvelles listes
     $insertStmt = $pdo->prepare("INSERT INTO donnees_de_base (etablissement_id, type_donnee, donnees_json) VALUES (?, ?, ?)");
     if(!empty($groupesList)) $insertStmt->execute([$etablissement_id, 'groupe', json_encode($groupesList)]);
     if(!empty($fusionGroupesList)) $insertStmt->execute([$etablissement_id, 'fusion_groupe', json_encode($fusionGroupesList)]);
     if(!empty($affectations)) $insertStmt->execute([$etablissement_id, 'affectation', json_encode($affectations)]);
+    // Mettre à jour la liste simple des formateurs via UPSERT pour éviter les doublons
+    if(!empty($formateursList)) {
+        $upsertFormateursStmt = $pdo->prepare(
+            "INSERT INTO donnees_de_base (etablissement_id, type_donnee, donnees_json)
+             VALUES (?, 'formateur', ?)
+             ON DUPLICATE KEY UPDATE donnees_json = VALUES(donnees_json)"
+        );
+        $upsertFormateursStmt->execute([$etablissement_id, json_encode($formateursList)]);
+    }
     
-    // On met à jour les données d'avancement (inchangé)
+    // c) On utilise une requête UPSERT dédiée UNIQUEMENT pour 'groupe_mode' pour éviter les doublons
+    if(!empty($groupeModes)) {
+        $upsertModeStmt = $pdo->prepare(
+            "INSERT INTO donnees_de_base (etablissement_id, type_donnee, donnees_json) 
+             VALUES (?, 'groupe_mode', ?)
+             ON DUPLICATE KEY UPDATE donnees_json = VALUES(donnees_json)"
+        );
+        $upsertModeStmt->execute([$etablissement_id, json_encode($groupeModes)]);
+    }
+    
+    // d) On met à jour les données d'avancement (qui utilise déjà un UPSERT)
     $avancementStmt = $pdo->prepare("INSERT INTO donnees_avancement (etablissement_id, nom_fichier, donnees_json) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE nom_fichier = VALUES(nom_fichier), donnees_json = VALUES(donnees_json)");
     $avancementStmt->execute([$etablissement_id, $fileName, json_encode($dataRows)]);
 
-    // ON NE TOUCHE PAS à 'formateurs_details', 'calendrier', ni à la ligne 'formateur' de 'donnees_de_base'.
-
+    // Les données 'calendrier' ne sont pas modifiées par ce script.
+    
     $pdo->commit();
 
-    echo json_encode(['success' => true, 'message' => 'Données importées avec succès.']);
+    echo json_encode(['success' => true, 'message' => 'Données de base et d\'avancement mises à jour avec succès.']);
 
 } catch (Exception $e) {
-    if ($pdo->inTransaction()) $pdo->rollBack();
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }

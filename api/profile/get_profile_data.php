@@ -1,36 +1,21 @@
 <?php
 /**
  * API pour Récupérer Toutes les Données du Profil
- *
- * Ce script est appelé une seule fois au chargement de la page profile.html.
- * Il rassemble les informations depuis plusieurs tables pour construire une réponse JSON complète
- * qui permettra de peupler tous les panneaux de la page de profil.
- *
- * Données récupérées :
- * - Depuis 'utilisateurs' et 'etablissements': Nom, email, nom de l'établissement, complexe.
- * - Depuis 'formateurs_details': La liste complète des formateurs avec leurs détails personnalisés.
- * - Depuis 'espaces': La liste des salles/espaces de l'établissement.
- * - Depuis 'calendrier': Les jours fériés et les périodes de vacances.
+ * (Description inchangée)
  */
 
-// On inclut le gardien strict. L'utilisateur doit être pleinement authentifié pour voir son profil.
 require_once '../auth/session_check.php';
-// On inclut la configuration de la base de données pour obtenir l'objet $pdo.
 require_once '../../config/database.php';
 
-// On indique que la réponse sera au format JSON.
 header('Content-Type: application/json');
 
-// On récupère les ID depuis la session (sécurisé).
 $utilisateur_id = $_SESSION['utilisateur_id'];
 $etablissement_id = $_SESSION['etablissement_id'];
 
 try {
-    // On initialise le tableau qui contiendra toutes nos données.
     $data = [];
 
-    // --- 1. Récupérer les informations de l'Utilisateur et de l'Établissement ---
-    // On utilise une jointure (JOIN) pour récupérer les données des deux tables en une seule requête.
+    // --- 1. Récupérer les informations de l'Utilisateur et de l'Établissement (inchangé) ---
     $stmtUser = $pdo->prepare(
         "SELECT u.nom_complet, u.email, e.nom_etablissement, e.complexe
          FROM utilisateurs u
@@ -40,40 +25,112 @@ try {
     $stmtUser->execute([$utilisateur_id, $etablissement_id]);
     $data['user'] = $stmtUser->fetch(PDO::FETCH_ASSOC);
 
-    // --- 2. Récupérer les détails des Formateurs (depuis la table stable) ---
-    // On renomme les colonnes avec 'AS' pour correspondre à ce que le JavaScript attend.
+    // --- 2. Récupérer les détails des Formateurs ---
+    // On lit dans la table `formateurs_details` pour obtenir nom, matricule, email et masse horaire
     $stmtFormateurs = $pdo->prepare(
-        "SELECT nom_formateur as nom, matricule, email, masse_horaire_statutaire as masse_horaire 
-         FROM formateurs_details 
-         WHERE etablissement_id = ? 
+        "SELECT nom_formateur AS nom, matricule, email, masse_horaire_statutaire AS masse_horaire
+         FROM formateurs_details
+         WHERE etablissement_id = ?
          ORDER BY nom_formateur ASC"
     );
     $stmtFormateurs->execute([$etablissement_id]);
-    $data['formateurs'] = $stmtFormateurs->fetchAll(PDO::FETCH_ASSOC);
+    $formateurs = $stmtFormateurs->fetchAll(PDO::FETCH_ASSOC);
 
-    // --- 3. Récupérer les Espaces ---
+    // Fallback: si la table détaillée est vide, essayer `donnees_de_base` (liste de noms)
+    if (!$formateurs || count($formateurs) === 0) {
+        $stmtFallback = $pdo->prepare(
+            "SELECT donnees_json FROM donnees_de_base WHERE etablissement_id = ? AND type_donnee = 'formateur'"
+        );
+        $stmtFallback->execute([$etablissement_id]);
+        $namesJson = $stmtFallback->fetchColumn();
+        $names = $namesJson ? json_decode($namesJson, true) : [];
+        if (is_array($names)) {
+            $formateurs = array_map(function ($n) {
+                return [
+                    'nom' => is_string($n) ? $n : '',
+                    'matricule' => '',
+                    'email' => '',
+                    'masse_horaire' => 0,
+                ];
+            }, $names);
+        }
+    }
+
+    $data['formateurs'] = $formateurs;
+
+    // --- 3. Récupérer les Espaces (inchangé) ---
     $stmtEspaces = $pdo->prepare("SELECT nom_espace FROM espaces WHERE etablissement_id = ? ORDER BY nom_espace ASC");
     $stmtEspaces->execute([$etablissement_id]);
-    // fetchAll(PDO::FETCH_COLUMN) renvoie un simple tableau de chaînes de caractères (ex: ["Salle 1", "TEAMS"]).
     $data['espaces'] = $stmtEspaces->fetchAll(PDO::FETCH_COLUMN); 
     
-    // --- 4. Récupérer les données du Calendrier (depuis la table stable) ---
-    $stmtCalendar = $pdo->prepare("SELECT jours_feries, vacances FROM calendrier WHERE etablissement_id = ?");
+    // --- 4. Récupérer les données du Calendrier (inchangé) ---
+    $stmtCalendar = $pdo->prepare("SELECT donnees_json FROM donnees_de_base WHERE etablissement_id = ? AND type_donnee = 'calendrier'");
     $stmtCalendar->execute([$etablissement_id]);
-    $calendarRaw = $stmtCalendar->fetch(PDO::FETCH_ASSOC);
+    $calendarJson = $stmtCalendar->fetchColumn();
+    $data['calendar'] = $calendarJson ? json_decode($calendarJson, true) : ['holidays' => '', 'vacations' => ''];
     
-    // On décode les chaînes JSON en tableaux PHP. Si rien n'est trouvé, on renvoie des tableaux vides.
-    $data['calendar'] = [
-        'holidays' => $calendarRaw && $calendarRaw['jours_feries'] ? json_decode($calendarRaw['jours_feries']) : [],
-        'vacations' => $calendarRaw && $calendarRaw['vacances'] ? json_decode($calendarRaw['vacances']) : []
-    ];
+    // --- 5. Infos des Stages (inchangé) ---
+    $stmtStages = $pdo->prepare("SELECT id, groupe_nom, date_debut, date_fin FROM stages WHERE etablissement_id = ? ORDER BY date_debut");
+    $stmtStages->execute([$etablissement_id]);
+    $data['stages'] = $stmtStages->fetchAll(PDO::FETCH_ASSOC);
+
+    // --- 6. RÉCUPÉRATION DES GROUPES (LE BLOC MANQUANT) ---
+    $stmtGroupes = $pdo->prepare("SELECT donnees_json FROM donnees_de_base WHERE etablissement_id = ? AND type_donnee = 'groupe'");
+    $stmtGroupes->execute([$etablissement_id]);
+    $groupesJson = $stmtGroupes->fetchColumn();
+    // On renvoie un simple tableau de noms de groupes
+    $data['groupes'] = $groupesJson ? json_decode($groupesJson, true) : [];
+    // --- FIN DU BLOC AJOUTÉ ---
+
+    // --- 7. RÉCUPÉRATION DES MODES DES GROUPES ---
+    $stmtGroupModes = $pdo->prepare("SELECT donnees_json FROM donnees_de_base WHERE etablissement_id = ? AND type_donnee = 'groupe_mode'");
+    $stmtGroupModes->execute([$etablissement_id]);
+    $groupModesJson = $stmtGroupModes->fetchColumn();
+    $groupModes = $groupModesJson ? json_decode($groupModesJson, true) : [];
+
+    // Fallback si pas encore stocké: déduire depuis `donnees_avancement` (une seule ligne par établissement)
+    if (!$groupModes || (is_array($groupModes) && count($groupModes) === 0)) {
+        $stmtAva = $pdo->prepare("SELECT donnees_json FROM donnees_avancement WHERE etablissement_id = ?");
+        $stmtAva->execute([$etablissement_id]);
+        $avaJson = $stmtAva->fetchColumn();
+        if ($avaJson) {
+            $rows = json_decode($avaJson, true);
+            if (is_array($rows)) {
+                $modeIdx = 15; // Colonne P
+                $groupeIdx = 8; // Colonne I
+                foreach ($rows as $r) {
+                    $groupeName = trim((string)($r[$groupeIdx] ?? ''));
+                    if ($groupeName === '') continue;
+                    $modeRaw = trim((string)($r[$modeIdx] ?? ''));
+                    if ($modeRaw === '') continue;
+                    $upper = mb_strtoupper($modeRaw);
+                    $mode = (strpos($upper, 'ALT') !== false) ? 'Alterné' : 'Résidentiel';
+                    if (!isset($groupModes[$groupeName])) {
+                        $groupModes[$groupeName] = $mode;
+                    }
+                }
+            }
+        }
+    }
+
+    // Normaliser les clés: TRIM + UPPERCASE pour correspondre aux noms de groupes affichés
+    $normalizedModes = [];
+    if (is_array($groupModes)) {
+        foreach ($groupModes as $groupName => $modeVal) {
+            $normalizedKey = strtoupper(trim((string)$groupName));
+            if ($normalizedKey !== '') {
+                $normalizedModes[$normalizedKey] = $modeVal;
+            }
+        }
+    }
+    $data['groupe_modes'] = $normalizedModes;
 
     // Si tout s'est bien passé, on envoie la réponse complète.
     echo json_encode(['success' => true, 'data' => $data]);
 
 } catch (Exception $e) {
-    // En cas d'erreur de base de données, on renvoie une erreur 500.
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur du serveur lors de la récupération des données du profil: ' . $e->getMessage()]);
 }
 ?>
+

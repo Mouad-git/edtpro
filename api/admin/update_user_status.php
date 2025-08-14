@@ -8,34 +8,56 @@ $data = json_decode(file_get_contents("php://input"));
 $userId = $data->user_id ?? null;
 $newStatus = $data->new_status ?? null;
 
-// ... (validation des données) ...
+if (!$userId || !$newStatus) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Données manquantes.']);
+    exit;
+}
 
 try {
+    // CAS 1 : Suppression définitive
     if ($newStatus === 'deleted') {
-        // Logique de suppression
         $stmt = $pdo->prepare("DELETE FROM utilisateurs WHERE id = ?");
-        $success = $stmt->execute([$userId]);
-    } else {
-        // Logique de mise à jour
-        $dateColumn = null;
-        if ($newStatus === 'approved') $dateColumn = 'date_approbation';
-        if ($newStatus === 'rejected') $dateColumn = 'date_rejet';
+        $stmt->execute([$userId]);
 
-        $sql = "UPDATE utilisateurs SET status = ?";
-        $params = [$newStatus];
-        if ($dateColumn) {
-            $sql .= ", {$dateColumn} = NOW()";
+        echo json_encode(['success' => $stmt->rowCount() > 0, 'message' => 'Utilisateur supprimé.']);
+
+    // CAS 2 : Mise à jour de statut
+    } else {
+        $allowed_statuses = ['approved', 'rejected', 'blocked'];
+        if (!in_array($newStatus, $allowed_statuses)) {
+            throw new Exception("Statut non autorisé.");
         }
-        $sql .= " WHERE id = ?";
-        $params[] = $userId;
+
+        $sql = "";
+        $params = [];
+
+        // On construit la requête SQL en fonction du statut
+        if ($newStatus === 'approved') {
+            // Met à jour le statut, la date d'approbation et remet les autres dates à NULL
+            $sql = "UPDATE utilisateurs SET status = ?, date_approbation = NOW(), date_rejet = NULL, date_blocage = NULL WHERE id = ?";
+            $params = [$newStatus, $userId];
+        } 
+        elseif ($newStatus === 'rejected') {
+            // Met à jour le statut, la date de rejet et remet les autres à NULL
+            $sql = "UPDATE utilisateurs SET status = ?, date_rejet = NOW(), date_approbation = NULL, date_blocage = NULL WHERE id = ?";
+            $params = [$newStatus, $userId];
+        } 
+        elseif ($newStatus === 'blocked') {
+            // LA CORRECTION EST ICI : On met à jour le statut ET la date de blocage
+            $sql = "UPDATE utilisateurs SET status = ?, date_blocage = NOW() WHERE id = ?";
+            $params = [$newStatus, $userId];
+        }
         
         $stmt = $pdo->prepare($sql);
-        $success = $stmt->execute($params);
+        $stmt->execute($params);
+        
+        echo json_encode(['success' => true, 'message' => 'Statut mis à jour.']);
     }
     
-    echo json_encode(['success' => $success]);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    error_log($e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Une erreur serveur est survenue.']);
 }
 ?>

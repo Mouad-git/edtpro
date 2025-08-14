@@ -77,6 +77,7 @@ if (!empty($formateursNomsList)) {
     
     // --- 2. Extraction et sauvegarde des données volatiles de l'Excel (Groupes, Affectations...) ---
     $groupes = []; $fusionGroupes = []; $affectations = [];
+    $groupeModes = []; // mapping nom_groupe => mode (Résidentiel/Alterné)
     
     $dataRows = array_slice($rawExcelDataWithHeader, 1);
 
@@ -84,6 +85,7 @@ if (!empty($formateursNomsList)) {
     $groupeIndex = 8;            // Colonne I
     $fusionGroupeIndex = 12;     // Colonne M
     $moduleIndex = 16;           // Colonne Q
+    $modeIndex = 15;             // Colonne P (mode)
     $nomFormateurIndex = 20;     // Colonne U
     $nomFormateurSyncIndex = 22; // Colonne W
 
@@ -102,6 +104,16 @@ if (!empty($formateursNomsList)) {
     foreach ($dataRows as $row) {
         $groupe = trim($row[$groupeIndex] ?? '');
         if ($groupe) $groupes[] = $groupe;
+        // Enregistrer le mode du groupe si disponible
+        if ($groupe) {
+            $modeRaw = trim((string)($row[$modeIndex] ?? ''));
+            if ($modeRaw !== '') {
+                // Normaliser: 'Résidentiel' ou 'Alterné'
+                $modeUpper = mb_strtoupper($modeRaw);
+                $mode = (strpos($modeUpper, 'ALT') !== false) ? 'Alterné' : 'Résidentiel';
+                $groupeModes[$groupe] = $mode;
+            }
+        }
         
         $fusionGroupe = trim($row[$fusionGroupeIndex] ?? '');
         if ($fusionGroupe) $fusionGroupes[] = $fusionGroupe;
@@ -118,11 +130,12 @@ if (!empty($formateursNomsList)) {
     $fusionGroupesList = array_values(array_unique($fusionGroupes)); sort($fusionGroupesList);
     
     // On supprime les anciennes données volatiles avant de réinsérer les nouvelles
-    $pdo->prepare("DELETE FROM donnees_de_base WHERE etablissement_id = ? AND type_donnee IN ('groupe', 'fusion_groupe', 'affectation')")->execute([$etablissement_id]);
+    $pdo->prepare("DELETE FROM donnees_de_base WHERE etablissement_id = ? AND type_donnee IN ('groupe', 'fusion_groupe', 'affectation', 'groupe_mode')")->execute([$etablissement_id]);
     $insertStmt = $pdo->prepare("INSERT INTO donnees_de_base (etablissement_id, type_donnee, donnees_json) VALUES (?, ?, ?)");
     if(!empty($groupesList)) $insertStmt->execute([$etablissement_id, 'groupe', json_encode($groupesList)]);
     if(!empty($fusionGroupesList)) $insertStmt->execute([$etablissement_id, 'fusion_groupe', json_encode($fusionGroupesList)]);
     if(!empty($affectations)) $insertStmt->execute([$etablissement_id, 'affectation', json_encode($affectations)]);
+    if(!empty($groupeModes)) $insertStmt->execute([$etablissement_id, 'groupe_mode', json_encode($groupeModes)]);
 
     // --- 3. Sauvegarde des données d'avancement ---
     $fileName = "Base initiale du " . date('d-m-Y');

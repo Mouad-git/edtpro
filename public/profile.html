@@ -81,7 +81,7 @@
         .panel-body { padding: 24px; }
         
         /* Styles des formulaires */
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .form-grid { display: block; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #495057; font-size: 14px; }
         .form-control { width: 100%; padding: 10px 14px; border: 1px solid #ced4da; border-radius: 6px; font-size: 15px; }
@@ -103,7 +103,7 @@
         /* Tags pour les espaces */
         .tag-container { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 1px solid #ced4da; border-radius: 6px; cursor: text; }
         .tag-container:focus-within { border-color: #86b7fe; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2); }
-        .tag { display: inline-flex; align-items: center; gap: 8px; background-color: #e9ecef; padding: 4px 10px; border-radius: 16px; font-size: 14px; }
+        .tag { display: inline-flex; align-items: center; gap: 8px; background-color: #DBEAFE; color: #1D4ED8; border-radius: 16px; padding: 4px 10px; border-radius: 16px; font-size: 14px; }
         .tag-remove { cursor: pointer; }
         .tag-input { flex-grow: 1; border: none; outline: none; background: transparent; }
         
@@ -156,6 +156,7 @@
             <a class="sidebar-link" data-target="panel-espaces">Espaces</a>
             <a class="sidebar-link" data-target="panel-calendar">Calendrier Annuel</a>
             <a class="sidebar-link" data-target="panel-formateurs">Formateurs</a>
+            <a class="sidebar-link" data-target="panel-stages">Stages</a>
         </div>
     </aside>
     
@@ -233,11 +234,104 @@
                 <div class="form-footer"><button type="submit" class="btn btn-primary">Sauvegarder les Modifications</button></div>
             </form>
         </div>
+
+        <div id="panel-stages" class="panel">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-2xl font-bold mb-2">Planification des Stages</h2>
+                <p class="text-gray-500 mb-6">Sélectionnez les groupes, définissez la période, puis cliquez sur "Planifier".</p>
+                
+                <form id="stagesForm" class="border rounded-lg p-4">
+                    <!-- Section 1: Tableau de sélection des groupes -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block text-lg font-semibold text-gray-800">1. Sélectionnez les Groupes</label>
+                            <div class="flex items-center gap-2 text-sm">
+                                <span class="text-gray-600">Filtrer par mode:</span>
+                                <select id="stage-mode-filter" class="border rounded-md px-2 py-1">
+                                    <option value="all">Tous</option>
+                                    <option value="Résidentiel">Résidentiel</option>
+                                    <option value="Alterné">Alterné</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="max-h-64 overflow-y-auto border rounded-md">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-100 sticky top-0">
+                                    <tr>
+                                        <th class="p-2 w-10 text-center">
+                                            <input type="checkbox" id="selectAllGroupes" title="Sélectionner tout">
+                                        </th>
+                                        <th class="p-2 text-left">Nom du Groupe</th>
+                                        <th class="p-2 text-left">Mode</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stage-groupes-table-body">
+                                    <!-- La liste des groupes sera chargée ici -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+        
+                    <!-- Section 2: Sélection de la période (améliorée) -->
+                    <div class="mb-4">
+                         <label class="block text-lg font-semibold text-gray-800 mb-3">2. Définissez la Période</label>
+                         <div class="flex flex-wrap items-center gap-2 mb-3">
+                            <button type="button" id="preset-this-week" class="px-3 py-1.5 text-sm rounded-md border hover:bg-gray-50">Cette semaine</button>
+                            <button type="button" id="preset-next-week" class="px-3 py-1.5 text-sm rounded-md border hover:bg-gray-50">Semaine prochaine</button>
+                            <button type="button" id="preset-two-weeks" class="px-3 py-1.5 text-sm rounded-md border hover:bg-gray-50">2 semaines</button>
+                            <label class="inline-flex items-center ml-auto text-sm text-gray-600">
+                                <input type="checkbox" id="stage-include-weekends" class="mr-2">Inclure les week-ends
+                            </label>
+                        </div>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Semaine (ISO)</label>
+                                <input type="week" id="stage-week" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="stage-debut" class="block text-sm font-medium text-gray-700">Date de début</label>
+                                    <input type="date" id="stage-debut" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label for="stage-fin" class="block text-sm font-medium text-gray-700">Date de fin</label>
+                                    <input type="date" id="stage-fin" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                </div>
+                            </div>
+                        </div>
+                        <p id="stage-period-summary" class="text-sm text-gray-600 mt-2"></p>
+                        <p class="text-xs text-gray-500 mt-1">Astuce: sélectionnez une semaine pour pré-remplir du lundi au vendredi. Vous pouvez ensuite ajuster les dates.</p>
+                    </div>
+        
+                    <!-- Section 3: Bouton d'action -->
+                    <div class="text-right mt-6 border-t pt-4">
+                        <button type="submit" id="addStageBtn" class="bg-blue-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-blue-700 transition">
+                            <i class="fas fa-calendar-plus mr-2"></i>Planifier pour les groupes sélectionnés
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-8">
+        
+                <h3 class="text-xl font-semibold mb-4">Stages déjà planifiés</h3>
+                <div class="overflow-x-auto">
+                    <table class="table w-full">
+                        <thead><tr><th>Groupe</th><th>Date de début</th><th>Date de fin</th><th class="text-center">Action</th></tr></thead>
+                        <tbody id="stages-list-table"></tbody>
+                    </table>
+                </div>
+                <div id="stagesFeedback" class="feedback-message mt-4"></div>
+            </div>
+        </div>
+        <!-- ======================================================================= -->
     </main>
 
+
+    
     <script>
         let profileCalendar = null;
         let establishmentCalendarData = null;
+        let existingStagesByGroup = {};
 
         document.addEventListener('DOMContentLoaded', () => {
             checkSessionAndLoad();
@@ -293,6 +387,48 @@
                     document.getElementById('etablissement_name').textContent = data.user.nom_etablissement || '';
                     document.getElementById('complexe_name').textContent = data.user.complexe || '';
                     
+                    const tableBody = document.getElementById('stage-groupes-table-body');
+                    const modeFilter = document.getElementById('stage-mode-filter');
+                    const groupModes = data.groupe_modes || {};
+                    // Assurer une clé exacte en supprimant espaces superflus
+                    Object.keys(groupModes).forEach(k => {
+                        const trimmed = (k || '').trim();
+                        if (trimmed !== k) {
+                            groupModes[trimmed] = groupModes[k];
+                            delete groupModes[k];
+                        }
+                    });
+                    function renderGroupRows(filterValue) {
+                        tableBody.innerHTML = '';
+                        (data.groupes || []).forEach(groupe => {
+                            const key = (groupe || '').toString().trim().toUpperCase();
+                            const mode = groupModes[key] || '';
+                            if (filterValue && filterValue !== 'all' && mode !== filterValue) return;
+                            const row = `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="p-2 text-center">
+                                        <input type="checkbox" class="groupe-stage-checkbox" value="${groupe}">
+                                    </td>
+                                    <td class="p-2">${groupe}</td>
+                                    <td class="p-2">${mode}</td>
+                                </tr>`;
+                            tableBody.innerHTML += row;
+                        });
+                    }
+                    renderGroupRows('all');
+                    if (modeFilter) {
+                        modeFilter.addEventListener('change', () => renderGroupRows(modeFilter.value));
+                    }
+                
+                renderStagesTable(data.stages || []);
+                // Indexer les stages par groupe pour détecter les chevauchements côté client
+                existingStagesByGroup = (data.stages || []).reduce((acc, s) => {
+                    const g = (s.groupe_nom || '').toString();
+                    if (!acc[g]) acc[g] = [];
+                    acc[g].push({ start: s.date_debut, end: s.date_fin, id: s.id });
+                    return acc;
+                }, {});
+
                     document.getElementById('espaces').value = (data.espaces || []).join('\n');
                     (data.espaces || []).forEach(createEspaceTag);
                     updateHiddenEspacesTextarea();
@@ -378,6 +514,8 @@
             profileCalendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'fr',
                 initialView: 'dayGridMonth',
+                aspectRatio: 1.6,
+                height: 'auto',
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth' },
                 editable: true, selectable: true,
                 events: [...apiHolidays, ...dbVacations],
@@ -402,15 +540,29 @@
         }
 
         async function fetchMoroccanHolidays(year) {
-            try {
-                const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/MA`);
-                const holidays = await response.json();
-                return holidays.map(h => ({
-                    title: h.localName, start: h.date, allDay: true, editable: false,
-                    display: 'background', backgroundColor: 'rgba(253, 126, 20, 0.2)', classNames: ['holiday-event']
-                }));
-            } catch { return []; }
+    try {
+        const response = await fetch(`../api/data/morocco_holidays.php?year=${year}`);
+        if (!response.ok) {
+            console.warn(`Erreur API personnalisée jours fériés : ${response.status}`);
+            return [];
         }
+        const holidays = await response.json();
+
+        return holidays.map(h => ({
+            title: h.title,
+            start: h.date,
+            allDay: true,
+            editable: false,
+            display: 'background',
+            backgroundColor: 'rgba(251, 146, 60, 0.2)',
+            classNames: ['holiday-event']
+        }));
+
+    } catch (error) {
+        console.error("Erreur de récupération des jours fériés depuis API personnalisée:", error);
+        return [];
+    }
+}
 
         function parseDbVacations(vacationsData) {
             // Accepte plusieurs formats: string (lignes JJ/MM/AAAA - JJ/MM/AAAA),
@@ -464,6 +616,101 @@
             el.className = isSuccess ? 'feedback-message feedback-success' : 'feedback-message feedback-error';
             setTimeout(() => el.textContent = '', 4000);
         }
+
+        // Helpers dates pour la période de stage
+        function parseIsoDate(value) {
+            if (!value) return null;
+            const d = new Date(value + 'T00:00:00');
+            return isNaN(d.getTime()) ? null : d;
+        }
+        function formatIso(d) { return d.toISOString().slice(0,10); }
+        function toMonday(year, week) {
+            const simple = new Date(year, 0, 1 + (week - 1) * 7);
+            const dow = simple.getDay() || 7;
+            const monday = new Date(simple);
+            monday.setDate(simple.getDate() + (1 - dow));
+            return monday;
+        }
+        function countDaysBetween(start, end, includeWeekends) {
+            if (!start || !end) return 0;
+            let count = 0;
+            const cur = new Date(start);
+            while (cur <= end) {
+                const day = cur.getDay();
+                if (includeWeekends || (day !== 0 && day !== 6)) count++;
+                cur.setDate(cur.getDate() + 1);
+            }
+            return count;
+        }
+        function updateStagePeriodSummary() {
+            const el = document.getElementById('stage-period-summary');
+            const d1 = parseIsoDate(document.getElementById('stage-debut').value);
+            const d2 = parseIsoDate(document.getElementById('stage-fin').value);
+            const includeWeekends = document.getElementById('stage-include-weekends')?.checked;
+            if (!d1 || !d2) { el.textContent = ''; return; }
+            if (d2 < d1) { el.textContent = 'La date de fin doit être postérieure ou égale à la date de début.'; return; }
+            const total = countDaysBetween(d1, d2, !!includeWeekends);
+            const options = { weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit' };
+            el.textContent = `Période: ${d1.toLocaleDateString('fr-FR', options)} → ${d2.toLocaleDateString('fr-FR', options)} • ${total} jour(s)` + (includeWeekends ? ' (week-ends inclus)' : '');
+        }
+
+        // AJOUTEZ CES DEUX FONCTIONS DANS VOTRE <script> de profile.html
+
+/**
+ * Affiche la liste des stages déjà planifiés dans leur tableau.
+ * @param {Array} stages - La liste des objets stage venant de l'API.
+ */
+function renderStagesTable(stages) {
+    const tableBody = document.getElementById('stages-list-table');
+    if (!stages || stages.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">Aucun stage planifié.</td></tr>';
+        return;
+    }
+    tableBody.innerHTML = '';
+    stages.forEach(stage => {
+        // Formater les dates pour un affichage lisible
+        const dateDebut = new Date(stage.date_debut + 'T00:00:00').toLocaleDateString('fr-FR');
+        const dateFin = new Date(stage.date_fin + 'T00:00:00').toLocaleDateString('fr-FR');
+
+        const row = `
+            <tr data-stage-id="${stage.id}">
+                <td class="p-2">${stage.groupe_nom}</td>
+                <td class="p-2">${dateDebut}</td>
+                <td class="p-2">${dateFin}</td>
+                <td class="text-center">
+                    <button onclick="deleteStage(${stage.id})" class="text-red-500 hover:text-red-700 transition" title="Supprimer ce stage">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>`;
+        tableBody.innerHTML += row;
+    });
+}
+
+/**
+ * Appelle l'API pour supprimer une période de stage spécifique.
+ * @param {number} stageId - L'ID du stage à supprimer.
+ */
+function deleteStage(stageId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette période de stage ?')) return;
+
+    fetch('../api/profile/update_stages.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', stage_id: stageId })
+    })
+    .then(res => res.json())
+    .then(result => {
+        showFeedback('stagesFeedback', result.message, result.success);
+        if (result.success) {
+            // On supprime la ligne du tableau sans recharger toute la page
+            const rowToRemove = document.querySelector(`tr[data-stage-id='${stageId}']`);
+            if (rowToRemove) {
+                rowToRemove.remove();
+            }
+        }
+    });
+}
 
         function setupFormSubmissions() {
             document.getElementById('userInfoForm').addEventListener('submit', e => {
@@ -525,7 +772,120 @@
                 fetch('../api/profile/update_formateurs.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
                     .then(res => res.json()).then(result => showFeedback('formateursFeedback', result.message, result.success));
             });
+
+            // Saisie semaine -> dates automatiques (lundi-vendredi)
+            const weekInput = document.getElementById('stage-week');
+            if (weekInput) {
+                weekInput.addEventListener('change', () => {
+                    const [yearStr, weekStr] = weekInput.value.split('-W');
+                    const year = parseInt(yearStr, 10);
+                    const week = parseInt(weekStr, 10);
+                    if (!isNaN(year) && !isNaN(week)) {
+                        const monday = toMonday(year, week);
+                        const friday = new Date(monday);
+                        friday.setDate(monday.getDate() + 4);
+                        const fmt = d => d.toISOString().slice(0,10);
+                        document.getElementById('stage-debut').value = fmt(monday);
+                        document.getElementById('stage-fin').value = fmt(friday);
+                        updateStagePeriodSummary();
+                    }
+                });
+            }
+
+            // Résumé dynamique et inclusion des week-ends
+            ['stage-debut','stage-fin','stage-include-weekends'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', updateStagePeriodSummary);
+            });
+
+            // Boutons de présélection
+            const presetThisWeek = document.getElementById('preset-this-week');
+            const presetNextWeek = document.getElementById('preset-next-week');
+            const presetTwoWeeks = document.getElementById('preset-two-weeks');
+            function setWeekRangeFromDate(baseDate, weeksSpan) {
+                const date = new Date(baseDate);
+                // Aller au lundi de la semaine de base
+                const dow = date.getDay() || 7;
+                const monday = new Date(date);
+                monday.setDate(date.getDate() + (1 - dow));
+                const end = new Date(monday);
+                end.setDate(monday.getDate() + (weeksSpan * 7) - 3); // vendredi fin (5e jour) pour 1 semaine => +4 ; pour 2 semaines => +11; calcule via -3
+                // Pour 1 semaine on veut +4, pour 2 semaines +11
+                if (weeksSpan === 1) end.setDate(monday.getDate() + 4);
+                if (weeksSpan === 2) end.setDate(monday.getDate() + 11);
+                document.getElementById('stage-debut').value = formatIso(monday);
+                document.getElementById('stage-fin').value = formatIso(end);
+                updateStagePeriodSummary();
+            }
+            if (presetThisWeek) presetThisWeek.addEventListener('click', () => setWeekRangeFromDate(new Date(), 1));
+            if (presetNextWeek) {
+                presetNextWeek.addEventListener('click', () => {
+                    const d = new Date(); d.setDate(d.getDate() + 7); setWeekRangeFromDate(d, 1);
+                });
+            }
+            if (presetTwoWeeks) presetTwoWeeks.addEventListener('click', () => setWeekRangeFromDate(new Date(), 2));
+
+            document.getElementById('stagesForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // On récupère les groupes cochés dans le tableau
+        const selectedGroupes = Array.from(document.querySelectorAll('.groupe-stage-checkbox:checked')).map(cb => cb.value);
+        const dateDebut = document.getElementById('stage-debut').value;
+        const dateFin = document.getElementById('stage-fin').value;
+
+        if (selectedGroupes.length === 0 || !dateDebut || !dateFin) {
+            showFeedback('stagesFeedback', 'Veuillez sélectionner au moins un groupe et une période complète.', false);
+            return;
         }
+
+        // Validation dates
+        const d1 = parseIsoDate(dateDebut), d2 = parseIsoDate(dateFin);
+        if (!d1 || !d2 || d2 < d1) {
+            showFeedback('stagesFeedback', 'La date de fin doit être postérieure ou égale à la date de début.', false);
+            return;
+        }
+
+        // Détection chevauchements
+        const overlappingGroups = [];
+        selectedGroupes.forEach(g => {
+            const list = existingStagesByGroup[g] || [];
+            const hasOverlap = list.some(it => !(it.end < dateDebut || it.start > dateFin));
+            if (hasOverlap) overlappingGroups.push(g);
+        });
+        if (overlappingGroups.length > 0) {
+            showFeedback('stagesFeedback', `Chevauchement détecté avec des stages existants pour: ${overlappingGroups.join(', ')}`, false);
+            return;
+        }
+
+        const data = {
+            groupes: selectedGroupes,
+            date_debut: dateDebut,
+            date_fin: dateFin
+        };
+
+        fetch('../api/profile/update_stages.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'add', data: data })
+        })
+        .then(res => res.json())
+        .then(result => {
+            showFeedback('stagesFeedback', result.message, result.success);
+            if (result.success) {
+                loadPageData(); // Rafraîchir pour voir la nouvelle liste et mettre à jour l'index des chevauchements
+            }
+        });
+    });
+    
+    // Logique pour la case à cocher "Sélectionner tout"
+    document.getElementById('selectAllGroupes').addEventListener('change', function() {
+        document.querySelectorAll('.groupe-stage-checkbox').forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+        }
+
+        
     </script>
 </body>
 </html>

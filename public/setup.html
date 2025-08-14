@@ -383,6 +383,8 @@
             calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'fr',
                 initialView: 'dayGridMonth',
+                aspectRatio: 1.6,
+                height: 'auto',
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listYear' },
                 editable: true, selectable: true, selectMirror: true,
                 select: info => {
