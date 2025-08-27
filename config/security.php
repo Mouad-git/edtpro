@@ -32,7 +32,7 @@ $disable_csp = $_ENV['DISABLE_CSP'] ?? false;
 if (!$disable_csp) {
     if ($environment === 'production') {
         // CSP stricte pour la production
-        header('Content-Security-Policy: default-src \'self\'; script-src \'self\' \'unsafe-inline\' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com; style-src \'self\' \'unsafe-inline\' https://cdnjs.cloudflare.com https://cdn.tailwindcss.com; img-src \'self\' data: https:; font-src \'self\' https://cdnjs.cloudflare.com; connect-src \'self\';');
+        header('Content-Security-Policy: default-src \'self\'; script-src \'self\' \'unsafe-inline\' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src \'self\' \'unsafe-inline\' https://cdnjs.cloudflare.com https://cdn.tailwindcss.com; img-src \'self\' data: https:; font-src \'self\' https://cdnjs.cloudflare.com; connect-src \'self\';');
     } else {
         // CSP plus permissive pour le développement
         header('Content-Security-Policy: default-src \'self\'; script-src \'self\' \'unsafe-inline\' \'unsafe-eval\' https:; style-src \'self\' \'unsafe-inline\' https:; img-src \'self\' data: https:; font-src \'self\' https:; connect-src \'self\' https:;');

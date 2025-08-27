@@ -24,45 +24,47 @@
         }
         
         /* Barre de navigation principale */
-        nav {
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
-            padding: 10px 20px; background:#fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: flex; align-items: center; justify-content: space-between;
-            z-index: 700;
+        #nav nav { position: fixed; top: 0; left: 0; width: 100%; height: 60px; padding: 10px 20px; background: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); display: flex; align-items: center; z-index: 1001; justify-content: space-between; }
+        #nav nav a { text-decoration: none; color: #333; padding: 8px 16px; border-radius: 8px; transition: background-color 0.3s, color 0.3s; }
+        #nav nav a:hover { background-color: #f0f4ff; color: #1d4ed8; font-weight: 600; }
+        #nav nav a.active { background-color: #f0f4ff; color: #1d4ed8; font-weight: 600; }
+        #nav .nav-links { display: flex; align-items: center; gap: 10px; }
+        #nav .profile-menu-container { position: relative; }
+        #nav .profile-button {
+            display: flex; align-items: center; justify-content: center; text-decoration: none;
+            width: 40px; height: 40px; border-radius: 50%; background-color: #e0eaff;
+            color: #1d4ed8; border: 1px solid #e0eaff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
         }
-        nav a { text-decoration: none; color: #333; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
-        nav a:hover, nav a.active { background-color: #f0f4ff; color: #1d4ed8; font-weight: 600; }
-        .nav-links { display: flex; align-items: center; gap: 10px; }
-        
-        /* Menu Profil Dropdown */
-        .profile-menu-container { position: relative; }
-        .profile-button {
-            display: flex; align-items: center; justify-content: center;
-            width: 40px; height: 40px; border-radius: 50%;
-            background-color: #e0eaff; color: #1d4ed8;
-            font-size: 16px; font-weight: 600; cursor: pointer;
-            border: 1px solid transparent;
-        }
-        .profile-dropdown {
+        #nav .profile-dropdown {
             display: none; position: absolute; top: calc(100% + 12px); right: 0;
             width: 280px; background-color: white; border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 1010;
-            overflow: hidden; animation: scale-up-and-fade-in 0.2s ease-out;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 1010; overflow: hidden;
+            transform-origin: top right; animation: scale-up-and-fade-in 0.2s ease-out;
         }
-        .profile-dropdown.show { display: block; }
+        #nav .profile-dropdown.show { display: block; }
         @keyframes scale-up-and-fade-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .dropdown-profile-header { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid #f3f4f6; }
-        .profile-pic { width: 48px; height: 48px; border-radius: 50%; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #6b7280; }
-        .profile-info strong { display: block; font-size: 1rem; font-weight: 600; color: #111827; }
-        .profile-info small { font-size: 0.875rem; color: #6b7280; }
-        .dropdown-link { display: flex; align-items: center; width: 100%; padding: 10px 12px; border-radius: 8px; text-decoration: none; color: #374151; font-weight: 500; transition: all 0.2s; }
-        .dropdown-link:hover { background-color: #f3f4f6; }
-        .dropdown-link .icon { width: 32px; font-size: 16px; color: #6b7280; }
-        .dropdown-divider { margin: 8px 0; border-top: 1px solid #f3f4f6; }
-        .dropdown-link.logout { color: #ef4444; }
-        .dropdown-link.logout .icon { color: #ef4444; }
-        .dropdown-link.logout:hover { background-color: #fee2e2; }
+        #nav .dropdown-profile-header { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid #f3f4f6; }
+        #nav .profile-pic {
+            width: 48px; height: 48px; border-radius: 50%; background-color: #f3f4f6;
+            display: flex; align-items: center; justify-content: center; font-size: 24px; color: #6b7280;
+        }
+        #nav .profile-info strong { display: block; font-size: 1rem; font-weight: 600; color: #111827; }
+        #nav .profile-info small { font-size: 0.875rem; color: #6b7280; }
+        #nav .dropdown-menu-list { list-style: none; padding: 8px; margin: 0; }
+        #nav .dropdown-link {
+            display: flex; align-items: center; width: 100%; padding: 10px 12px;
+            border-radius: 8px; text-decoration: none; color: #374151;
+            font-weight: 500; transition: background-color 0.2s, color 0.2s;
+        }
+        #nav .dropdown-link:hover { background-color: #f3f4f6; }
+        #nav .dropdown-link .icon { width: 32px; font-size: 16px; color: #6b7280; }
+        #nav .dropdown-link .text { flex-grow: 1; }
+        #nav .dropdown-link .chevron { font-size: 12px; color: #9ca3af; }
+        #nav .dropdown-divider { margin: 0 8px; border: none; border-top: 1px solid #f3f4f6; }
+        #nav .dropdown-link.logout { margin: 8px; width: calc(100% - 16px); color: #ef4444; }
+        #nav .dropdown-link.logout .icon { color: #ef4444; }
+        #nav .dropdown-link.logout:hover { background-color: #fee2e2; }
         
         /* Barre Latérale et Contenu */
         .sidebar { position: fixed; top: 60px; left: 0; width: 260px; height: calc(100vh - 60px); background: white; border-right: 1px solid #e9ecef; padding: 24px 12px; z-index: 600; }
@@ -103,7 +105,7 @@
         /* Tags pour les espaces */
         .tag-container { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: 1px solid #ced4da; border-radius: 6px; cursor: text; }
         .tag-container:focus-within { border-color: #86b7fe; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2); }
-        .tag { display: inline-flex; align-items: center; gap: 8px; background-color: #DBEAFE; color: #1D4ED8; border-radius: 16px; padding: 4px 10px; border-radius: 16px; font-size: 14px; }
+        .tag { display: inline-flex; align-items: center; gap: 8px; background-color: #DBEAFE; color: #1D4ED8; border-radius: 16px; padding: 4px 10px; font-size: 14px; }
         .tag-remove { cursor: pointer; }
         .tag-input { flex-grow: 1; border: none; outline: none; background: transparent; }
         
@@ -112,23 +114,351 @@
         .fc .fc-button { background-color: #fff !important; color: #495057 !important; border: 1px solid #ced4da !important; box-shadow: none !important; }
         .fc .fc-button-primary:not(:disabled).fc-button-active { background-color: #0d6efd !important; color: white !important; border-color: #0d6efd !important;}
         .fc .fc-daygrid-day.fc-day-today { background-color: rgba(13, 110, 253, 0.1); }
-        .holiday-event { color: #fd7e14; font-weight: 500; }
+        .holiday-event { color: #fd7e14; font-weight: 500; cursor: pointer; }
         .vacation-event { cursor: pointer; }
+        
+        /* Styles pour le modal des jours fériés */
+        .modal-overlay {
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        .modal-content {
+            animation: slideInScale 0.2s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInScale {
+            from { transform: scale(0.9) translateY(-20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        
+        /* Amélioration des styles des boutons */
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-icon:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .holiday-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        
+        .holiday-type-civil {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .holiday-type-religious {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+        
+        .holiday-type-custom {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        /* Styles pour la liste des jours fériés */
+        .holiday-list-item {
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .holiday-list-item:hover {
+            background-color: #f8fafc;
+            border-left-color: #3b82f6;
+            transform: translateX(2px);
+        }
+        
+        .holiday-list-item.civil {
+            border-left-color: #1e40af;
+        }
+        
+        .holiday-list-item.religious {
+            border-left-color: #92400e;
+        }
+        
+        .holiday-list-item.custom {
+            border-left-color: #6b7280;
+        }
+        
+        /* Styles pour les formulaires améliorés */
+        .form-field-error {
+            animation: shake 0.3s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .form-success {
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Styles pour les états de chargement */
+        .loading-spinner {
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Styles pour les notifications améliorées */
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        .notification.success {
+            background-color: #10b981;
+        }
+        
+        .notification.error {
+            background-color: #ef4444;
+        }
+        
+        .notification.warning {
+            background-color: #f59e0b;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Styles pour les tooltips */
+        .tooltip {
+            position: relative;
+        }
+        
+        .tooltip::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1f2937;
+            color: white;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+        
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: 118%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: #1f2937;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+        
+        .tooltip:hover::before,
+        .tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* ======================================================================= */
+/* ====== STYLES AMÉLIORÉS POUR LE SÉLECTEUR DE CALENDRIER CRÉATIF ====== */
+/* ======================================================================= */
+
+#calendar-picker-container {
+    width: 640px; /* Un peu plus d'espace */
+    padding: 1.25rem; /* p-5 */
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); /* shadow-2xl */
+    border-radius: 0.75rem; /* rounded-xl */
+}
+
+#calendar-picker-container .calendar-month {
+    width: 100%;
+}
+#calendar-picker-container .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+#calendar-picker-container .day-name {
+    font-size: 0.75rem; /* 12px */
+    font-weight: 500;
+    color: #6b7280; /* text-gray-500 */
+    text-align: center;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+#calendar-picker-container .calendar-day {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 38px;
+    font-size: 0.875rem; /* 14px */
+    border-radius: 9999px; /* rounded-full */
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease-in-out;
+    color: #374151; /* text-gray-700 */
+}
+#calendar-picker-container .calendar-day:not(.disabled):hover {
+    background-color: #f3f4f6; /* gray-100 */
+}
+
+#calendar-picker-container .calendar-day.is-today {
+    color: #1d4ed8; /* blue-700 */
+    font-weight: 600;
+    background-color: #eff6ff; /* blue-50 */
+}
+#calendar-picker-container .calendar-day.is-today:not(.selected-start):not(.selected-end) {
+    border-color: #bfdbfe; /* blue-200 */
+}
+
+#calendar-picker-container .calendar-day.disabled {
+    color: #d1d5db; /* gray-300 */
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+#calendar-picker-container .calendar-day.selected-start,
+#calendar-picker-container .calendar-day.selected-end {
+    background-color: #2563eb; /* blue-600 */
+    color: white !important;
+    font-weight: 600;
+    border-color: transparent;
+}
+#calendar-picker-container .calendar-day.in-range:not(.selected-start):not(.selected-end) {
+    background-color: #dbeafe; /* blue-200 */
+    border-radius: 0;
+}
+/* Logique pour arrondir les angles de la sélection en début et fin de semaine */
+#calendar-picker-container .calendar-day.in-range.selected-start {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+#calendar-picker-container .calendar-day.in-range.selected-end {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Amélioration des boutons de navigation et de contrôle */
+#calendar-picker-container .flex button {
+    transition: background-color 0.2s;
+}
+#calendar-picker-container #calendar-headers {
+    font-size: 1rem;
+    color: #1f2937; /* text-gray-800 */
+}
+#calendar-picker-container #calendar-grid {
+    gap: 2rem;
+}
+#calendar-picker-container #calendar-clear-btn {
+    background-color: #fff;
+    color: #374151;
+    border: 1px solid #d1d5db; /* gray-300 */
+}
+#calendar-picker-container #calendar-clear-btn:hover {
+    background-color: #f9fafb; /* gray-50 */
+}
+#calendar-picker-container #calendar-close-btn {
+    border: 1px solid transparent;
+}
+
+        /* === NOUVEAU CSS POUR LE FILTRE DES STAGES === */
+        .stage-mode-filter-btn {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 999px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-color: transparent;
+            color: #4b5563;
+        }
+        .stage-mode-filter-btn.active {
+            background-color: #ffffff;
+            color: #1d4ed8;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* === CSS POUR LES PÉRIODES DE STAGE HORIZONTALES === */
+        .stages-table .period-badge {
+            transition: all 0.2s ease-in-out;
+        }
+        .stages-table .period-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
     </style>
 </head>
 <body>
 
-    <nav>
-        <img src="assets/images/logo_edtpro.png" style="height: 80px; width: auto;" alt="Logo">
-        <div class="nav-links">
-            <a href="emploi.html">Emploi globale</a>
-            <a href="edition.html">Edition</a>
-            <a href="avancement.html">Avancement</a>
-            <div class="profile-menu-container">
-                <button id="profile-button" class="profile-button">
+    <div id="nav">
+        <nav>
+            <img src="assets/images/logo_edtpro.png" style="height: 80px; width: auto;" id="logo" alt="Logo">
+            <div class="nav-links">
+                <a href="emploi.html" id="nav-emploi">Emploi globale</a>
+                <a href="edition.html" id="nav-edition">Edition</a>
+                <a href="avancement.html" id="nav-avancement">Avancement</a>
+                <div class="profile-menu-container" id="profile-menu-container">
+                  <button id="profile-button" class="profile-button">
                     <span id="profile-initials">--</span>
-                </button>
-                <div id="profile-dropdown" class="profile-dropdown">
+                  </button>
+                  <div id="profile-dropdown" class="profile-dropdown">
                     <div class="dropdown-profile-header">
                         <div class="profile-pic"><i class="fas fa-user"></i></div>
                         <div class="profile-info">
@@ -136,19 +466,30 @@
                             <small id="dropdown-user-email">...</small>
                         </div>
                     </div>
-                    <ul class="dropdown-menu-list" style="padding: 8px; margin: 0; list-style: none;">
-                        <li><a href="profile.html" class="dropdown-link"><i class="fas fa-user-edit icon"></i> Mon Profil</a></li>
+                    <ul class="dropdown-menu-list">
+                        <li>
+                            <a href="profile.html" class="dropdown-link">
+                                <i class="fas fa-user-edit icon"></i>
+                                <span class="text">Mon Profil</span>
+                                <i class="fas fa-chevron-right chevron"></i>
+                            </a>
+                        </li>
                     </ul>
                     <hr class="dropdown-divider">
-                    <a href="../api/auth/logout.php" class="dropdown-link logout" style="margin: 8px; width: calc(100% - 16px);"><i class="fas fa-sign-out-alt icon"></i> Déconnexion</a>
+                    <a href="../api/auth/logout.php" class="dropdown-link logout">
+                        <i class="fas fa-sign-out-alt icon"></i>
+                        <span class="text">Déconnexion</span>
+                    </a>
+                  </div>
                 </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    </div>
 
     <aside class="sidebar">
         <div class="profile-header">
             <div class="profile-avatar" id="profile-page-initials">--</div>
+            <h3 class="text-lg font-semibold mt-3 text-gray-800" id="profile-page-name"></h3>
         </div>
         <div class="sidebar-links">
             <a class="sidebar-link active" data-target="panel-account">Profil</a>
@@ -207,14 +548,81 @@
         </div>
 
         <div id="panel-calendar" class="panel">
-            <div class="panel-header"><h2>Calendrier Annuel</h2></div>
+            <div class="panel-header">
+                <h2>Calendrier Annuel - Gestion des Jours Fériés et Vacances</h2>
+            </div>
             <form id="calendarForm">
                 <div class="panel-body">
-                    <p class="form-group" style="font-size: 15px; color: #6c757d;">Cliquez et glissez pour définir une période de vacances. Cliquez sur une période pour la supprimer.</p>
-                    <div id="profile-calendar" style="margin-top: 1rem;"></div>
+                    <!-- Section de contrôles pour la gestion des jours fériés -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-lg font-semibold text-blue-800">
+                                <i class="fas fa-star mr-2"></i>Gestion des Jours Fériés
+                            </h3>
+                            <div class="flex gap-2">
+                                <button type="button" id="toggleHolidayListBtn" 
+                                        class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition flex items-center gap-2">
+                                    <i class="fas fa-list"></i>Liste des Jours Fériés
+                                </button>
+                                <button type="button" id="addHolidayBtn" 
+                                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center gap-2">
+                                    <i class="fas fa-plus"></i>Ajouter un Jour Férié
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-blue-700 text-sm mb-3">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Cliquez sur une date dans le calendrier pour créer un nouveau jour férié, ou cliquez sur un jour férié existant pour le modifier.
+                        </p>
+                        
+                        <!-- Liste des jours fériés -->
+                        <div id="holidayListContainer" class="hidden mt-4">
+                            <div class="bg-white border border-blue-200 rounded-lg overflow-hidden">
+                                <div class="bg-blue-100 p-3 border-b border-blue-200">
+                                    <div class="flex justify-between items-center">
+                                        <h4 class="font-semibold text-blue-800">Jours Fériés Configurés</h4>
+                                        <div class="flex gap-2">
+                                            <input type="text" id="holidaySearchInput" placeholder="Rechercher..." 
+                                                   class="px-2 py-1 text-sm border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                            <select id="holidayTypeFilter" class="px-2 py-1 text-sm border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                                <option value="all">Tous les types</option>
+                                                <option value="civil">Civil</option>
+                                                <option value="religious">Religieux</option>
+                                                <option value="custom">Personnalisé</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="holidayList" class="max-h-60 overflow-y-auto">
+                                    <!-- La liste sera remplie dynamiquement -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section de contrôles pour la gestion des vacances -->
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                        <h3 class="text-lg font-semibold text-green-800 mb-3">
+                            <i class="fas fa-umbrella-beach mr-2"></i>Gestion des Périodes de Vacances
+                        </h3>
+                        <p class="text-green-700 text-sm">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Cliquez et glissez sur le calendrier pour définir une nouvelle période de vacances. 
+                            Cliquez sur une période existante pour la supprimer.
+                        </p>
+                    </div>
+                    
+                    <!-- Calendrier principal -->
+                    <div class="bg-white border rounded-lg p-4">
+                        <div id="profile-calendar" style="margin-top: 1rem;"></div>
+                    </div>
                 </div>
                 <div id="calendarFeedback" class="feedback-message"></div>
-                <div class="form-footer"><button type="submit" class="btn btn-primary">Sauvegarder le Calendrier</button></div>
+                <div class="form-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-2"></i>Sauvegarder le Calendrier
+                    </button>
+                </div>
             </form>
         </div>
         
@@ -235,97 +643,241 @@
             </form>
         </div>
 
+        <!-- ======================================================================= -->
+        <!-- ============ SECTION DE PLANIFICATION DES STAGES AMÉLIORÉE ============ -->
+        <!-- ======================================================================= -->
         <div id="panel-stages" class="panel">
             <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h2 class="text-2xl font-bold mb-2">Planification des Stages</h2>
-                <p class="text-gray-500 mb-6">Sélectionnez les groupes, définissez la période, puis cliquez sur "Planifier".</p>
-                
-                <form id="stagesForm" class="border rounded-lg p-4">
-                    <!-- Section 1: Tableau de sélection des groupes -->
-                    <div class="mb-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <label class="block text-lg font-semibold text-gray-800">1. Sélectionnez les Groupes</label>
-                            <div class="flex items-center gap-2 text-sm">
-                                <span class="text-gray-600">Filtrer par mode:</span>
-                                <select id="stage-mode-filter" class="border rounded-md px-2 py-1">
-                                    <option value="all">Tous</option>
-                                    <option value="Résidentiel">Résidentiel</option>
-                                    <option value="Alterné">Alterné</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="max-h-64 overflow-y-auto border rounded-md">
-                            <table class="w-full text-sm">
-                                <thead class="bg-gray-100 sticky top-0">
-                                    <tr>
-                                        <th class="p-2 w-10 text-center">
-                                            <input type="checkbox" id="selectAllGroupes" title="Sélectionner tout">
-                                        </th>
-                                        <th class="p-2 text-left">Nom du Groupe</th>
-                                        <th class="p-2 text-left">Mode</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="stage-groupes-table-body">
-                                    <!-- La liste des groupes sera chargée ici -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-        
-                    <!-- Section 2: Sélection de la période (améliorée) -->
-                    <div class="mb-4">
-                         <label class="block text-lg font-semibold text-gray-800 mb-3">2. Définissez la Période</label>
-                         <div class="flex flex-wrap items-center gap-2 mb-3">
-                            <button type="button" id="preset-this-week" class="px-3 py-1.5 text-sm rounded-md border hover:bg-gray-50">Cette semaine</button>
-                            <button type="button" id="preset-next-week" class="px-3 py-1.5 text-sm rounded-md border hover:bg-gray-50">Semaine prochaine</button>
-                            <button type="button" id="preset-two-weeks" class="px-3 py-1.5 text-sm rounded-md border hover:bg-gray-50">2 semaines</button>
-                            <label class="inline-flex items-center ml-auto text-sm text-gray-600">
-                                <input type="checkbox" id="stage-include-weekends" class="mr-2">Inclure les week-ends
-                            </label>
-                        </div>
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Semaine (ISO)</label>
-                                <input type="week" id="stage-week" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="stage-debut" class="block text-sm font-medium text-gray-700">Date de début</label>
-                                    <input type="date" id="stage-debut" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                                </div>
-                                <div>
-                                    <label for="stage-fin" class="block text-sm font-medium text-gray-700">Date de fin</label>
-                                    <input type="date" id="stage-fin" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                                </div>
-                            </div>
-                        </div>
-                        <p id="stage-period-summary" class="text-sm text-gray-600 mt-2"></p>
-                        <p class="text-xs text-gray-500 mt-1">Astuce: sélectionnez une semaine pour pré-remplir du lundi au vendredi. Vous pouvez ensuite ajuster les dates.</p>
-                    </div>
-        
-                    <!-- Section 3: Bouton d'action -->
-                    <div class="text-right mt-6 border-t pt-4">
-                        <button type="submit" id="addStageBtn" class="bg-blue-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-blue-700 transition">
-                            <i class="fas fa-calendar-plus mr-2"></i>Planifier pour les groupes sélectionnés
-                        </button>
-                    </div>
-                </form>
-                
-                <hr class="my-8">
-        
-                <h3 class="text-xl font-semibold mb-4">Stages déjà planifiés</h3>
-                <div class="overflow-x-auto">
-                    <table class="table w-full">
-                        <thead><tr><th>Groupe</th><th>Date de début</th><th>Date de fin</th><th class="text-center">Action</th></tr></thead>
-                        <tbody id="stages-list-table"></tbody>
-                    </table>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Planification des Stages</h2>
                 </div>
-                <div id="stagesFeedback" class="feedback-message mt-4"></div>
+                <p class="text-gray-500 mb-6">Sélectionnez les groupes, définissez une période, puis planifiez en masse ou individuellement.</p>
+        
+                <!-- Section de planification en masse -->
+                <div id="bulk-planning-section" class="border rounded-lg p-4 mb-6 bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Planification en Masse</h3>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <!-- Sélecteur de période -->
+                        <div class="relative flex-grow">
+                            <label for="date-range-display" class="block text-sm font-medium text-gray-700 mb-1">Période du stage</label>
+                            <div class="relative">
+                                <input type="text" id="date-range-display"
+                                       class="w-full p-2 pl-10 border border-gray-300 rounded-md cursor-pointer bg-white"
+                                       placeholder="Cliquez pour sélectionner une période" readonly>
+                                <i class="fas fa-calendar-alt absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        
+                            <!-- Le conteneur du calendrier qui s'affichera en popup -->
+                            <div id="calendar-picker-container" class="absolute top-full left-0 mt-2 p-4 bg-white border rounded-lg shadow-xl z-50 hidden w-[620px]">
+                                <div class="flex justify-between items-center mb-4">
+                                    <button type="button" id="calendar-prev-month" class="p-2 rounded-full hover:bg-gray-100"><i class="fas fa-chevron-left"></i></button>
+                                    <div class="flex-grow text-center font-semibold" id="calendar-headers"></div>
+                                    <button type="button" id="calendar-next-month" class="p-2 rounded-full hover:bg-gray-100"><i class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div id="calendar-grid" class="grid grid-cols-2 gap-4"></div>
+                                <div class="flex justify-end gap-2 mt-4 border-t pt-3">
+                                     <button type="button" id="calendar-clear-btn" class="px-3 py-1.5 text-sm rounded-md border hover:bg-gray-50">Effacer</button>
+                                     <button type="button" id="calendar-close-btn" class="px-4 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">OK</button>
+                                </div>
+                            </div>
+                        
+                            <!-- Champs de date cachés pour la soumission -->
+                            <input type="date" id="stage-debut" class="hidden">
+                            <input type="date" id="stage-fin" class="hidden">
+                        </div>
+                        
+                        <!-- Bouton d'action -->
+                        <div class="mt-auto">
+                            <button type="button" id="addStageBtn" class="bg-blue-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-blue-700 transition h-full">
+                                <i class="fas fa-calendar-plus mr-2"></i>Planifier pour les groupes sélectionnés
+                            </button>
+                        </div>
+                    </div>
+                     <p id="stage-period-summary" class="text-sm text-gray-600 mt-2 h-4"></p>
+                </div>
+        
+                <!-- Tableau des groupes et des stages planifiés -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                         <h3 class="text-xl font-semibold">Liste des Groupes et Stages</h3>
+                         <!-- Switch pour filtrer -->
+                         <div class="flex items-center gap-2 p-1 bg-gray-200 rounded-full">
+                            <button class="stage-mode-filter-btn active" data-filter="all">Tous</button>
+                            <button class="stage-mode-filter-btn" data-filter="Résidentiel">Résidentiel</button>
+                            <button class="stage-mode-filter-btn" data-filter="Alterné">Alterné</button>
+                         </div>
+                    </div>
+                    <div class="overflow-x-auto border rounded-lg">
+                        <table class="table w-full stages-table">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-3 w-10 text-center"><input type="checkbox" id="selectAllGroupes" title="Sélectionner tout"></th>
+                                    <th class="p-3 text-left">Nom du Groupe</th>
+                                    <th class="p-3 text-left">Mode</th>
+                                    <th class="p-3 text-left">Période de Stage Planifiée</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stages-list-table">
+                                <!-- Les données seront chargées ici par JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="stagesFeedback" class="feedback-message mt-4"></div>
+                </div>
             </div>
         </div>
         <!-- ======================================================================= -->
     </main>
 
+    <!-- Modal de gestion des jours fériés -->
+    <div id="holidayModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center modal-overlay">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 modal-content">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 id="holidayModalTitle" class="text-lg font-semibold text-gray-900">
+                    Ajouter un Jour Férié
+                </h3>
+                <button type="button" id="closeHolidayModal" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="holidayForm" class="p-6">
+                <input type="hidden" id="holidayId" value="">
+                <input type="hidden" id="holidayAction" value="add">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="holidayName" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nom du jour férié *
+                        </label>
+                        <input type="text" id="holidayName" name="holidayName" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Ex: Fête Nationale">
+                        <div id="holidayNameError" class="text-red-500 text-sm mt-1 hidden"></div>
+                    </div>
+                    
+                    <div>
+                        <label for="holidayDate" class="block text-sm font-medium text-gray-700 mb-1">
+                            Date *
+                        </label>
+                        <input type="date" id="holidayDate" name="holidayDate" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <div id="holidayDateError" class="text-red-500 text-sm mt-1 hidden"></div>
+                    </div>
+                    
+                    <div>
+                        <label for="holidayType" class="block text-sm font-medium text-gray-700 mb-1">
+                            Type
+                        </label>
+                        <select id="holidayType" name="holidayType"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="civil">Jour férié civil</option>
+                            <option value="religious">Jour férié religieux</option>
+                            <option value="custom">Jour férié personnalisé</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="holidayDescription" class="block text-sm font-medium text-gray-700 mb-1">
+                            Description (optionnelle)
+                        </label>
+                        <textarea id="holidayDescription" name="holidayDescription" rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  placeholder="Description ou commentaire sur ce jour férié"></textarea>
+                    </div>
+                    
+                    <!-- Options avancées -->
+                    <div class="border-t pt-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-700">Options avancées</label>
+                            <button type="button" id="toggleAdvancedOptions" class="text-blue-600 text-sm hover:text-blue-800">
+                                <i class="fas fa-chevron-down"></i> Afficher
+                            </button>
+                        </div>
+                        <div id="advancedOptions" class="hidden space-y-3">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="holidayRecurring" class="mr-2">
+                                <label for="holidayRecurring" class="text-sm text-gray-600">Répéter chaque année</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="holidayNotification" class="mr-2">
+                                <label for="holidayNotification" class="text-sm text-gray-600">Notification de rappel</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center mt-6 pt-4 border-t">
+                    <div class="flex gap-2">
+                        <button type="button" id="deleteHolidayBtn" 
+                                class="hidden bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition flex items-center gap-2">
+                            <i class="fas fa-trash"></i>Supprimer
+                        </button>
+                        <button type="button" id="duplicateHolidayBtn" 
+                                class="hidden bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition flex items-center gap-2">
+                            <i class="fas fa-copy"></i>Dupliquer
+                        </button>
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="button" id="cancelHolidayBtn" 
+                                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition">
+                            Annuler
+                        </button>
+                        <button type="submit" id="saveHolidayBtn" 
+                                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center gap-2">
+                            <i class="fas fa-save"></i>Sauvegarder
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de gestion en lot des jours fériés -->
+    <div id="bulkHolidayModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center modal-overlay">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 modal-content">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-layer-group mr-2"></i>Gestion en Lot des Jours Fériés
+                </h3>
+                <button type="button" id="closeBulkHolidayModal" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-6">
+                    <div class="flex gap-4 mb-4">
+                        <button type="button" id="importHolidaysBtn" class="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition flex items-center justify-center gap-2">
+                            <i class="fas fa-upload"></i>Importer depuis un fichier
+                        </button>
+                        <button type="button" id="exportHolidaysBtn" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                            <i class="fas fa-download"></i>Exporter vers un fichier
+                        </button>
+                    </div>
+                    
+                    <div class="border-t pt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Importer des jours fériés (format JSON)</label>
+                        <textarea id="bulkHolidayInput" rows="8" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  placeholder='[{"nom": "Fête Nationale", "date": "2025-07-30", "type": "civil", "description": "Fête du Trône"}]'></textarea>
+                        <p class="text-sm text-gray-500 mt-1">Format: tableau JSON avec les champs nom, date (YYYY-MM-DD), type (civil/religious/custom), et description (optionnelle)</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="cancelBulkHolidayBtn" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition">
+                        Annuler
+                    </button>
+                    <button type="button" id="saveBulkHolidayBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center gap-2">
+                        <i class="fas fa-save"></i>Importer les Jours Fériés
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input caché pour l'import de fichiers -->
+    <input type="file" id="holidayFileInput" accept=".json,.csv" class="hidden">
 
     
     <script>
@@ -349,6 +901,7 @@
                 await loadPageData(); // Attendre que les données soient chargées
                 setupTabNavigation();
                 setupFormSubmissions();
+                setupHolidayManagement(); // Ajouter la gestion des jours fériés
             } catch (error) { 
                 console.error('Erreur de session:', error);
                 window.location.href = 'login.html'; 
@@ -367,6 +920,7 @@
             document.getElementById('dropdown-user-name').textContent = displayName;
             document.getElementById('dropdown-user-email').textContent = userData.email;
             document.getElementById('profile-page-initials').textContent = getInitials(displayName);
+            document.getElementById('profile-page-name').textContent = displayName;
         }
 
         function setupProfileMenu() {
@@ -376,6 +930,10 @@
             window.addEventListener('click', () => menu.classList.remove('show'));
         }
 
+        // ==========================================================
+        // ============= FONCTIONS JAVASCRIPT MISES À JOUR ============
+        // ==========================================================
+        
         async function loadPageData() {
             try {
                 const response = await fetch('../api/profile/get_profile_data.php');
@@ -387,47 +945,95 @@
                     document.getElementById('etablissement_name').textContent = data.user.nom_etablissement || '';
                     document.getElementById('complexe_name').textContent = data.user.complexe || '';
                     
-                    const tableBody = document.getElementById('stage-groupes-table-body');
-                    const modeFilter = document.getElementById('stage-mode-filter');
-                    const groupModes = data.groupe_modes || {};
-                    // Assurer une clé exacte en supprimant espaces superflus
-                    Object.keys(groupModes).forEach(k => {
-                        const trimmed = (k || '').trim();
-                        if (trimmed !== k) {
-                            groupModes[trimmed] = groupModes[k];
-                            delete groupModes[k];
+                    // Logique pour le nouveau tableau de stages
+                    const allGroupes = data.groupes || [];
+                    const groupeModes = data.groupe_modes || {};
+                    const stages = data.stages || [];
+
+                    // Crée une map des stages par groupe (tableau de stages)
+                    const stagesByGroup = stages.reduce((acc, stage) => {
+                        if (!acc[stage.groupe_nom]) {
+                            acc[stage.groupe_nom] = [];
                         }
-                    });
-                    function renderGroupRows(filterValue) {
+                        acc[stage.groupe_nom].push(stage);
+                        return acc;
+                    }, {});
+
+                    const tableBody = document.getElementById('stages-list-table');
+                    
+                    // Fonction globale pour afficher les lignes du tableau
+                    window.renderStageRows = (filterValue = 'all') => {
                         tableBody.innerHTML = '';
-                        (data.groupes || []).forEach(groupe => {
+                        allGroupes.forEach(groupe => {
                             const key = (groupe || '').toString().trim().toUpperCase();
-                            const mode = groupModes[key] || '';
-                            if (filterValue && filterValue !== 'all' && mode !== filterValue) return;
-                            const row = `
-                                <tr class="hover:bg-gray-50">
-                                    <td class="p-2 text-center">
-                                        <input type="checkbox" class="groupe-stage-checkbox" value="${groupe}">
-                                    </td>
-                                    <td class="p-2">${groupe}</td>
-                                    <td class="p-2">${mode}</td>
-                                </tr>`;
-                            tableBody.innerHTML += row;
+                            const mode = groupeModes[key] || 'N/A';
+
+                            if (filterValue !== 'all' && mode !== filterValue) return;
+
+                            const groupeStages = stagesByGroup[groupe] || [];
+                            
+                            if (groupeStages.length === 0) {
+                                // Aucun stage pour ce groupe
+                                const row = `
+                                    <tr class="hover:bg-gray-50" data-group-name="${groupe}">
+                                        <td class="p-3 text-center">
+                                            <input type="checkbox" class="groupe-stage-checkbox" value="${groupe}">
+                                        </td>
+                                        <td class="p-3">${groupe}</td>
+                                        <td class="p-3">${mode}</td>
+                                        <td class="p-3"><span class="text-gray-400">Non planifié</span></td>
+                                    </tr>`;
+                                tableBody.innerHTML += row;
+                            } else {
+                                // Afficher tous les stages du groupe sur une seule ligne
+                                const periodsHtml = groupeStages.map((stage, index) => {
+                                    const dateDebut = new Date(stage.date_debut + 'T00:00:00').toLocaleDateString('fr-FR');
+                                    const dateFin = new Date(stage.date_fin + 'T00:00:00').toLocaleDateString('fr-FR');
+                                    return `
+                                        <div class="inline-flex items-center gap-2 mb-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                                            <span class="text-sm font-medium text-blue-800">
+                                                <strong>${dateDebut}</strong> au <strong>${dateFin}</strong>
+                                            </span>
+                                            <button onclick="deleteStage(${stage.id}, '${groupe}')" 
+                                                    class="text-red-500 hover:text-red-700 transition p-1 rounded-full hover:bg-red-100" 
+                                                    title="Supprimer ce stage">
+                                                <i class="fas fa-times text-xs"></i>
+                                            </button>
+                                        </div>
+                                    `;
+                                }).join('');
+                                
+                                const row = `
+                                    <tr class="hover:bg-gray-50" data-group-name="${groupe}">
+                                        <td class="p-3 text-center">
+                                            <input type="checkbox" class="groupe-stage-checkbox" value="${groupe}">
+                                        </td>
+                                        <td class="p-3">${groupe}</td>
+                                        <td class="p-3">${mode}</td>
+                                        <td class="p-3">
+                                            <div class="flex flex-wrap gap-2">
+                                                ${periodsHtml}
+                                            </div>
+                                        </td>
+                                    </tr>`;
+                                tableBody.innerHTML += row;
+                            }
                         });
-                    }
-                    renderGroupRows('all');
-                    if (modeFilter) {
-                        modeFilter.addEventListener('change', () => renderGroupRows(modeFilter.value));
-                    }
-                
-                renderStagesTable(data.stages || []);
-                // Indexer les stages par groupe pour détecter les chevauchements côté client
-                existingStagesByGroup = (data.stages || []).reduce((acc, s) => {
-                    const g = (s.groupe_nom || '').toString();
-                    if (!acc[g]) acc[g] = [];
-                    acc[g].push({ start: s.date_debut, end: s.date_fin, id: s.id });
-                    return acc;
-                }, {});
+                         if (tableBody.innerHTML === '') {
+                            tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-6">Aucun groupe ne correspond à ce filtre.</td></tr>`;
+                        }
+                    };
+                    
+                    renderStageRows('all'); // Affichage initial
+
+                    // Gestion des filtres
+                    document.querySelectorAll('.stage-mode-filter-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            document.querySelector('.stage-mode-filter-btn.active').classList.remove('active');
+                            btn.classList.add('active');
+                            renderStageRows(btn.dataset.filter);
+                        });
+                    });
 
                     document.getElementById('espaces').value = (data.espaces || []).join('\n');
                     (data.espaces || []).forEach(createEspaceTag);
@@ -450,6 +1056,537 @@
             }
         }
 
+        function deleteStage(stageId, groupName) {
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer cette période de stage ?`)) return;
+            fetch('../api/profile/update_stages.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', stage_id: stageId }) })
+            .then(res => res.json())
+            .then(result => {
+                showFeedback('stagesFeedback', result.message, result.success);
+                if (result.success) {
+                    loadPageData(); // Recharger les données pour mettre à jour le tableau
+                }
+            });
+        }
+        
+        // ==========================================================
+        // ========== GESTION CRUD DES JOURS FÉRIÉS ===============
+        // ==========================================================
+        
+        let currentHolidayData = null;
+        let allHolidays = [];
+        
+        function setupHolidayManagement() {
+            // Événement pour ouvrir le modal d'ajout
+            document.getElementById('addHolidayBtn').addEventListener('click', () => {
+                openHolidayModal('add');
+            });
+            
+            // Événement pour basculer la liste des jours fériés
+            document.getElementById('toggleHolidayListBtn').addEventListener('click', () => {
+                const container = document.getElementById('holidayListContainer');
+                const btn = document.getElementById('toggleHolidayListBtn');
+                
+                if (container.classList.contains('hidden')) {
+                    container.classList.remove('hidden');
+                    btn.innerHTML = '<i class="fas fa-list-ul"></i>Masquer la Liste';
+                    refreshHolidayList();
+                } else {
+                    container.classList.add('hidden');
+                    btn.innerHTML = '<i class="fas fa-list"></i>Liste des Jours Fériés';
+                }
+            });
+            
+            // Événements pour le modal principal
+            document.getElementById('closeHolidayModal').addEventListener('click', closeHolidayModal);
+            document.getElementById('cancelHolidayBtn').addEventListener('click', closeHolidayModal);
+            document.getElementById('deleteHolidayBtn').addEventListener('click', handleHolidayDelete);
+            document.getElementById('duplicateHolidayBtn').addEventListener('click', handleHolidayDuplicate);
+            
+            // Événements pour les options avancées
+            document.getElementById('toggleAdvancedOptions').addEventListener('click', () => {
+                const options = document.getElementById('advancedOptions');
+                const btn = document.getElementById('toggleAdvancedOptions');
+                
+                if (options.classList.contains('hidden')) {
+                    options.classList.remove('hidden');
+                    btn.innerHTML = '<i class="fas fa-chevron-up"></i> Masquer';
+                } else {
+                    options.classList.add('hidden');
+                    btn.innerHTML = '<i class="fas fa-chevron-down"></i> Afficher';
+                }
+            });
+            
+            // Événements pour la recherche et le filtrage
+            document.getElementById('holidaySearchInput').addEventListener('input', filterHolidayList);
+            document.getElementById('holidayTypeFilter').addEventListener('change', filterHolidayList);
+            
+            // Événement pour la soumission du formulaire
+            document.getElementById('holidayForm').addEventListener('submit', handleHolidaySave);
+            
+            // Fermer les modals en cliquant à l'extérieur
+            document.getElementById('holidayModal').addEventListener('click', (e) => {
+                if (e.target.id === 'holidayModal') closeHolidayModal();
+            });
+        }
+        
+        function openHolidayModal(action, holidayData = null) {
+            const modal = document.getElementById('holidayModal');
+            const title = document.getElementById('holidayModalTitle');
+            const form = document.getElementById('holidayForm');
+            const deleteBtn = document.getElementById('deleteHolidayBtn');
+            const duplicateBtn = document.getElementById('duplicateHolidayBtn');
+            const actionInput = document.getElementById('holidayAction');
+            
+            // Reset du formulaire et des erreurs
+            form.reset();
+            clearFormErrors();
+            actionInput.value = action;
+            currentHolidayData = holidayData;
+            
+            if (action === 'add') {
+                title.textContent = 'Ajouter un Jour Férié';
+                deleteBtn.classList.add('hidden');
+                duplicateBtn.classList.add('hidden');
+                document.getElementById('holidayId').value = '';
+                
+                // Si une date est fournie (clic sur calendrier), la pré-remplir
+                if (holidayData && holidayData.date) {
+                    document.getElementById('holidayDate').value = holidayData.date;
+                }
+            } else if (action === 'edit' && holidayData) {
+                title.textContent = 'Modifier le Jour Férié';
+                deleteBtn.classList.remove('hidden');
+                duplicateBtn.classList.remove('hidden');
+                
+                // Pré-remplir le formulaire
+                document.getElementById('holidayId').value = holidayData.id || '';
+                document.getElementById('holidayName').value = holidayData.nom || holidayData.title || '';
+                document.getElementById('holidayDate').value = holidayData.date || '';
+                document.getElementById('holidayType').value = holidayData.type || 'custom';
+                document.getElementById('holidayDescription').value = holidayData.description || '';
+            }
+            
+            modal.classList.remove('hidden');
+            document.getElementById('holidayName').focus();
+        }
+        
+        function closeHolidayModal() {
+            document.getElementById('holidayModal').classList.add('hidden');
+            currentHolidayData = null;
+            clearFormErrors();
+        }
+        
+        function clearFormErrors() {
+            const errorElements = document.querySelectorAll('#holidayForm .text-red-500');
+            errorElements.forEach(el => {
+                el.classList.add('hidden');
+                el.textContent = '';
+            });
+        }
+        
+        function validateHolidayForm() {
+            let isValid = true;
+            clearFormErrors();
+            
+            const name = document.getElementById('holidayName').value.trim();
+            const date = document.getElementById('holidayDate').value;
+            
+            if (!name) {
+                showFieldError('holidayNameError', 'Le nom du jour férié est requis');
+                isValid = false;
+            }
+            
+            if (!date) {
+                showFieldError('holidayDateError', 'La date est requise');
+                isValid = false;
+            }
+            
+            // Vérifier si la date existe déjà (sauf en mode édition)
+            if (date && document.getElementById('holidayAction').value === 'add') {
+                const exists = allHolidays.some(h => h.date === date);
+                if (exists) {
+                    showFieldError('holidayDateError', 'Un jour férié existe déjà à cette date');
+                    isValid = false;
+                }
+            }
+            
+            return isValid;
+        }
+        
+        function showFieldError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.remove('hidden');
+            }
+        }
+        
+        async function handleHolidaySave(e) {
+            e.preventDefault();
+            
+            if (!validateHolidayForm()) {
+                return;
+            }
+            
+            const formData = new FormData(e.target);
+            const action = formData.get('holidayAction');
+            const holidayData = {
+                id: formData.get('holidayId') || null,
+                nom: formData.get('holidayName'),
+                date: formData.get('holidayDate'),
+                type: formData.get('holidayType'),
+                description: formData.get('holidayDescription')
+            };
+            
+            try {
+                const response = await fetch('../api/profile/update_establishment_info.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        holiday_action: action,
+                        holiday_data: holidayData
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showFeedback('calendarFeedback', result.message, true);
+                    closeHolidayModal();
+                    await refreshCalendarData();
+                } else {
+                    showFeedback('calendarFeedback', result.message, false);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde du jour férié:', error);
+                showFeedback('calendarFeedback', 'Erreur de communication avec le serveur.', false);
+            }
+        }
+        
+        async function handleHolidayDelete() {
+            if (!currentHolidayData) return;
+            
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer le jour férié "${currentHolidayData.nom || currentHolidayData.title}" ?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('../api/profile/update_establishment_info.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        holiday_action: 'delete',
+                        holiday_data: { 
+                            id: currentHolidayData.id,
+                            date: currentHolidayData.date 
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showFeedback('calendarFeedback', result.message, true);
+                    closeHolidayModal();
+                    await refreshCalendarData();
+                } else {
+                    showFeedback('calendarFeedback', result.message, false);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression du jour férié:', error);
+                showFeedback('calendarFeedback', 'Erreur de communication avec le serveur.', false);
+            }
+        }
+        
+        async function refreshCalendarData() {
+            try {
+                const response = await fetch('../api/profile/get_profile_data.php');
+                const result = await response.json();
+                
+                if (result.success) {
+                    establishmentCalendarData = result.data.calendar || { holidays: [], vacations: '' };
+                    if (profileCalendar) {
+                        profileCalendar.destroy();
+                        profileCalendar = null;
+                    }
+                    await initializeProfileCalendar();
+                    
+                    // Mettre à jour la liste si elle est visible
+                    if (!document.getElementById('holidayListContainer').classList.contains('hidden')) {
+                        refreshHolidayList();
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du rafraîchissement des données du calendrier:', error);
+            }
+        }
+        
+        function handleHolidayDuplicate() {
+            if (!currentHolidayData) return;
+            
+            // Fermer le modal actuel et ouvrir un nouveau en mode ajout avec les données copiées
+            closeHolidayModal();
+            
+            setTimeout(() => {
+                const duplicatedData = {
+                    ...currentHolidayData,
+                    nom: currentHolidayData.nom + ' (Copie)',
+                    id: null // Nouvel ID sera généré
+                };
+                openHolidayModal('add', duplicatedData);
+                
+                // Pré-remplir avec les données dupliquées
+                document.getElementById('holidayName').value = duplicatedData.nom;
+                document.getElementById('holidayType').value = duplicatedData.type || 'custom';
+                document.getElementById('holidayDescription').value = duplicatedData.description || '';
+                // Ne pas copier la date pour éviter les conflits
+            }, 100);
+        }
+        
+        function refreshHolidayList() {
+            // Mettre à jour la liste des jours fériés depuis les données du calendrier
+            if (establishmentCalendarData && establishmentCalendarData.holidays) {
+                allHolidays = Array.isArray(establishmentCalendarData.holidays) ? 
+                    establishmentCalendarData.holidays : [];
+            } else {
+                allHolidays = [];
+            }
+            
+            filterHolidayList();
+        }
+        
+        function filterHolidayList() {
+            const searchTerm = document.getElementById('holidaySearchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('holidayTypeFilter').value;
+            const listContainer = document.getElementById('holidayList');
+            
+            let filteredHolidays = allHolidays.filter(holiday => {
+                const matchesSearch = holiday.nom.toLowerCase().includes(searchTerm) ||
+                                    (holiday.description && holiday.description.toLowerCase().includes(searchTerm));
+                const matchesType = typeFilter === 'all' || holiday.type === typeFilter;
+                return matchesSearch && matchesType;
+            });
+            
+            // Trier par date
+            filteredHolidays.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            if (filteredHolidays.length === 0) {
+                listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">Aucun jour férié trouvé</div>';
+                return;
+            }
+            
+            listContainer.innerHTML = filteredHolidays.map(holiday => {
+                const dateFormatted = new Date(holiday.date + 'T00:00:00').toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                const typeClass = {
+                    'civil': 'holiday-type-civil',
+                    'religious': 'holiday-type-religious',
+                    'custom': 'holiday-type-custom'
+                }[holiday.type] || 'holiday-type-custom';
+                
+                return `
+                    <div class="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition" 
+                         onclick="openHolidayModal('edit', ${JSON.stringify(holiday).replace(/"/g, '&quot;')})">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="font-medium text-gray-900">${holiday.nom}</span>
+                                    <span class="holiday-type-badge ${typeClass}">${{
+                                        'civil': 'Civil',
+                                        'religious': 'Religieux',
+                                        'custom': 'Personnalisé'
+                                    }[holiday.type] || 'Personnalisé'}</span>
+                                </div>
+                                <div class="text-sm text-gray-600">${dateFormatted}</div>
+                                ${holiday.description ? `<div class="text-sm text-gray-500 mt-1">${holiday.description}</div>` : ''}
+                            </div>
+                            <div class="flex gap-1">
+                                <button class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded" 
+                                        title="Modifier" onclick="event.stopPropagation(); openHolidayModal('edit', ${JSON.stringify(holiday).replace(/"/g, '&quot;')})">
+                                    <i class="fas fa-edit text-sm"></i>
+                                </button>
+                                <button class="p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded" 
+                                        title="Supprimer" onclick="event.stopPropagation(); deleteHolidayFromList(${JSON.stringify(holiday).replace(/"/g, '&quot;')})">
+                                    <i class="fas fa-trash text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        async function deleteHolidayFromList(holidayData) {
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer le jour férié "${holidayData.nom}" ?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('../api/profile/update_establishment_info.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        holiday_action: 'delete',
+                        holiday_data: { 
+                            id: holidayData.id,
+                            date: holidayData.date 
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showFeedback('calendarFeedback', result.message, true);
+                    await refreshCalendarData();
+                } else {
+                    showFeedback('calendarFeedback', result.message, false);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression du jour férié:', error);
+                showFeedback('calendarFeedback', 'Erreur de communication avec le serveur.', false);
+            }
+        }
+        
+        // ==========================================================
+        // ========== FIN GESTION CRUD JOURS FÉRIÉS ===============
+        // ==========================================================
+        
+        function setupFormSubmissions() {
+            document.getElementById('userInfoForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const data = { nom_complet: document.getElementById('nom_complet').value, email: document.getElementById('email').value };
+                fetch('../api/profile/update_user_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                    .then(res => res.json()).then(result => {
+                        showFeedback('userInfoFeedback', result.message, result.success);
+                        if (result.success) populateUserInfo({ ...data, nom: data.nom_complet });
+                    });
+            });
+
+            document.getElementById('passwordForm').addEventListener('submit', e => {
+                e.preventDefault(); const form = e.target; const data = Object.fromEntries(new FormData(form).entries());
+                if (data.new_password !== data.confirm_new_password) { showFeedback('passwordFeedback', 'Les mots de passe ne correspondent pas.', false); return; }
+                fetch('../api/profile/update_password.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                    .then(res => res.json()).then(result => { showFeedback('passwordFeedback', result.message, result.success); if (result.success) form.reset(); });
+            });
+            
+            document.getElementById('espacesForm').addEventListener('submit', e => {
+                e.preventDefault(); const data = { espaces: document.getElementById('espaces').value.split('\n').filter(Boolean) };
+                fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                    .then(res => res.json()).then(result => showFeedback('espacesFeedback', result.message, result.success));
+            });
+            
+            document.getElementById('calendarForm').addEventListener('submit', e => {
+                e.preventDefault(); if (!profileCalendar) { showFeedback('calendarFeedback', 'Calendrier non initialisé.', false); return; }
+                const toFrDate = (date) => date.toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                
+                // Récupérer tous les événements pour déboguer
+                const allEvents = profileCalendar.getEvents();
+                console.log('Tous les événements:', allEvents);
+                
+                // Récupérer les vacances (événements éditables)
+                const vacationEvents = profileCalendar.getEvents().filter(event => event.extendedProps.isEditable);
+                console.log('Événements de vacances trouvés:', vacationEvents);
+                
+                const vacations = vacationEvents.map(event => {
+                    const end = new Date(event.end.valueOf() - 86400000); 
+                    return `${toFrDate(event.start)} - ${toFrDate(end)}`;
+                }).join('\n'); // Utiliser un vrai saut de ligne
+                
+                console.log('Vacances formatées (raw):', JSON.stringify(vacations));
+                console.log('Vacances formatées (split):', vacations.split('\n'));
+                
+                // Récupérer les jours fériés (événements non éditables avec classe holiday-event)
+                const holidays = profileCalendar.getEvents().filter(event => 
+                    event.classNames.includes('holiday-event') && !event.extendedProps.isEditable
+                ).map(event => ({
+                    nom: event.title,
+                    date: event.start.toISOString().split('T')[0] // Format YYYY-MM-DD
+                }));
+                
+                console.log('Jours fériés:', holidays);
+                
+                const data = { vacations, holidays: JSON.stringify(holidays) };
+                console.log('Données envoyées:', data);
+                
+                fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                    .then(res => res.json()).then(result => {
+                        console.log('Réponse du serveur:', result);
+                        if (result.debug) {
+                            console.log('=== DÉBOGAGE SERVEUR ===');
+                            console.log(result.debug);
+                            console.log('=== FIN DÉBOGAGE ===');
+                        }
+                        showFeedback('calendarFeedback', result.message, result.success);
+                    });
+            });
+            
+            document.getElementById('formateursForm').addEventListener('submit', e => {
+                e.preventDefault(); const formateurs = Array.from(new FormData(e.target).entries()).reduce((acc, [key, val]) => {
+                    const [, matricule, prop] = key.match(/formateurs\[(.+?)\]\[(.+?)\]/); if (!acc[matricule]) acc[matricule] = {}; acc[matricule][prop] = val; return acc;
+                }, {});
+                const data = { formateurs: Object.values(formateurs) };
+                fetch('../api/profile/update_formateurs.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+                    .then(res => res.json()).then(result => showFeedback('formateursFeedback', result.message, result.success));
+            });
+
+            // Événement pour le bouton de planification des stages
+            document.getElementById('addStageBtn').addEventListener('click', function() {
+                const selectedGroupes = Array.from(document.querySelectorAll('.groupe-stage-checkbox:checked')).map(cb => cb.value);
+                const dateDebut = document.getElementById('stage-debut').value;
+                const dateFin = document.getElementById('stage-fin').value;
+                
+                if (selectedGroupes.length === 0 || !dateDebut || !dateFin) {
+                    showFeedback('stagesFeedback', 'Veuillez sélectionner au moins un groupe et une période complète.', false);
+                    return;
+                }
+                
+                const d1 = parseIsoDate(dateDebut), d2 = parseIsoDate(dateFin);
+                if (!d1 || !d2 || d2 < d1) {
+                    showFeedback('stagesFeedback', 'La date de fin doit être postérieure ou égale à la date de début.', false);
+                    return;
+                }
+            
+                const data = { groupes: selectedGroupes, date_debut: dateDebut, date_fin: dateFin };
+                
+                fetch('../api/profile/update_stages.php', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ action: 'add', data: data }) 
+                })
+                .then(res => res.json())
+                .then(result => {
+                    showFeedback('stagesFeedback', result.message, result.success);
+                    if (result.success) {
+                        loadPageData(); // Recharger les données
+                        // Vider les sélections
+                        document.getElementById('selectAllGroupes').checked = false;
+                        document.querySelectorAll('.groupe-stage-checkbox').forEach(cb => cb.checked = false);
+                        document.getElementById('date-range-display').value = '';
+                        document.getElementById('stage-debut').value = '';
+                        document.getElementById('stage-fin').value = '';
+                        updateStagePeriodSummary();
+                    }
+                });
+            });
+            
+            document.getElementById('selectAllGroupes').addEventListener('change', function() {
+                // Sélectionne toutes les checkboxes visibles (une par groupe)
+                document.querySelectorAll('#stages-list-table tr .groupe-stage-checkbox').forEach(checkbox => { 
+                    checkbox.checked = this.checked; 
+                });
+            });
+        }
+
+        // ==========================================================
+        // ============== CODE INCHANGÉ (A GARDER TEL QUEL) ===========
+        // ==========================================================
+        
         function setupEspacesTagInput() {
             const container = document.getElementById('espaces-tag-container');
             const input = document.getElementById('espaces-input');
@@ -507,32 +1644,106 @@
         async function initializeProfileCalendar() {
             const calendarEl = document.getElementById('profile-calendar');
             if (!calendarEl || !establishmentCalendarData) return;
-
-            const apiHolidays = await fetchMoroccanHolidays(new Date().getFullYear());
+            
+            // Utiliser les jours fériés sauvegardés en base s'ils existent, sinon utiliser l'API
+            let holidays = [];
+            if (establishmentCalendarData.holidays && Array.isArray(establishmentCalendarData.holidays) && establishmentCalendarData.holidays.length > 0) {
+                // Utiliser les jours fériés sauvegardés en base
+                holidays = establishmentCalendarData.holidays.map((h, index) => ({
+                    id: h.id || `holiday_${index}`,
+                    title: h.nom,
+                    start: h.date,
+                    allDay: true,
+                    editable: false,
+                    display: 'background',
+                    backgroundColor: 'rgba(251, 146, 60, 0.2)',
+                    classNames: ['holiday-event'],
+                    extendedProps: {
+                        isHoliday: true,
+                        holidayData: h
+                    }
+                }));
+            } else {
+                // Utiliser l'API externe si pas de données en base
+                const apiHolidays = await fetchMoroccanHolidays(new Date().getFullYear());
+                holidays = apiHolidays.map((h, index) => ({
+                    id: `api_holiday_${index}`,
+                    title: h.title,
+                    start: h.start,
+                    allDay: true,
+                    editable: false,
+                    display: 'background',
+                    backgroundColor: 'rgba(251, 146, 60, 0.2)',
+                    classNames: ['holiday-event'],
+                    extendedProps: {
+                        isHoliday: true,
+                        isApiHoliday: true,
+                        holidayData: {
+                            nom: h.title,
+                            date: h.start,
+                            type: 'civil'
+                        }
+                    }
+                }));
+            }
+            
             const dbVacations = parseDbVacations(establishmentCalendarData.vacations);
-
             profileCalendar = new FullCalendar.Calendar(calendarEl, {
-                locale: 'fr',
-                initialView: 'dayGridMonth',
-                aspectRatio: 1.6,
+                locale: 'fr', 
+                initialView: 'dayGridMonth', 
+                aspectRatio: 1.6, 
                 height: 'auto',
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth' },
-                editable: true, selectable: true,
-                events: [...apiHolidays, ...dbVacations],
+                editable: true, 
+                selectable: true, 
+                events: [...holidays, ...dbVacations],
                 select: info => {
                     const title = prompt('Nom de la période de vacances:', 'Vacances');
                     if (title) {
-                        profileCalendar.addEvent({
-                            title, start: info.start, end: info.end, allDay: true,
-                            backgroundColor: '#0d6efd', borderColor: '#0d6efd',
-                            classNames: ['vacation-event'], extendedProps: { isEditable: true }
+                        profileCalendar.addEvent({ 
+                            title, 
+                            start: info.start, 
+                            end: info.end, 
+                            allDay: true, 
+                            backgroundColor: '#0d6efd', 
+                            borderColor: '#0d6efd', 
+                            classNames: ['vacation-event'], 
+                            extendedProps: { isEditable: true } 
                         });
                     }
                     profileCalendar.unselect();
                 },
                 eventClick: info => {
-                    if (info.event.extendedProps.isEditable && confirm(`Supprimer la période "${info.event.title}" ?`)) {
-                        info.event.remove();
+                    // Gestion du clic sur les jours fériés
+                    if (info.event.extendedProps.isHoliday) {
+                        const holidayData = info.event.extendedProps.holidayData;
+                        if (holidayData) {
+                            openHolidayModal('edit', {
+                                id: info.event.id,
+                                nom: holidayData.nom,
+                                date: holidayData.date,
+                                type: holidayData.type || 'civil',
+                                description: holidayData.description || ''
+                            });
+                        }
+                        return;
+                    }
+                    
+                    // Gestion du clic sur les vacances (comportement existant)
+                    if (info.event.extendedProps.isEditable && confirm(`Supprimer la période "${info.event.title}" ?`)) { 
+                        info.event.remove(); 
+                    }
+                },
+                dateClick: info => {
+                    // Permettre de créer un jour férié en cliquant sur une date
+                    const clickedDate = info.dateStr;
+                    
+                    // Vérifier si la date n'a pas déjà un jour férié
+                    const existingHoliday = allHolidays.find(h => h.date === clickedDate);
+                    if (existingHoliday) {
+                        openHolidayModal('edit', existingHoliday);
+                    } else {
+                        openHolidayModal('add', { date: clickedDate });
                     }
                 }
             });
@@ -540,73 +1751,40 @@
         }
 
         async function fetchMoroccanHolidays(year) {
-    try {
-        const response = await fetch(`../api/data/morocco_holidays.php?year=${year}`);
-        if (!response.ok) {
-            console.warn(`Erreur API personnalisée jours fériés : ${response.status}`);
-            return [];
+            try {
+                const response = await fetch(`../api/data/morocco_holidays.php?year=${year}`);
+                if (!response.ok) { console.warn(`Erreur API jours fériés: ${response.status}`); return []; }
+                const holidays = await response.json();
+                return holidays.map(h => ({ title: h.title, start: h.date, allDay: true, editable: false, display: 'background', backgroundColor: 'rgba(251, 146, 60, 0.2)', classNames: ['holiday-event'] }));
+            } catch (error) { console.error("Erreur de récupération des jours fériés:", error); return []; }
         }
-        const holidays = await response.json();
-
-        return holidays.map(h => ({
-            title: h.title,
-            start: h.date,
-            allDay: true,
-            editable: false,
-            display: 'background',
-            backgroundColor: 'rgba(251, 146, 60, 0.2)',
-            classNames: ['holiday-event']
-        }));
-
-    } catch (error) {
-        console.error("Erreur de récupération des jours fériés depuis API personnalisée:", error);
-        return [];
-    }
-}
 
         function parseDbVacations(vacationsData) {
-            // Accepte plusieurs formats: string (lignes JJ/MM/AAAA - JJ/MM/AAAA),
-            // tableau de chaînes, ou tableau d'objets {nom, debut, fin}
             if (!vacationsData) return [];
-
             const toIso = (dStr) => {
-                // Supporte déjà JJ/MM/AAAA et ISO
-                if (!dStr) return '';
-                if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) return dStr;
-                const parts = dStr.split('/');
-                if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                if (!dStr) return ''; if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) return dStr;
+                const parts = dStr.split('/'); if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
                 return dStr;
             };
-
             let items = [];
             if (typeof vacationsData === 'string') {
-                items = vacationsData.split('\n').filter(Boolean).map(line => {
-                    const [startStr, endStr] = line.split('-').map(s => s.trim());
-                    return { start: toIso(startStr), end: toIso(endStr), title: 'Vacances' };
-                });
+                items = vacationsData.split('\n').filter(Boolean).map(line => { const [startStr, endStr] = line.split('-').map(s => s.trim()); return { start: toIso(startStr), end: toIso(endStr), title: 'Vacances' }; });
             } else if (Array.isArray(vacationsData)) {
                 items = vacationsData.map(v => {
-                    if (typeof v === 'string') {
-                        const [startStr, endStr] = v.split('-').map(s => s.trim());
-                        return { start: toIso(startStr), end: toIso(endStr), title: 'Vacances' };
-                    }
-                    // Objet { nom, debut, fin }
+                    if (typeof v === 'string') { const [startStr, endStr] = v.split('-').map(s => s.trim()); return { start: toIso(startStr), end: toIso(endStr), title: 'Vacances' }; }
                     return { start: toIso(v.debut || v.start), end: toIso(v.fin || v.end), title: v.nom || 'Vacances' };
                 });
-            } else if (typeof vacationsData === 'object') {
-                // objet unique {nom, debut, fin}
-                items = [{ start: toIso(vacationsData.debut), end: toIso(vacationsData.fin), title: vacationsData.nom || 'Vacances' }];
-            }
-
-            return items.filter(it => it.start).map(it => ({
-                title: it.title,
-                start: it.start,
-                end: it.end,
-                allDay: true,
-                backgroundColor: '#0d6efd',
-                borderColor: '#0d6efd',
-                classNames: ['vacation-event'],
-                extendedProps: { isEditable: true }
+            } else if (typeof vacationsData === 'object') { items = [{ start: toIso(vacationsData.debut), end: toIso(vacationsData.fin), title: vacationsData.nom || 'Vacances' }]; }
+            return items.filter(it => it.start).map(it => ({ 
+                title: it.title, 
+                start: it.start, 
+                end: it.end, 
+                allDay: true, 
+                backgroundColor: '#0d6efd', 
+                borderColor: '#0d6efd', 
+                classNames: ['vacation-event', 'db-vacation-event'], 
+                editable: false, 
+                extendedProps: { isDbEvent: true, isEditable: false } 
             }));
         }
 
@@ -614,278 +1792,372 @@
             const el = document.getElementById(elementId);
             el.textContent = message;
             el.className = isSuccess ? 'feedback-message feedback-success' : 'feedback-message feedback-error';
-            setTimeout(() => el.textContent = '', 4000);
+            
+            // Ajouter une classe d'animation
+            el.classList.add(isSuccess ? 'form-success' : 'form-field-error');
+            
+            setTimeout(() => {
+                el.textContent = '';
+                el.classList.remove('form-success', 'form-field-error');
+            }, 4000);
+            
+            // Afficher aussi une notification flottante
+            showNotification(message, isSuccess ? 'success' : 'error');
+        }
+        
+        function showNotification(message, type = 'success') {
+            // Créer l'élément notification
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            // Ajouter au DOM
+            document.body.appendChild(notification);
+            
+            // Supprimer automatiquement après 5 secondes
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 5000);
+        }
+        
+        function showLoadingButton(buttonId, isLoading = true) {
+            const button = document.getElementById(buttonId);
+            if (!button) return;
+            
+            const originalText = button.innerHTML;
+            
+            if (isLoading) {
+                button.disabled = true;
+                button.innerHTML = '<div class="loading-spinner"></div> Chargement...';
+                button.dataset.originalText = originalText;
+            } else {
+                button.disabled = false;
+                button.innerHTML = button.dataset.originalText || originalText;
+            }
+        }
+        
+        function addTooltip(element, text) {
+            element.setAttribute('data-tooltip', text);
+            element.classList.add('tooltip');
+        }
+        
+        function toFrDate(date) {
+            return date.toLocaleDateString('fr-FR', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit' 
+            });
         }
 
-        // Helpers dates pour la période de stage
         function parseIsoDate(value) {
             if (!value) return null;
-            const d = new Date(value + 'T00:00:00');
+            // Créer la date en UTC pour éviter les problèmes de fuseau horaire
+            const [year, month, day] = value.split('-').map(Number);
+            const d = new Date(Date.UTC(year, month - 1, day));
             return isNaN(d.getTime()) ? null : d;
         }
-        function formatIso(d) { return d.toISOString().slice(0,10); }
-        function toMonday(year, week) {
-            const simple = new Date(year, 0, 1 + (week - 1) * 7);
-            const dow = simple.getDay() || 7;
-            const monday = new Date(simple);
-            monday.setDate(simple.getDate() + (1 - dow));
-            return monday;
-        }
+
         function countDaysBetween(start, end, includeWeekends) {
             if (!start || !end) return 0;
             let count = 0;
             const cur = new Date(start);
-            while (cur <= end) {
-                const day = cur.getDay();
+            const endDate = new Date(end);
+            
+            while (cur.getTime() <= endDate.getTime()) {
+                const day = cur.getUTCDay();
                 if (includeWeekends || (day !== 0 && day !== 6)) count++;
-                cur.setDate(cur.getDate() + 1);
+                cur.setUTCDate(cur.getUTCDate() + 1);
             }
             return count;
         }
+
         function updateStagePeriodSummary() {
             const el = document.getElementById('stage-period-summary');
             const d1 = parseIsoDate(document.getElementById('stage-debut').value);
             const d2 = parseIsoDate(document.getElementById('stage-fin').value);
-            const includeWeekends = document.getElementById('stage-include-weekends')?.checked;
             if (!d1 || !d2) { el.textContent = ''; return; }
             if (d2 < d1) { el.textContent = 'La date de fin doit être postérieure ou égale à la date de début.'; return; }
-            const total = countDaysBetween(d1, d2, !!includeWeekends);
-            const options = { weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit' };
-            el.textContent = `Période: ${d1.toLocaleDateString('fr-FR', options)} → ${d2.toLocaleDateString('fr-FR', options)} • ${total} jour(s)` + (includeWeekends ? ' (week-ends inclus)' : '');
-        }
-
-        // AJOUTEZ CES DEUX FONCTIONS DANS VOTRE <script> de profile.html
-
-/**
- * Affiche la liste des stages déjà planifiés dans leur tableau.
- * @param {Array} stages - La liste des objets stage venant de l'API.
- */
-function renderStagesTable(stages) {
-    const tableBody = document.getElementById('stages-list-table');
-    if (!stages || stages.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">Aucun stage planifié.</td></tr>';
-        return;
-    }
-    tableBody.innerHTML = '';
-    stages.forEach(stage => {
-        // Formater les dates pour un affichage lisible
-        const dateDebut = new Date(stage.date_debut + 'T00:00:00').toLocaleDateString('fr-FR');
-        const dateFin = new Date(stage.date_fin + 'T00:00:00').toLocaleDateString('fr-FR');
-
-        const row = `
-            <tr data-stage-id="${stage.id}">
-                <td class="p-2">${stage.groupe_nom}</td>
-                <td class="p-2">${dateDebut}</td>
-                <td class="p-2">${dateFin}</td>
-                <td class="text-center">
-                    <button onclick="deleteStage(${stage.id})" class="text-red-500 hover:text-red-700 transition" title="Supprimer ce stage">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
-            </tr>`;
-        tableBody.innerHTML += row;
-    });
-}
-
-/**
- * Appelle l'API pour supprimer une période de stage spécifique.
- * @param {number} stageId - L'ID du stage à supprimer.
- */
-function deleteStage(stageId) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette période de stage ?')) return;
-
-    fetch('../api/profile/update_stages.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', stage_id: stageId })
-    })
-    .then(res => res.json())
-    .then(result => {
-        showFeedback('stagesFeedback', result.message, result.success);
-        if (result.success) {
-            // On supprime la ligne du tableau sans recharger toute la page
-            const rowToRemove = document.querySelector(`tr[data-stage-id='${stageId}']`);
-            if (rowToRemove) {
-                rowToRemove.remove();
-            }
-        }
-    });
-}
-
-        function setupFormSubmissions() {
-            document.getElementById('userInfoForm').addEventListener('submit', e => {
-                e.preventDefault();
-                const data = { nom_complet: document.getElementById('nom_complet').value, email: document.getElementById('email').value };
-                fetch('../api/profile/update_user_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-                    .then(res => res.json()).then(result => {
-                        showFeedback('userInfoFeedback', result.message, result.success);
-                        if (result.success) populateUserInfo({ ...data, nom: data.nom_complet });
-                    });
-            });
-
-            document.getElementById('passwordForm').addEventListener('submit', e => {
-                e.preventDefault();
-                const form = e.target;
-                const data = Object.fromEntries(new FormData(form).entries());
-                if (data.new_password !== data.confirm_new_password) {
-                    showFeedback('passwordFeedback', 'Les mots de passe ne correspondent pas.', false); return;
-                }
-                fetch('../api/profile/update_password.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-                    .then(res => res.json()).then(result => {
-                        showFeedback('passwordFeedback', result.message, result.success);
-                        if (result.success) form.reset();
-                    });
-            });
+            const total = countDaysBetween(d1, d2, false); // Weekends exclus par défaut
             
-            document.getElementById('espacesForm').addEventListener('submit', e => {
-                e.preventDefault();
-                const data = { espaces: document.getElementById('espaces').value.split('\n').filter(Boolean) };
-                fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-                    .then(res => res.json()).then(result => showFeedback('espacesFeedback', result.message, result.success));
-            });
+            // Formater les dates sans problème de fuseau horaire
+            const formatDate = (date) => {
+                const day = date.getUTCDate().toString().padStart(2, '0');
+                const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+                const year = date.getUTCFullYear();
+                const weekday = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'][date.getUTCDay()];
+                return `${weekday} ${day}/${month}/${year}`;
+            };
             
-            document.getElementById('calendarForm').addEventListener('submit', e => {
-                e.preventDefault();
-                if (!profileCalendar) { showFeedback('calendarFeedback', 'Calendrier non initialisé.', false); return; }
-                const toFrDate = (date) => date.toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' });
-                const vacations = profileCalendar.getEvents()
-                    .filter(event => event.extendedProps.isEditable)
-                    .map(event => {
-                        const end = new Date(event.end.valueOf() - 86400000); // Rendre la date de fin inclusive
-                        return `${toFrDate(event.start)} - ${toFrDate(end)}`;
-                    }).join('\n');
-                
-                const data = { vacations, holidays: '' }; // On ne sauvegarde que les vacances modifiables.
-                fetch('../api/profile/update_establishment_info.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-                    .then(res => res.json()).then(result => showFeedback('calendarFeedback', result.message, result.success));
-            });
-            
-            document.getElementById('formateursForm').addEventListener('submit', e => {
-                e.preventDefault();
-                const formateurs = Array.from(new FormData(e.target).entries()).reduce((acc, [key, val]) => {
-                    const [, matricule, prop] = key.match(/formateurs\[(.+?)\]\[(.+?)\]/);
-                    if (!acc[matricule]) acc[matricule] = {};
-                    acc[matricule][prop] = val;
-                    return acc;
-                }, {});
-                const data = { formateurs: Object.values(formateurs) };
-                fetch('../api/profile/update_formateurs.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-                    .then(res => res.json()).then(result => showFeedback('formateursFeedback', result.message, result.success));
-            });
-
-            // Saisie semaine -> dates automatiques (lundi-vendredi)
-            const weekInput = document.getElementById('stage-week');
-            if (weekInput) {
-                weekInput.addEventListener('change', () => {
-                    const [yearStr, weekStr] = weekInput.value.split('-W');
-                    const year = parseInt(yearStr, 10);
-                    const week = parseInt(weekStr, 10);
-                    if (!isNaN(year) && !isNaN(week)) {
-                        const monday = toMonday(year, week);
-                        const friday = new Date(monday);
-                        friday.setDate(monday.getDate() + 4);
-                        const fmt = d => d.toISOString().slice(0,10);
-                        document.getElementById('stage-debut').value = fmt(monday);
-                        document.getElementById('stage-fin').value = fmt(friday);
-                        updateStagePeriodSummary();
-                    }
-                });
-            }
-
-            // Résumé dynamique et inclusion des week-ends
-            ['stage-debut','stage-fin','stage-include-weekends'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('change', updateStagePeriodSummary);
-            });
-
-            // Boutons de présélection
-            const presetThisWeek = document.getElementById('preset-this-week');
-            const presetNextWeek = document.getElementById('preset-next-week');
-            const presetTwoWeeks = document.getElementById('preset-two-weeks');
-            function setWeekRangeFromDate(baseDate, weeksSpan) {
-                const date = new Date(baseDate);
-                // Aller au lundi de la semaine de base
-                const dow = date.getDay() || 7;
-                const monday = new Date(date);
-                monday.setDate(date.getDate() + (1 - dow));
-                const end = new Date(monday);
-                end.setDate(monday.getDate() + (weeksSpan * 7) - 3); // vendredi fin (5e jour) pour 1 semaine => +4 ; pour 2 semaines => +11; calcule via -3
-                // Pour 1 semaine on veut +4, pour 2 semaines +11
-                if (weeksSpan === 1) end.setDate(monday.getDate() + 4);
-                if (weeksSpan === 2) end.setDate(monday.getDate() + 11);
-                document.getElementById('stage-debut').value = formatIso(monday);
-                document.getElementById('stage-fin').value = formatIso(end);
-                updateStagePeriodSummary();
-            }
-            if (presetThisWeek) presetThisWeek.addEventListener('click', () => setWeekRangeFromDate(new Date(), 1));
-            if (presetNextWeek) {
-                presetNextWeek.addEventListener('click', () => {
-                    const d = new Date(); d.setDate(d.getDate() + 7); setWeekRangeFromDate(d, 1);
-                });
-            }
-            if (presetTwoWeeks) presetTwoWeeks.addEventListener('click', () => setWeekRangeFromDate(new Date(), 2));
-
-            document.getElementById('stagesForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // On récupère les groupes cochés dans le tableau
-        const selectedGroupes = Array.from(document.querySelectorAll('.groupe-stage-checkbox:checked')).map(cb => cb.value);
-        const dateDebut = document.getElementById('stage-debut').value;
-        const dateFin = document.getElementById('stage-fin').value;
-
-        if (selectedGroupes.length === 0 || !dateDebut || !dateFin) {
-            showFeedback('stagesFeedback', 'Veuillez sélectionner au moins un groupe et une période complète.', false);
-            return;
+            el.textContent = `Période: ${formatDate(d1)} → ${formatDate(d2)} • ${total} jour(s) de stage (hors week-ends)`;
         }
 
-        // Validation dates
-        const d1 = parseIsoDate(dateDebut), d2 = parseIsoDate(dateFin);
-        if (!d1 || !d2 || d2 < d1) {
-            showFeedback('stagesFeedback', 'La date de fin doit être postérieure ou égale à la date de début.', false);
-            return;
-        }
+        // --- DÉBUT DU CODE POUR LE SÉLECTEUR DE CALENDRIER CRÉATIF ---
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let startDate = null;
+        let endDate = null;
+        let isDragging = false; // <-- AJOUTER CETTE LIGNE
+        const pickerContainer = document.getElementById('calendar-picker-container');
+        const dateDisplay = document.getElementById('date-range-display');
+        const hiddenStartDate = document.getElementById('stage-debut');
+        const hiddenEndDate = document.getElementById('stage-fin');
 
-        // Détection chevauchements
-        const overlappingGroups = [];
-        selectedGroupes.forEach(g => {
-            const list = existingStagesByGroup[g] || [];
-            const hasOverlap = list.some(it => !(it.end < dateDebut || it.start > dateFin));
-            if (hasOverlap) overlappingGroups.push(g);
-        });
-        if (overlappingGroups.length > 0) {
-            showFeedback('stagesFeedback', `Chevauchement détecté avec des stages existants pour: ${overlappingGroups.join(', ')}`, false);
-            return;
-        }
+        function generateMonth(month, year, containerId) {
+    const monthContainer = document.getElementById(containerId);
+    monthContainer.innerHTML = '';
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    // Définir la date d'aujourd'hui (sans l'heure) pour la comparaison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-        const data = {
-            groupes: selectedGroupes,
-            date_debut: dateDebut,
-            date_fin: dateFin
-        };
-
-        fetch('../api/profile/update_stages.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'add', data: data })
-        })
-        .then(res => res.json())
-        .then(result => {
-            showFeedback('stagesFeedback', result.message, result.success);
-            if (result.success) {
-                loadPageData(); // Rafraîchir pour voir la nouvelle liste et mettre à jour l'index des chevauchements
-            }
-        });
+    const weekdays = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'];
+    weekdays.forEach(day => {
+        const dayNameEl = document.createElement('div');
+        dayNameEl.className = 'day-name';
+        dayNameEl.textContent = day;
+        monthContainer.appendChild(dayNameEl);
     });
     
-    // Logique pour la case à cocher "Sélectionner tout"
-    document.getElementById('selectAllGroupes').addEventListener('change', function() {
-        document.querySelectorAll('.groupe-stage-checkbox').forEach(checkbox => {
-            checkbox.checked = this.checked;
-        });
-    });
-        }
+    let startingDay = firstDay.getDay() - 1;
+    if(startingDay < 0) startingDay = 6;
+
+    for (let i = 0; i < startingDay; i++) { monthContainer.appendChild(document.createElement('div')); }
+
+    for (let i = 1; i <= lastDay.getDate(); i++) {
+    const dayEl = document.createElement('div');
+    const currentDate = new Date(year, month, i);
+    dayEl.textContent = i;
+    dayEl.className = 'calendar-day';
+    // Créer la date string en UTC pour éviter les problèmes de fuseau horaire
+    const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
+    dayEl.dataset.date = dateString;
+    
+    if (currentDate.getTime() === today.getTime()) {
+        dayEl.classList.add('is-today');
+    }
+
+    // Gère l'affichage de la plage (y compris lors d'un glissement inversé)
+    // NOUVELLE LOGIQUE (à placer dans la boucle for de generateMonth)
+if (startDate && endDate) {
+    const d_start = new Date(startDate);
+    const d_end = new Date(endDate);
+    const d_current = new Date(dateString);
+
+    // Gère l'affichage de la plage
+    if (d_current >= Math.min(d_start, d_end) && d_current <= Math.max(d_start, d_end)) {
+        dayEl.classList.add('in-range');
+    }
+    // Gère les points de début et de fin
+    if (dateString === startDate) dayEl.classList.add(d_start <= d_end ? 'selected-start' : 'selected-end');
+    if (dateString === endDate) dayEl.classList.add(d_end >= d_start ? 'selected-end' : 'selected-start');
+}
+
+
+    // Attacher les nouveaux gestionnaires d'événements
+    dayEl.addEventListener('mousedown', handleMouseDown);
+    dayEl.addEventListener('mouseenter', handleMouseEnter);
+    
+    monthContainer.appendChild(dayEl);
+}
+}
+
+// AJOUTEZ CES NOUVELLES FONCTIONS DANS VOTRE BLOC <script>
+
+    function handleMouseDown(e) {
+    const clickedDate = e.target.dataset.date;
+    if (!clickedDate || e.target.classList.contains('disabled')) return;
+
+    isDragging = true;
+    startDate = clickedDate;
+    endDate = clickedDate; // Initialise la fin au début
+    
+    // Pas besoin de renderCalendars ici, car mouseenter le fera immédiatement
+    renderCalendars(); // Ou on peut le mettre pour un retour visuel instantané
+}
+
+function handleMouseEnter(e) {
+    if (!isDragging) return; // Ne fait rien si on ne clique pas
+
+    const hoveredDate = e.target.dataset.date;
+    if (!hoveredDate || e.target.classList.contains('disabled')) return;
+    
+    endDate = hoveredDate;
+    renderCalendars(); // Met à jour l'affichage en temps réel pendant le glissement
+}
+
+function handleMouseUp() {
+    if (!isDragging) return; // Évite de s'exécuter si on n'était pas en train de glisser
+    isDragging = false;
+    
+    // Assure que la date de début est toujours avant la date de fin
+    if (endDate < startDate) {
+        [startDate, endDate] = [endDate, startDate]; // Inverse les dates
+    }
+    
+    renderCalendars();
+    updateDisplayAndSummary();
+}
+
+// Assurez-vous que cet écouteur est ajouté une seule fois, par exemple dans DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    // ... votre code existant dans DOMContentLoaded
+    document.addEventListener('mouseup', handleMouseUp);
+});
+
+// Si vous n'utilisez pas DOMContentLoaded, ajoutez-le simplement à la fin de votre script principal
+// document.addEventListener('mouseup', handleMouseUp);
+// (Assurez-vous qu'il ne soit pas dans une fonction qui est appelée plusieurs fois)
+
+        // Version simplifiée de renderCalendars
+function renderCalendars() {
+    const calendarGrid = document.getElementById('calendar-grid');
+    // Vider le contenu précédent
+    calendarGrid.innerHTML = `
+        <div class="calendar-month"><div class="calendar-days" id="month1-days"></div></div>
+        <div class="calendar-month"><div class="calendar-days" id="month2-days"></div></div>
+    `;
+    
+    const nextMonth = (currentMonth + 1) % 12;
+    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+    
+    document.getElementById('calendar-headers').innerHTML = `
+        <span>${new Date(currentYear, currentMonth).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</span>
+        <span class="px-4">|</span>
+        <span>${new Date(nextYear, nextMonth).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</span>
+    `;
+    
+    generateMonth(currentMonth, currentYear, 'month1-days');
+    generateMonth(nextMonth, nextYear, 'month2-days');
+}
 
         
+        function updateDisplayAndSummary() {
+            if (startDate && endDate) {
+                // Formater les dates sans problème de fuseau horaire
+                const formatDateForDisplay = (dateString) => {
+                    const [year, month, day] = dateString.split('-').map(Number);
+                    return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
+                };
+                
+                dateDisplay.value = `${formatDateForDisplay(startDate)} - ${formatDateForDisplay(endDate)}`;
+                hiddenStartDate.value = startDate; hiddenEndDate.value = endDate;
+            } else if (startDate) {
+                const [year, month, day] = startDate.split('-').map(Number);
+                dateDisplay.value = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year} - ...`;
+                hiddenStartDate.value = startDate; hiddenEndDate.value = '';
+            } else {
+                dateDisplay.value = ''; hiddenStartDate.value = ''; hiddenEndDate.value = '';
+            }
+            if (typeof updateStagePeriodSummary === 'function') { updateStagePeriodSummary(); }
+        }
+
+        dateDisplay.addEventListener('click', () => {
+            pickerContainer.classList.toggle('hidden');
+            if (!pickerContainer.classList.contains('hidden')) { renderCalendars(); }
+        });
+
+        document.getElementById('calendar-prev-month').addEventListener('click', () => {
+            currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendars();
+        });
+
+        document.getElementById('calendar-next-month').addEventListener('click', () => {
+            currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; } renderCalendars();
+        });
+
+        document.getElementById('calendar-close-btn').addEventListener('click', () => pickerContainer.classList.add('hidden'));
+        document.getElementById('calendar-clear-btn').addEventListener('click', () => {
+            startDate = null; endDate = null; renderCalendars(); updateDisplayAndSummary();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!pickerContainer.contains(e.target) && e.target !== dateDisplay && !dateDisplay.contains(e.target)) {
+                pickerContainer.classList.add('hidden');
+            }
+        });
+        // --- FIN DU CODE POUR LE SÉLECTEUR DE CALENDRIER CRÉATIF ---
+    </script>
+    
+    <!-- Security JavaScript -->
+    <script src="assets/js/security.js"></script>
+    <script src="assets/js/ajax-security.js"></script>
+    
+    <!-- Navbar and Profile Functionality -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set active navbar link for current page
+        const navLinks = document.querySelectorAll('#nav a[id^="nav-"]');
+        navLinks.forEach(link => {
+            if (link.href.includes('profile.html')) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+        
+        // Profile dropdown functionality
+        const profileButton = document.getElementById('profile-button');
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const profileMenuContainer = document.getElementById('profile-menu-container');
+        
+        if (profileButton && profileDropdown) {
+            profileButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('show');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!profileMenuContainer.contains(e.target)) {
+                    profileDropdown.classList.remove('show');
+                }
+            });
+        }
+        
+        // Load user profile data for navbar
+        loadUserProfile();
+    });
+    
+    async function loadUserProfile() {
+        try {
+            const response = await fetch('../api/profile/get_profile_data.php');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Update navbar profile
+                    const initials = getInitials(data.user.nom_complet);
+                    document.getElementById('profile-initials').textContent = initials;
+                    document.getElementById('dropdown-user-name').textContent = data.user.nom_complet;
+                    document.getElementById('dropdown-user-email').textContent = data.user.email;
+                    
+                    // Update sidebar profile
+                    document.getElementById('profile-page-initials').textContent = initials;
+                    document.getElementById('profile-page-name').textContent = data.user.nom_complet;
+                }
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement du profil:', error);
+        }
+    }
+    
+    function getInitials(fullName) {
+        if (!fullName) return '--';
+        return fullName.split(' ')
+            .map(name => name.charAt(0).toUpperCase())
+            .slice(0, 2)
+            .join('');
+    }
     </script>
 </body>
 </html>

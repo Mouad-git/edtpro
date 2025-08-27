@@ -58,9 +58,13 @@ try {
     $nomFormateurIndex = array_search('Formateur Affecté Présentiel Actif', $header);
     $nomFormateurSyncIndex = array_search('Formateur Affecté Syn Actif', $header);
     $modeIndex = array_search('Mode', $header);
-    $estRegionalIndex = array_search('Régional', $header);
-    $s1HeuresIndex = array_search('MHP S1 DRIF', $header);
-    $s2HeuresIndex = array_search('MHP S2 DRIF', $header);
+    
+    // Indices fixes pour les colonnes X et AB (nouvelle logique de semestre)
+    $colonneXIndex = 23;         // Colonne X (premier semestre) -> s1_heures
+    $colonneABIndex = 27;        // Colonne AB (deuxième semestre) -> s2_heures
+    
+    // Indice fixe pour la colonne S (régional)
+    $colonneSIndex = 18;         // Colonne S (régional: O=true, N=false)
 
     // Validation des colonnes essentielles
     if ($groupeIndex === false || $moduleIndex === false || $nomFormateurIndex === false) {
@@ -103,9 +107,20 @@ try {
         $formateurS = ($nomFormateurSyncIndex !== false) ? getFormattedName($row[$nomFormateurSyncIndex] ?? null) : '';
         $module = trim($row[$moduleIndex] ?? '');
 
-        $est_regional = ($estRegionalIndex !== false) ? (strtoupper(trim($row[$estRegionalIndex] ?? '')) === 'O') : false;
-        $s1_heures = ($s1HeuresIndex !== false) ? floatval(str_replace(',', '.', $row[$s1HeuresIndex] ?? '0')) : 0;
-        $s2_heures = ($s2HeuresIndex !== false) ? floatval(str_replace(',', '.', $row[$s2HeuresIndex] ?? '0')) : 0;
+        // Utilisation de la colonne S pour déterminer si le module est régional
+        $est_regional = false;
+        if (isset($row[$colonneSIndex])) {
+            $valeurRegional = strtoupper(trim($row[$colonneSIndex]));
+            if ($valeurRegional === 'O') {
+                $est_regional = true;
+            } elseif ($valeurRegional === 'N') {
+                $est_regional = false;
+            }
+        }
+        
+        // Utilisation des colonnes X et AB pour remplir s1_heures et s2_heures
+        $s1_heures = isset($row[$colonneXIndex]) ? floatval(str_replace(',', '.', $row[$colonneXIndex] ?? '0')) : 0;
+        $s2_heures = isset($row[$colonneABIndex]) ? floatval(str_replace(',', '.', $row[$colonneABIndex] ?? '0')) : 0;
         
         if ($formateurP && $groupe && $module) {
             $affectations[] = ['formateur' => $formateurP, 'groupe' => $groupe, 'module' => $module, 'type' => 'presentiel', 's1_heures' => $s1_heures, 's2_heures' => $s2_heures, 'est_regional' => $est_regional];

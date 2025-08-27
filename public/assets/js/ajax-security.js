@@ -7,7 +7,7 @@ class AjaxSecurity {
     constructor() {
         this.csrfToken = this.getCsrfToken();
         this.requestQueue = [];
-        this.maxConcurrentRequests = 5;
+        this.maxConcurrentRequests = 10; // Augmenté à 10 pour éviter les blocages
         this.activeRequests = 0;
         this.initSecurity();
     }
@@ -105,6 +105,7 @@ class AjaxSecurity {
         // Vérifier l'URL
         if (!this.isValidUrl(url)) {
             this.logSecurityEvent('URL invalide détectée', { url: url });
+            console.warn('AJAX Security: URL invalide bloquée:', url);
             return false;
         }
 
@@ -112,13 +113,15 @@ class AjaxSecurity {
         const method = options.method || 'GET';
         if (!this.isValidMethod(method)) {
             this.logSecurityEvent('Méthode HTTP invalide', { method: method });
+            console.warn('AJAX Security: Méthode HTTP invalide bloquée:', method);
             return false;
         }
 
-        // Vérifier les données
-        if (options.body) {
+        // Vérifier les données (seulement pour POST/PUT/PATCH)
+        if (options.body && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
             if (!this.validateRequestData(options.body)) {
                 this.logSecurityEvent('Données de requête invalides');
+                console.warn('AJAX Security: Données de requête invalides bloquées');
                 return false;
             }
         }
@@ -249,7 +252,7 @@ class AjaxSecurity {
     checkRateLimit() {
         const now = Date.now();
         const timeWindow = 60000; // 1 minute
-        const maxRequests = 60; // 60 requêtes par minute
+        const maxRequests = 120; // Augmenté à 120 requêtes par minute pour éviter les blocages
 
         // Nettoyer les anciennes requêtes
         this.requestQueue = this.requestQueue.filter(time => now - time < timeWindow);
@@ -331,24 +334,14 @@ class AjaxSecurity {
             data: data
         };
 
-        // Envoyer au serveur
-        if (typeof fetch !== 'undefined') {
-            fetch('/api/security/log', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': this.csrfToken
-                },
-                body: JSON.stringify(event)
-            }).catch(() => {
-                // Fallback: stocker localement
-                this.storeSecurityEvent(event);
-            });
-        } else {
-            this.storeSecurityEvent(event);
+        // Pour l'instant, on stocke seulement localement
+        // L'endpoint /api/security/log n'existe pas encore
+        this.storeSecurityEvent(event);
+        
+        // Log en console pour le développement (seulement en mode développement)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.info('AJAX Security Event:', event);
         }
-
-        console.warn('AJAX Security Event:', event);
     }
 
     /**

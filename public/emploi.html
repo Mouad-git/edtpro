@@ -715,11 +715,12 @@
       height: 60px;
       padding: 10px 20px;
       background:#fff;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       display: flex;
       align-items: center;
       z-index: 700;
       justify-content: space-between;
+      border-bottom: 1px solid #dee2e6;
     }
 
 
@@ -1152,144 +1153,44 @@
 }
 
 /* Conteneur principal pour le menu de profil */
-/* AJOUTEZ/REMPLACEZ CE BLOC CSS DANS VOS PAGES */
-
-.profile-menu-container {
-    position: relative;
-}
-
+.profile-menu-container { position: relative; }
 .profile-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #e0eaff; /* Couleur similaire à un lien actif */
-    color: #1d4ed8;
-    border: 1px solid #e0eaff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex; align-items: center; justify-content: center; text-decoration: none;
+    width: 40px; height: 40px; border-radius: 50%; background-color: #e0eaff;
+    color: #1d4ed8; border: 1px solid #e0eaff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
 }
-
-
 .profile-dropdown {
-    display: none;
-    position: absolute;
-    top: calc(100% + 12px);
-    right: 0;
-    width: 280px;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    z-index: 1010;
-    overflow: hidden;
-    transform-origin: top right;
-    animation: scale-up-and-fade-in 0.2s ease-out;
-}
+            display: none; position: absolute; top: calc(100% + 12px); right: 0;
+            width: 280px; background-color: white; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 1010; overflow: hidden;
+            transform-origin: top right; animation: scale-up-and-fade-in 0.2s ease-out;
+        }
+        .profile-dropdown.show { display: block; }
+        @keyframes scale-up-and-fade-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .dropdown-profile-header { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid #f3f4f6; }
+        .profile-pic {
+            width: 48px; height: 48px; border-radius: 50%; background-color: #f3f4f6;
+            display: flex; align-items: center; justify-content: center; font-size: 24px; color: #6b7280;
+        }
+        .profile-info strong { display: block; font-size: 1rem; font-weight: 600; color: #111827; }
+        .profile-info small { font-size: 0.875rem; color: #6b7280; }
+        .dropdown-menu-list { list-style: none; padding: 8px; margin: 0; }
+        .dropdown-link {
+            display: flex; align-items: center; width: 100%; padding: 10px 12px;
+            border-radius: 8px; text-decoration: none; color: #374151;
+            font-weight: 500; transition: background-color 0.2s, color 0.2s;
+        }
+        .dropdown-link:hover { background-color: #f3f4f6; }
+        .dropdown-link .icon { width: 32px; font-size: 16px; color: #6b7280; }
+        .dropdown-link .text { flex-grow: 1; }
+        .dropdown-link .chevron { font-size: 12px; color: #9ca3af; }
+        .dropdown-divider { margin: 0 8px; border: none; border-top: 1px solid #f3f4f6; }
+        .dropdown-link.logout { margin: 8px; width: calc(100% - 16px); color: #ef4444; }
+        .dropdown-link.logout .icon { color: #ef4444; }
+        .dropdown-link.logout:hover { background-color: #fee2e2; }
 
-.profile-dropdown.show {
-    display: block; /* La classe .show le rend visible */
-}
 
-@keyframes scale-up-and-fade-in {
-    from {
-        transform: scale(0.95);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-
-.dropdown-profile-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.profile-pic {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background-color: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    color: #6b7280;
-}
-
-.profile-info strong {
-    display: block;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #111827;
-}
-.profile-info small {
-    font-size: 0.875rem;
-    color: #6b7280;
-}
-
-.dropdown-menu-list {
-    list-style: none;
-    padding: 8px;
-    margin: 0;
-}
-
-.dropdown-link {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #374151;
-    font-weight: 500;
-    transition: background-color 0.2s, color 0.2s;
-}
-.dropdown-link:hover {
-    background-color: #f3f4f6;
-}
-
-.dropdown-link .icon {
-    width: 32px;
-    font-size: 16px;
-    color: #6b7280;
-}
-.dropdown-link .text {
-    flex-grow: 1;
-}
-.dropdown-link .chevron {
-    font-size: 12px;
-    color: #9ca3af;
-}
-
-.dropdown-divider {
-    margin: 0 8px;
-    border: none;
-    border-top: 1px solid #f3f4f6;
-}
-
-.dropdown-link.logout {
-    margin: 8px;
-    width: calc(100% - 16px);
-    color: #ef4444; /* Rouge */
-}
-.dropdown-link.logout .icon {
-    color: #ef4444;
-}
-.dropdown-link.logout:hover {
-    background-color: #fee2e2;
-}
 
     /* Styles pour le tableau des contraintes dans la modale */
     .constraints-table {
@@ -2007,6 +1908,98 @@
     background-color: #f1f5f9;
 }
 
+/* Styles pour les sections du modal */
+.hours-section {
+    margin-bottom: 40px;
+    padding: 20px;
+    border: 1px solid #e7e7e7;
+    border-radius: 8px;
+    background-color: #fafafa;
+}
+
+.hours-section:last-child {
+    margin-bottom: 0;
+}
+
+.hours-section h3 {
+    margin: 0 0 20px 0;
+    font-size: 1.3rem;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+/* Styles pour le tableau des formateurs */
+#formateurHoursSummaryTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#formateurHoursSummaryTable th, #formateurHoursSummaryTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e7e7e7;
+}
+
+#formateurHoursSummaryTable th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #34495e;
+    position: sticky;
+    top: 0;
+}
+
+#formateurHoursSummaryTable td:last-child {
+    font-weight: bold;
+    text-align: center;
+}
+
+#formateurHoursSummaryTable tr:nth-child(even) {
+    background-color: #fdfdfd;
+}
+
+#formateurHoursSummaryTable tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* Styles pour le switch bouton */
+.switch-container {
+    display: flex;
+    background-color: #f0f0f0;
+    border-radius: 25px;
+    padding: 4px;
+    gap: 2px;
+    margin-bottom: 20px;
+    justify-content: center;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.switch-btn {
+  padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background-color: transparent;
+    color: #666;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    min-width: 100px;
+}
+
+.switch-btn.active {
+    background-color: #3498db;
+    color: white;
+    box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
+}
+
+.switch-btn:hover:not(.active) {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -2031,8 +2024,7 @@
   position: relative;
   overflow: hidden;
   transition-duration: 0.3s;
-  background-color: rgb(255, 255, 255);
-  border: 1px solid black;
+  background-color: black
 }
 
 /* plus sign */
@@ -2049,12 +2041,12 @@
 }
 
 /* text */
-.text {
+.text-btn {
   position: absolute;
   right: 0%;
   width: 0%;
   opacity: 0;
-  color: rgb(0, 0, 0);
+  color: rgb(255, 255, 255);
   font-size: 1.2em;
   font-weight: 600;
   transition-duration: 0.3s;
@@ -2069,10 +2061,10 @@
 .Btn:hover .svgWrapper {
   width: 30%;
   transition-duration: 0.3s;
-  padding-left: 20px;
+  padding-left: 10px !important;
 }
 /* hover effect button's text */
-.Btn:hover .text {
+.Btn:hover .text-btn {
   opacity: 1;
   width: 70%;
   transition-duration: 0.3s;
@@ -2127,6 +2119,62 @@
     z-index: 1; /* Il est techniquement "au-dessus" mais invisible */
 }
 
+/* =========================================================== */
+/* ==   OPTION 2 : STYLE VISUEL ET SUBTIL (BARRE LATÉRALE)    == */
+/* =========================================================== */
+
+.locked-cell {
+    position: relative;
+    cursor: not-allowed;
+    background-color: #fafafa !important; /* Fond à peine grisé */
+}
+
+.locked-cell select {
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+/* La barre latérale qui indique le statut "bloqué" */
+.locked-cell::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px; /* Largeur de la barre */
+    height: 100%;
+    background-color: #ced4da; /* Couleur de la barre */
+    border-radius: 3px 0 0 3px; /* Coins arrondis à gauche */
+}
+
+/* L'infobulle qui n'apparaît qu'au survol */
+.locked-cell::after {
+    content: attr(data-lock-reason);
+    position: absolute;
+    bottom: 105%; /* Positionnée juste au-dessus de la cellule */
+    left: 50%;
+    transform: translateX(-50%);
+
+    /* Style de l'infobulle */
+    background-color: #343a40; /* Fond sombre */
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+
+    /* Masquée par défaut et transition douce */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 10;
+}
+
+/* Affiche l'infobulle au survol de la cellule */
+.locked-cell:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
   </style>
 </head>
 
@@ -2134,52 +2182,39 @@
   <div class="container">
     <nav>
       <img src="assets/images/logo_edtpro.png" style="height: 80px; width: auto;" id="logo" alt="Logo">
-      <div class="nav-links"> <!-- J'ai ajouté une classe pour mieux cibler les liens -->
-          <a href="emploi.html" id="nav-emploi">Emploi globale</a>
+      <div class="nav-links">
+          <a href="emploi.html" id="nav-emploi" class="active">Emploi globale</a>
           <a href="edition.html" id="nav-edition">Edition</a>
           <a href="avancement.html" id="nav-avancement">Avancement</a>
           <div class="profile-menu-container" id="profile-menu-container">
-            <!-- Le bouton/lien principal reste le même -->
             <button id="profile-button" class="profile-button">
               <span id="profile-initials">--</span>
-          </button>
-        
-            <!-- === NOUVELLE STRUCTURE SIMPLIFIÉE DU MENU DÉROULANT === -->
-<div id="profile-dropdown" class="profile-dropdown">
-  <!-- En-tête avec l'image et le nom -->
-  <div class="dropdown-profile-header">
-      <div class="profile-pic">
-          <i class="fas fa-user"></i>
-      </div>
-      <div class="profile-info">
-          <strong id="dropdown-user-name">Chargement...</strong>
-          <small id="dropdown-user-email">...</small>
-      </div>
-  </div>
-
-  <!-- Liste des liens (simplifiée) -->
-  <ul class="dropdown-menu-list">
-      <li>
-          <a href="profile.html" class="dropdown-link">
-              <i class="fas fa-user-edit icon"></i>
-              <span class="text">Mon Profil</span>
-              <i class="fas fa-chevron-right chevron"></i>
-          </a>
-      </li>
-      <!-- Le lien "Paramètres" a été supprimé -->
-  </ul>
-
-  <!-- Séparateur et lien de déconnexion -->
-  <hr class="dropdown-divider">
-  <a href="../api/auth/logout.php" class="dropdown-link logout">
-      <i class="fas fa-sign-out-alt icon"></i>
-      <span class="text">Déconnexion</span>
-  </a>
-</div>
-<!-- ======================================================== -->
+            </button>
+            <div id="profile-dropdown" class="profile-dropdown">
+              <div class="dropdown-profile-header">
+                  <div class="profile-pic"><i class="fas fa-user"></i></div>
+                  <div class="profile-info">
+                      <strong id="dropdown-user-name">Chargement...</strong>
+                      <small id="dropdown-user-email">...</small>
+                  </div>
+              </div>
+              <ul class="dropdown-menu-list">
+                  <li>
+                      <a href="profile.html" class="dropdown-link">
+                          <i class="fas fa-user-edit icon"></i>
+                          <span class="text">Mon Profil</span>
+                          <i class="fas fa-chevron-right chevron"></i>
+                      </a>
+                  </li>
+              </ul>
+              <hr class="dropdown-divider">
+              <a href="../api/auth/logout.php" class="dropdown-link logout">
+                  <i class="fas fa-sign-out-alt icon"></i>
+                  <span class="text">Déconnexion</span>
+              </a>
+            </div>
       </div>
   </nav>
-    
     <section class="upload-section">
       <div class="upload">
         <div class="file-input-container">
@@ -2252,21 +2287,22 @@
                  viewBox="0 0 24 24" 
                  class="svgIcon" 
                  fill="none" 
-                 stroke="black" 
+                 stroke="#fff" 
                  stroke-width="1.6" 
                  stroke-linecap="round" 
                  stroke-linejoin="round">
               <path d="M3 17.5h18" stroke-width="1.2" />
               <polyline points="4 13 8 9 12 11 16 6 20 10" />
-              <circle cx="4" cy="13" r="0.9" fill="black" stroke="none" />
-              <circle cx="8" cy="9" r="0.9" fill="black" stroke="none" />
-              <circle cx="12" cy="11" r="0.9" fill="black" stroke="none" />
-              <circle cx="16" cy="6" r="0.9" fill="black" stroke="none" />
-              <circle cx="20" cy="10" r="0.9" fill="black" stroke="none" />
+              <circle cx="4" cy="13" r="0.9" fill="#fff" stroke="none" />
+              <circle cx="8" cy="9" r="0.9" fill="#fff" stroke="none" />
+              <circle cx="12" cy="11" r="0.9" fill="#fff" stroke="none" />
+              <circle cx="16" cy="6" r="0.9" fill="#fff" stroke="none" />
+              <circle cx="20" cy="10" r="0.9" fill="#fff" stroke="none" />
             </svg>
           </div>
-          <div class="text">stats</div>
+          <div class="text-btn">statistique</div>
         </button>
+        
         
         
         
@@ -2469,28 +2505,60 @@
   <div class="summary-modal-content">
     <div class="summary-modal-header">
       <h2 id="groupHoursModalTitle">Répartition Horaire par Groupe</h2>
+      
       <button id="closeGroupHoursModal" class="close-btn">&times;</button>
     </div>
     <div class="summary-modal-body">
       
-      <!-- NOUVEL ÉLÉMENT CANVAS POUR LE GRAPHIQUE -->
-      <div class="chart-container">
-        <canvas id="groupHoursChartCanvas"></canvas>
+      <div class="switch-container">
+        <button id="switchToGroups" class="switch-btn active">Groupes</button>
+        <button id="switchToFormateurs" class="switch-btn">Formateurs</button>
       </div>
-      
-      <!-- Le conteneur du tableau reste pour le détail -->
-      <div class="summary-table-container">
-        <table id="groupHoursSummaryTable" style="display: none;">
-          <thead>
-            <tr>
-              <th>Groupe</th>
-              <th>Heures Affectées</th>
-            </tr>
-          </thead>
-          <tbody id="groupHoursResultTbody">
-            <!-- Le contenu sera généré par JavaScript -->
-          </tbody>
-        </table>
+
+      <!-- SECTION GROUPES -->
+      <div class="hours-section" id="groupsSection">
+        <h3 style="display: none;">Masse Horaire par Groupe</h3>
+        <div class="chart-container">
+          <canvas id="groupHoursChartCanvas"></canvas>
+        </div>
+        
+        <!-- Le conteneur du tableau reste pour le détail -->
+        <div class="summary-table-container">
+          <table id="groupHoursSummaryTable" style="display: none;">
+            <thead>
+              <tr>
+                <th>Groupe</th>
+                <th>Heures Affectées</th>
+              </tr>
+            </thead>
+            <tbody id="groupHoursResultTbody">
+              <!-- Le contenu sera généré par JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECTION FORMATEURS -->
+      <div class="hours-section" id="formateursSection" style="display: none;">
+        <h3 style="display: none;">Masse Horaire par Formateur</h3>
+        <div class="chart-container">
+          <canvas id="formateurHoursChartCanvas"></canvas>
+        </div>
+        
+        <!-- Le conteneur du tableau pour les formateurs -->
+        <div class="summary-table-container">
+          <table id="formateurHoursSummaryTable" style="display: none;">
+            <thead>
+              <tr>
+                <th>Formateur</th>
+                <th>Heures Affectées</th>
+              </tr>
+            </thead>
+            <tbody id="formateurHoursResultTbody">
+              <!-- Le contenu sera généré par JavaScript -->
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -2521,6 +2589,7 @@ const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
     let calendarCurrentDate = new Date();
     let currentWeekValue = '';
     let groupHoursChart = null; // Gardera en mémoire notre instance de graphique
+    let formateurHoursChart = null; // Gardera en mémoire notre instance de graphique pour les formateurs
     
     
     Chart.register(ChartDataLabels);
@@ -2591,76 +2660,92 @@ const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
      * Génère et affiche le calendrier pour un mois donné.
      * @param {Date} date - Une date dans le mois à afficher.
      */
-    function generateCalendar(date) {
-        const calendarBody = document.getElementById('calendarBody');
-        const calendarTitle = document.getElementById('calendarTitle');
-        
-        calendarBody.innerHTML = '';
-        const month = date.getMonth();
-        const year = date.getFullYear();
-
-        const monthName = date.toLocaleDateString('fr-FR', { month: 'long' });
-        calendarTitle.textContent = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
-
-        const firstDayOfMonth = new Date(year, month, 1);
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const dateOffset = (firstDayOfMonth.getDay() + 6) % 7; 
-
-        const selectedWeekInfo = getWeekInfo(selectedDate);
-        const { startOfWeek, endOfWeek } = selectedWeekInfo;
-
-        let currentDay = 1;
-        for (let i = 0; i < 6; i++) {
-            const row = document.createElement('tr');
-            for (let j = 0; j < 7; j++) {
-                const cell = document.createElement('td');
-                if (i === 0 && j < dateOffset) {
-                    // Cellules vides avant
-                } else if (currentDay > daysInMonth) {
-                    // Cellules vides après
-                } else {
-                    const cellDate = new Date(year, month, currentDay);
-                    cellDate.setHours(0,0,0,0);
-                    const dayDiv = document.createElement('div');
-                    dayDiv.className = 'calendar-day';
-                    dayDiv.textContent = currentDay;
-
-                    const today = new Date();
-                    today.setHours(0,0,0,0);
-                    if (cellDate.getTime() === today.getTime()) {
-                        dayDiv.classList.add('today');
-                    }
-                    
-                    if (cellDate.getMonth() === 7) { // Août
-                        dayDiv.classList.add('disabled-day');
-                    } else {
-                        dayDiv.onclick = () => {
-                           updateWeekSelection(cellDate);
-                           document.getElementById('calendarPopup').style.display = 'none';
-                        };
-                    }
-                    
-                    // NOUVELLE LOGIQUE POUR LE STYLE DE LA SEMAINE SÉLECTIONNÉE
-                    if (cellDate >= startOfWeek && cellDate <= endOfWeek) {
-                        if (cellDate.getTime() === startOfWeek.getTime()) {
-                            dayDiv.classList.add('selected-start');
-                        } else if (cellDate.getTime() === endOfWeek.getTime()) {
-                            dayDiv.classList.add('selected-end');
-                        } else {
-                            dayDiv.classList.add('selected-in-range');
-                        }
-                    }
-
-                    cell.appendChild(dayDiv);
-                    currentDay++;
-                }
-                row.appendChild(cell);
-            }
-            calendarBody.appendChild(row);
-            if (currentDay > daysInMonth) break;
-        }
-    }
+/**
+ * [CORRIGÉ]
+ * Génère et affiche le calendrier pour un mois donné.
+ * Corrige l'erreur "cellDate is not defined".
+ * @param {Date} date - Une date dans le mois à afficher.
+ */
+ function generateCalendar(date) {
+    const calendarBody = document.getElementById('calendarBody');
+    const calendarTitle = document.getElementById('calendarTitle');
     
+    calendarBody.innerHTML = '';
+    const month = date.getMonth();
+    const year = date.getFullYear();
+
+    const monthName = date.toLocaleDateString('fr-FR', { month: 'long' });
+    calendarTitle.textContent = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
+
+    const firstDayOfMonth = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const dateOffset = (firstDayOfMonth.getDay() + 6) % 7; 
+
+    const selectedWeekInfo = getWeekInfo(selectedDate);
+    const { startOfWeek, endOfWeek } = selectedWeekInfo;
+
+    let currentDay = 1;
+    for (let i = 0; i < 6; i++) {
+        const row = document.createElement('tr');
+        for (let j = 0; j < 7; j++) {
+            const cell = document.createElement('td');
+            if (i === 0 && j < dateOffset) {
+                // Cellules vides avant le début du mois
+            } else if (currentDay > daysInMonth) {
+                // Cellules vides après la fin du mois
+            } else {
+                // ===================================================================
+                // ==                       CORRECTION ICI                        ==
+                // ===================================================================
+                // 1. On déclare la variable `cellDate` AVANT de l'utiliser.
+                const cellDate = new Date(year, month, currentDay);
+                cellDate.setHours(0, 0, 0, 0);
+
+                // 2. On déclare `dayDiv` AVANT de lui ajouter des classes.
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                dayDiv.textContent = currentDay;
+                
+                // 3. Maintenant, on peut utiliser `cellDate` en toute sécurité.
+                const dateStr = cellDate.toISOString().split('T')[0]; 
+                
+                if (lockedDates.has(dateStr)) {
+                    dayDiv.classList.add('disabled-day');
+                    dayDiv.title = holidayNames.get(dateStr) || 'Non disponible';
+                } else {
+                    dayDiv.onclick = () => {
+                       updateWeekSelection(cellDate);
+                       document.getElementById('calendarPopup').style.display = 'none';
+                    };
+                }
+                
+                // Le reste de la logique reste inchangé...
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (cellDate.getTime() === today.getTime()) {
+                    dayDiv.classList.add('today');
+                }
+                
+                // Style pour la semaine sélectionnée
+                if (cellDate >= startOfWeek && cellDate <= endOfWeek) {
+                    if (cellDate.getTime() === startOfWeek.getTime()) {
+                        dayDiv.classList.add('selected-start');
+                    } else if (cellDate.getTime() === endOfWeek.getTime()) {
+                        dayDiv.classList.add('selected-end');
+                    } else {
+                        dayDiv.classList.add('selected-in-range');
+                    }
+                }
+
+                cell.appendChild(dayDiv);
+                currentDay++;
+            }
+            row.appendChild(cell);
+        }
+        calendarBody.appendChild(row);
+        if (currentDay > daysInMonth) break;
+    }
+}
     /**
      * Met à jour l'affichage et charge les données pour la semaine d'une date donnée.
      * @param {Date} date - La date sélectionnée.
@@ -3759,9 +3844,29 @@ function isModuleRegional(formateur, groupe, module) {
  * [CORRIGÉ] Génère et affiche le contenu HTML de l'emploi du temps.
  * Utilise la nouvelle logique robuste pour appliquer la classe `module-regional`.
  */
-function renderTimetableFromData(data) {
+/**
+ * [COMPLET ET MIS À JOUR]
+ * Génère et affiche le contenu HTML de l'emploi du temps à partir des données fournies.
+ * Intègre le verrouillage des cellules pour les jours fériés et les périodes de vacances.
+ * @param {object} data - Les données de l'emploi du temps à afficher.
+ */
+ /**
+ * [COMPLET ET MIS À JOUR SELON LA DEMANDE]
+ * Génère le HTML de l'emploi du temps en conservant la logique existante,
+ * mais en y ajoutant le verrouillage des cellules pour les jours fériés et les vacances.
+ * @param {object} data - Les données de l'emploi du temps à afficher.
+ */
+/**
+ * [CORRIGÉ POUR L'AFFICHAGE DU MODULE]
+ * Génère le HTML de l'emploi du temps.
+ * Cette version corrige l'affichage du nom du module dans la cellule pour qu'il n'inclue jamais l'étoile (⭐),
+ * tout en la conservant comme indicateur visuel à l'intérieur du menu déroulant.
+ * @param {object} data - Les données de l'emploi du temps à afficher.
+ */
+ function renderTimetableFromData(data) {
     const tbody = document.querySelector('#timetable tbody');
-    let html = '';
+    tbody.innerHTML = '';
+
     if (!appData.formateurs || appData.formateurs.length === 0) {
         tbody.innerHTML = '<tr><td colspan="26" style="text-align:center; padding: 20px;">Données de base non chargées. Veuillez importer un fichier Excel.</td></tr>';
         return;
@@ -3787,10 +3892,13 @@ function renderTimetableFromData(data) {
         }
     }
 
+    const weekInfo = getWeekInfo(selectedDate);
+    let html = '';
+
     appData.formateurs.forEach(formateur => {
         const formateurData = timetableData[formateur] || {};
         let seanceCount = 0;
-        if(formateurData){
+        if (formateurData) {
             Object.values(formateurData).forEach(day => {
                 Object.values(day).forEach(session => {
                     if (session.groupe) seanceCount++;
@@ -3811,7 +3919,15 @@ function renderTimetableFromData(data) {
           </td>
           <td class="type-cell">Groupe</td>`;
         
-        jours.forEach(jour => {
+        jours.forEach((jour, jourIndex) => {
+            const currentDate = new Date(weekInfo.startOfWeek);
+            currentDate.setDate(currentDate.getDate() + jourIndex);
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const isLocked = lockedDates.has(dateStr);
+            const lockReason = isLocked ? (holidayNames.get(dateStr) || 'Férié') : '';
+            const lockedClass = isLocked ? 'locked-cell' : '';
+            const disabledAttribute = isLocked ? 'disabled' : '';
+
             seances.forEach(seance => {
                 const session = formateurData[jour]?.[seance] || { groupe: '', module: '', salle: '' };
                 const dayClass = dayClasses[jour];
@@ -3821,30 +3937,37 @@ function renderTimetableFromData(data) {
                 const groupesPossibles = isTeams ? appData.fusionGroupes : appData.groupes;
                 const typeAffection = isTeams ? 'synchrone' : 'presentiel';
                 const groupesFiltres = groupesPossibles.filter(g => appData.affectations.some(a => a.formateur === formateur && a.groupe === g && a.type === typeAffection));
-                html += `<td class="auto-resize-cell draggable-cell ${dayClass} ${isSelected} ${isGroupOverloaded}" draggable="true" data-type="groupe" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}">
-                  <select class="auto-resize-select" data-type="groupe" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}">
+                
+                html += `<td class="auto-resize-cell draggable-cell ${dayClass} ${isSelected} ${isGroupOverloaded} ${lockedClass}" 
+                             draggable="${!isLocked}" data-lock-reason="${lockReason}"
+                             data-type="groupe" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}">
+                  <select class="auto-resize-select" data-type="groupe" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}" ${disabledAttribute}>
                     <option value=""></option>
                     ${groupesFiltres.map(g => `<option value="${g}" ${g === session.groupe ? 'selected' : ''}>${g}</option>`).join('')}
                   </select>
-                  <div class="drag-indicator"><i class="fas fa-arrows-alt"></i></div>
+                  ${!isLocked ? '<div class="drag-indicator"><i class="fas fa-arrows-alt"></i></div>' : ''}
                 </td>`;
             });
         });
         html += `</tr>`;
         
         html += `<tr><td class="type-cell">Module</td>`;
-        jours.forEach(jour => {
+        jours.forEach((jour, jourIndex) => {
+            const currentDate = new Date(weekInfo.startOfWeek);
+            currentDate.setDate(currentDate.getDate() + jourIndex);
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const isLocked = lockedDates.has(dateStr);
+            const lockReason = isLocked ? (holidayNames.get(dateStr) || 'Férié') : '';
+            const lockedClass = isLocked ? 'locked-cell' : '';
+            
             seances.forEach(seance => {
                 const session = formateurData[jour]?.[seance] || { groupe: '', module: '', salle: '' };
                 const dayClass = dayClasses[jour];
                 const isModuleSelected = session.module ? 'selected-cell' : '';
-
                 const semester = getModuleSemester(formateur, session.groupe, session.module);
-                // Appel à la fonction corrigée pour déterminer si la classe doit être ajoutée
                 const isRegional = isModuleRegional(formateur, session.groupe, session.module);
                 const semesterClass = semester ? `module-${semester.toLowerCase()}` : '';
                 const regionalClass = isRegional ? 'module-regional' : '';
-
                 const modulesPossibles = new Map();
                 if (session.groupe) {
                     const subGroups = session.groupe.trim().split(/\s+/).filter(Boolean);
@@ -3852,40 +3975,48 @@ function renderTimetableFromData(data) {
                         if (a.formateur === formateur && subGroups.includes(a.groupe)) {
                             const modSemester = getModuleSemester(formateur, a.groupe, a.module);
                             const modIsRegional = isModuleRegional(formateur, a.groupe, a.module);
-                            if (modSemester) {
-                                modulesPossibles.set(a.module, { semester: modSemester, isRegional: modIsRegional });
-                            }
+                            modulesPossibles.set(a.module, { semester: modSemester, isRegional: modIsRegional });
                         }
                     });
                 }
-                
                 let moduleOptionsHTML = '';
                 modulesPossibles.forEach((meta, mod) => {
-                    moduleOptionsHTML += `<option value="${mod}" data-semester="${meta.semester}" data-regional="${meta.isRegional}" ${mod === session.module ? 'selected' : ''}>${mod}</option>`;
+                    let displayText = meta.isRegional ? '⭐ ' + mod : mod;
+                    moduleOptionsHTML += `<option value="${mod}" data-semester="${meta.semester}" data-regional="${meta.isRegional}" ${mod === session.module ? 'selected' : ''}>${displayText}</option>`;
                 });
                 
-                // La classe ${regionalClass} est maintenant ajoutée directement ici
-                html += `<td class="auto-resize-cell ${dayClass} ${isModuleSelected} ${semesterClass} ${regionalClass}" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}">
-  <div class="custom-select-wrapper">
-    <span class="custom-select-display">${session.module || ''}</span>
-    <select class="auto-resize-select" data-type="module" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}" ${!session.groupe ? 'disabled' : ''}>
-      <option value=""></option>
-      ${moduleOptionsHTML}
-    </select>
-  </div>
-</td>`;
+                html += `<td class="auto-resize-cell ${dayClass} ${isModuleSelected} ${semesterClass} ${regionalClass} ${lockedClass}" 
+                             data-lock-reason="${lockReason}" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}">
+                    <div class="custom-select-wrapper">
+                        <span class="custom-select-display">${session.module || ''}</span>
+                        <select class="auto-resize-select" data-type="module" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}" 
+                                ${!session.groupe || isLocked ? 'disabled' : ''}>
+                          <option value=""></option>
+                          ${moduleOptionsHTML}
+                        </select>
+                    </div>
+                </td>`;
             });
         });
         html += `</tr>`;
 
         html += `<tr class="salle-row"><td class="type-cell">Espace</td>`;
-        jours.forEach(jour => {
+        jours.forEach((jour, jourIndex) => {
+            const currentDate = new Date(weekInfo.startOfWeek);
+            currentDate.setDate(currentDate.getDate() + jourIndex);
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const isLocked = lockedDates.has(dateStr);
+            const lockReason = isLocked ? (holidayNames.get(dateStr) || 'Férié') : '';
+            const lockedClass = isLocked ? 'locked-cell' : '';
+            const disabledAttribute = isLocked ? 'disabled' : '';
+
             seances.forEach(seance => {
                 const session = formateurData[jour]?.[seance] || { groupe: '', module: '', salle: '' };
                 const dayClass = dayClasses[jour];
                 const isSalleSelected = session.salle ? 'selected-cell' : '';
-                html += `<td class="auto-resize-cell ${dayClass} ${isSalleSelected}" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}">
-                  <select class="auto-resize-select" data-type="salle" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}">
+                html += `<td class="auto-resize-cell ${dayClass} ${isSalleSelected} ${lockedClass}" 
+                             data-lock-reason="${lockReason}" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}">
+                  <select class="auto-resize-select" data-type="salle" data-jour="${jour}" data-seance="${seance}" data-formateur="${formateur}" ${disabledAttribute}>
                     <option value=""></option>
                     ${appData.espaces.map(e => `<option value="${e}" ${e === session.salle ? 'selected' : ''}>${e}</option>`).join('')}
                   </select>
@@ -3896,12 +4027,19 @@ function renderTimetableFromData(data) {
     });
     
     tbody.innerHTML = html;
+    
+    // Post-traitement
     document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
         const select = wrapper.querySelector('select');
         const display = wrapper.querySelector('.custom-select-display');
         if (select && display) {
+            // ========================================================================
+            // ==                         CORRECTION ICI                           ==
+            // ========================================================================
+            // On utilise .value, qui est toujours le nom propre du module,
+            // au lieu de .text, qui peut contenir l'étoile.
             display.textContent = select.value;
-            // On appelle aussi resizeTextToFit sur le span pour un ajustement parfait
+            // ========================================================================
             resizeTextToFit(display); 
         }
     });
@@ -3909,7 +4047,6 @@ function renderTimetableFromData(data) {
     Object.keys(groupHours).forEach(checkGroupHours);
     setupDragAndDrop();
 }
-
 
     
     let dragSrcElement = null;
@@ -4004,77 +4141,113 @@ function renderTimetableFromData(data) {
       this.classList.remove('drop-target');
     }
 
-    // --- FONCTION : handleDrop ---
-function handleDrop(e) {
-    e.stopPropagation();
-    
-    // Vérifier que l'élément source et l'élément cible sont différents
+/**
+ * [COMPLET ET FINAL]
+ * Gère le dépôt d'une séance glissée.
+ * Valide le déplacement contre toutes les contraintes connues :
+ * 1. Jours verrouillés (fériés/vacances).
+ * 2. Périodes de stage pour les groupes concernés.
+ * 3. Conflits de salle/groupe avec d'autres formateurs.
+ * @param {Event} e - L'événement de 'drop'.
+ * @returns {boolean} - Retourne `false` pour empêcher le comportement par défaut du navigateur.
+ */
+ function handleDrop(e) {
+    e.stopPropagation(); // Empêche l'événement de se propager aux éléments parents.
+
+    // On ne peut pas déposer une cellule sur elle-même.
     if (dragSrcElement === this) {
         return false;
     }
 
-    // Récupérer les informations de la source et de la cible
+    // --- 1. Récupération des informations de la source et de la cible ---
+    const targetCell = this;
     const sourceInfo = JSON.parse(e.dataTransfer.getData('text/plain'));
+
     const srcFormateur = sourceInfo.formateur;
     const srcJour = sourceInfo.jour;
     const srcSeance = sourceInfo.seance;
+    const sourceSession = JSON.parse(JSON.stringify(timetableData[srcFormateur][srcJour][srcSeance]));
 
-    const targetCell = this; // 'this' est l'élément cible (où on dépose)
     const targetFormateur = targetCell.dataset.formateur;
     const targetJour = targetCell.dataset.jour;
     const targetSeance = targetCell.dataset.seance;
-
-    // Vérification de sécurité : empêcher le déplacement entre formateurs
+    const targetSession = JSON.parse(JSON.stringify(timetableData[targetFormateur][targetJour][targetSeance]));
+    
+    // Un déplacement entre formateurs n'est pas autorisé par la logique actuelle.
     if (srcFormateur !== targetFormateur) {
         showNotification("Déplacement non autorisé entre formateurs.", "warning");
         return false;
     }
 
-    // Récupérer les sessions source et cible
-    const sourceSession = JSON.parse(JSON.stringify(timetableData[srcFormateur][srcJour][srcSeance]));
-    const targetSession = JSON.parse(JSON.stringify(timetableData[targetFormateur][targetJour][targetSeance]));
+    // --- 2. Validation contre les contraintes (jours verrouillés, stages) ---
+    const weekInfo = getWeekInfo(selectedDate);
+    
+    // Date de la cellule source
+    const srcDate = new Date(weekInfo.startOfWeek);
+    srcDate.setDate(srcDate.getDate() + jours.indexOf(srcJour));
+    const srcDateStr = srcDate.toISOString().split('T')[0];
+    
+    // Date de la cellule cible
+    const targetDate = new Date(weekInfo.startOfWeek);
+    targetDate.setDate(targetDate.getDate() + jours.indexOf(targetJour));
+    const targetDateStr = targetDate.toISOString().split('T')[0];
 
-    // Créer un timetable temporaire pour tester les conflits
+    // a) La cellule cible est-elle sur un jour globalement verrouillé ?
+    if (lockedDates.has(targetDateStr)) {
+        const lockReason = holidayNames.get(targetDateStr) || 'un jour non ouvrable';
+        showNotification(`Déplacement impossible : le ${targetJour} est ${lockReason}.`, "error");
+        handleDragEnd(); // Nettoie les styles visuels
+        return false;
+    }
+
+    // b) Y a-t-il un conflit de stage ?
+    // Cas 1: Le groupe source est en stage à la date cible.
+    if (sourceSession.groupe && internshipDatesByGroup.get(sourceSession.groupe)?.has(targetDateStr)) {
+        showNotification(`Déplacement impossible : Le groupe ${sourceSession.groupe} est en stage ce jour-là.`, "error");
+        handleDragEnd();
+        return false;
+    }
+    // Cas 2: Si c'est un échange, le groupe cible est en stage à la date source.
+    if (targetSession.groupe && internshipDatesByGroup.get(targetSession.groupe)?.has(srcDateStr)) {
+        showNotification(`Échange impossible : Le groupe ${targetSession.groupe} est en stage sur le créneau d'origine.`, "error");
+        handleDragEnd();
+        return false;
+    }
+
+    // --- 3. Validation contre les conflits de session (groupes/salles) ---
+    // On simule l'échange dans une copie temporaire pour vérifier les conflits.
     let tempTimetable = JSON.parse(JSON.stringify(timetableData));
     tempTimetable[srcFormateur][srcJour][srcSeance] = targetSession;
     tempTimetable[targetFormateur][targetJour][targetSeance] = sourceSession;
 
-    // Vérifier les conflits pour la session source (dans son nouvel emplacement)
+    // a) La session cible (qui va à l'emplacement source) crée-t-elle un conflit ?
     const sourceConflict = checkSessionConflict(srcJour, srcSeance, targetSession, tempTimetable, { formateur: srcFormateur });
     if (sourceConflict) {
         showNotification(`Déplacement impossible: ${sourceConflict}`, "chevauchement");
+        handleDragEnd();
         return false;
     }
 
-    // Vérifier les conflits pour la session cible (dans son nouvel emplacement)
+    // b) La session source (qui va à l'emplacement cible) crée-t-elle un conflit ?
     const targetConflict = checkSessionConflict(targetJour, targetSeance, sourceSession, tempTimetable, { formateur: targetFormateur });
     if (targetConflict) {
         showNotification(`Déplacement impossible: ${targetConflict}`, "chevauchement");
+        handleDragEnd();
         return false;
     }
 
-    // Si tout est OK, effectuer le swap dans le modèle de données principal
+    // --- 4. Si toutes les validations sont passées, on effectue l'échange ---
     timetableData[srcFormateur][srcJour][srcSeance] = targetSession;
     timetableData[targetFormateur][targetJour][targetSeance] = sourceSession;
 
-    // Afficher un message de succès
     showNotification("Session déplacée avec succès.", "success");
 
-    // --- ACTION CRUCIALE : Re-rendre tout le tableau ---
-    // Cela recrée tous les éléments HTML, y compris les <select>.
-    // Le post-traitement dans renderTimetableFromData s'occupera de déclencher
-    // handleModuleChange pour appliquer les styles.
+    // On rafraîchit tout le tableau pour que l'affichage soit parfaitement cohérent.
     renderTimetableFromData(timetableData);
-    // --- FIN ACTION CRUCIALE ---
 
-    // Nettoyer les classes CSS de drag-and-drop (géré aussi par handleDragEnd)
-    document.querySelectorAll('.dragging, .drop-target, .drop-possible').forEach(function (item) {
-        item.classList.remove('dragging', 'drop-target', 'drop-possible');
-    });
-
+    // handleDragEnd() est appelé automatiquement à la fin du glisser-déposer, pas besoin de l'appeler ici.
     return false;
 }
-// --- FIN FONCTION : handleDrop ---
 
     function checkSessionConflict(jour, seance, sessionToCheck, timetable, exclusion) {
         if (!sessionToCheck || !sessionToCheck.groupe) return null;
@@ -5158,7 +5331,7 @@ async function runAutoGeneration() {
     document.getElementById('weekLoader').style.display = 'flex';
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    // 1. Extraire les contraintes de l'interface
+    // 1. Extraire les contraintes de l'interface (inchangé)
     saveAutoGenConfig();
     autoGenConstraints = {};
     document.querySelectorAll('#autoGenConstraintsContainer tr[data-formateur]').forEach(row => {
@@ -5174,7 +5347,7 @@ async function runAutoGeneration() {
         };
     });
 
-    // 2. Initialiser l'emploi du temps vide et les trackers
+    // 2. Initialiser l'emploi du temps vide et les trackers (inchangé)
     let newTimetableData = {};
     let trackers = { formateurHours: {}, formateurTeamsCount: {}, roomSlots: {}, groupSlots: {}, formateurSlots: {}, groupHours: {} };
     appData.formateurs.forEach(f => {
@@ -5187,71 +5360,82 @@ async function runAutoGeneration() {
         });
     });
 
-    // 3. Créer et prioriser les "besoins de cours"
+    // ========================================================================
+    // ==         MODIFICATION PRINCIPALE : FILTRAGE DES GROUPES EN STAGE      ==
+    // ========================================================================
+    
+    // 3. Créer la liste des "besoins de cours" en excluant les groupes en stage
+    
+    // D'abord, on récupère les dates de début et de fin de la semaine à planifier.
+    const { startOfWeek, endOfWeek } = getWeekInfo(selectedDate);
+    
     const semestresChoisis = new Set();
     if (document.getElementById('forceS1').checked) semestresChoisis.add('S1');
     if (document.getElementById('forceS2').checked) semestresChoisis.add('S2');
     if (document.getElementById('forceAnnual').checked) semestresChoisis.add('Annual');
 
-    const affectationsFiltrees = appData.affectations.filter(aff =>
-        semestresChoisis.has(getModuleSemester(aff.formateur, aff.groupe, aff.module))
-    );
+    console.log("--- Début du filtrage des affectations ---");
+    const affectationsFiltrees = appData.affectations.filter(aff => {
+        // Condition 1 : Le module doit être du bon semestre.
+        const isCorrectSemester = semestresChoisis.has(getModuleSemester(aff.formateur, aff.groupe, aff.module));
+        if (!isCorrectSemester) return false;
+
+        // Condition 2 : Le groupe ne doit PAS être en stage pendant cette semaine.
+        const isInternship = isGroupOnInternshipDuringWeek(aff.groupe, startOfWeek, endOfWeek);
+        if (isInternship) {
+            console.log(`Exclusion du groupe : ${aff.groupe} (en stage)`);
+            return false; // On exclut cette affectation.
+        }
+
+        return true; // L'affectation passe les deux filtres.
+    });
+    console.log("--- Fin du filtrage ---");
+
+    // ========================================================================
+    // ==                 FIN DE LA MODIFICATION PRINCIPALE                  ==
+    // ========================================================================
 
     const courseRequirements = createCourseRequirements(affectationsFiltrees);
     const prioritizedCourses = prioritizeTasks(courseRequirements, autoGenConstraints);
 
     let unplacedTasksLog = [];
 
-    // --- PHASE UNIQUE : Placement forcé de TOUTES les sessions en blocs de 5h ---
-console.log("Phase unique : Placement forcé de toutes les sessions en blocs de 5h...");
-prioritizedCourses.forEach(course => {
-    // Forcer TOUTES les sessions à être des blocs de 5h (arrondi supérieur)
-    const numBlocksToPlace = Math.ceil(course.sessionsNeeded / 2);
-    
-    for (let i = 0; i < numBlocksToPlace; i++) {
-        const bestSlots = findBestSlotsForBlock(course, newTimetableData, trackers, autoGenConstraints);
-        if (bestSlots.length > 0) {
-            const chosenSlot = bestSlots[Math.floor(Math.random() * bestSlots.length)];
-            tryPlaceBlock(course, chosenSlot, newTimetableData, trackers);
-            // Décrémenter de 2 car on place toujours un bloc complet
-            course.sessionsNeeded -= 2;
-        } else {
-            unplacedTasksLog.push({ 
-                task: course, 
-                reason: `Bloc 5h forcé (${course.groupe}) : N'a pas pu être placé (tour ${i + 1}/${numBlocksToPlace}).` 
-            });
-            // Ne pas passer à la phase 2 - on arrête ici pour cette tâche
-            break;
+    // Le reste de la fonction (boucles de placement) est identique car les
+    // tâches pour les groupes en stage ont déjà été éliminées.
+    prioritizedCourses.forEach(course => {
+        const numBlocksToPlace = Math.ceil(course.sessionsNeeded / 2);
+        
+        for (let i = 0; i < numBlocksToPlace; i++) {
+            const bestSlots = findBestSlotsForBlock(course, newTimetableData, trackers, autoGenConstraints);
+            if (bestSlots.length > 0) {
+                const chosenSlot = bestSlots[Math.floor(Math.random() * bestSlots.length)];
+                tryPlaceBlock(course, chosenSlot, newTimetableData, trackers);
+                course.sessionsNeeded -= 2;
+            } else {
+                unplacedTasksLog.push({ 
+                    task: course, 
+                    reason: `Bloc 5h forcé (${course.groupe}) : N'a pas pu être placé (tour ${i + 1}/${numBlocksToPlace}).` 
+                });
+                break;
+            }
         }
-    }
-    
-    // Vérifier s'il reste des sessions non placées (cas d'erreur)
-    if (course.sessionsNeeded > 0) {
-        unplacedTasksLog.push({ 
-            task: course, 
-            reason: `Sessions restantes non placées (${course.groupe}) : Impossible de respecter la règle des blocs de 5h.` 
-        });
-    }
-    // === PHASE 2 : Essayer de placer les sessions restantes une par une (si blocs impossibles)
-    while (course.sessionsNeeded > 0) {
-        const bestSlots = findBestSlotsForSingle(course, newTimetableData, trackers, autoGenConstraints);
-        if (bestSlots.length > 0) {
-            const chosenSlot = bestSlots[Math.floor(Math.random() * bestSlots.length)];
-            tryPlaceSingle(course, chosenSlot, newTimetableData, trackers);
-            course.sessionsNeeded -= 1;
-        } else {
-            unplacedTasksLog.push({ 
-                task: course, 
-                reason: `Session individuelle non placée (${course.groupe}) : aucune option disponible.` 
-            });
-            break;
+        
+        while (course.sessionsNeeded > 0) {
+            const bestSlots = findBestSlotsForSingle(course, newTimetableData, trackers, autoGenConstraints);
+            if (bestSlots.length > 0) {
+                const chosenSlot = bestSlots[Math.floor(Math.random() * bestSlots.length)];
+                tryPlaceSingle(course, chosenSlot, newTimetableData, trackers);
+                course.sessionsNeeded -= 1;
+            } else {
+                unplacedTasksLog.push({ 
+                    task: course, 
+                    reason: `Session individuelle non placée (${course.groupe}) : aucune option disponible.` 
+                });
+                break;
+            }
         }
-    }
+    });
 
-
-});
-
-    // 5. Finalisation
     renderTimetableFromData(newTimetableData);
     document.getElementById('autoGenModal').style.display = 'none';
     document.getElementById('weekLoader').style.display = 'none';
@@ -5261,9 +5445,9 @@ prioritizedCourses.forEach(course => {
     console.log("Tâches non placées :", unplacedTasksLog);
     const unplacedCount = unplacedTasksLog.length;
     if (unplacedCount > 0) {
-        showNotification(`${unplacedCount} tâche(s) n'a/n'ont pas pu être placée(s). Consultez la console.`, 'warning');
+        showNotification(`${unplacedCount} tâche(s) n'a/ont pas pu être placée(s). Consultez la console.`, 'warning');
     } else {
-        showNotification("Génération aléatoire terminée avec succès !", 'success');
+        showNotification("Génération automatique terminée avec succès !", 'success');
     }
 }
 
@@ -5294,28 +5478,52 @@ function prioritizeTasks(tasks, constraints) {
     return tasks.sort((a, b) => getDifficultyScore(b, constraints) - getDifficultyScore(a, constraints));
 }
 
-function findBestSlotsForBlock(task, newTimetableData, trackers, constraints) {
+/**
+ * [AMÉLIORÉ AVEC ÉQUILIBRAGE]
+ * Trouve les meilleurs emplacements pour un bloc de 5h en privilégiant
+ * les groupes ayant le moins d'heures affectées.
+ */
+ function findBestSlotsForBlock(task, newTimetableData, trackers, constraints) {
     let bestSlots = [];
-    let highestScore = -Infinity; // Utiliser -Infinity pour une comparaison plus sûre
+    let highestScore = -Infinity;
     const formateur = task.formateur;
     const formateurConstraints = constraints[formateur];
-    if (!formateurConstraints) return [];
+
+    if (!formateurConstraints) {
+        return [];
+    }
     
     const pairs = [['S1', 'S2'], ['S3', 'S4']];
     const shuffledJours = [...jours];
     shuffleArray(shuffledJours);
 
-    // NOUVELLE PARTIE : Bonus pour l'équilibrage des groupes
-    const currentHours = trackers.groupHours[task.groupe] || 0;
-    // Plus le nombre d'heures est bas, plus le bonus est élevé.
-    // Le poids (ex: * 10) rend ce critère plus important.
-    const balanceBonus = (40 - currentHours) * 10; 
+    const weekInfo = getWeekInfo(selectedDate);
+    
+    const currentGroupHours = trackers.groupHours[task.groupe] || 0;
+    const balanceBonus = (40 - currentGroupHours) * 10;
 
     for (const jour of shuffledJours) {
+        const jourIndex = jours.indexOf(jour);
+        const currentDate = new Date(weekInfo.startOfWeek);
+        currentDate.setDate(currentDate.getDate() + jourIndex);
+        const dateStr = currentDate.toISOString().split('T')[0];
+        
+        // ========================================================================
+        // ==     VÉRIFICATION COMBINÉE : JOURS FÉRIÉS ET STAGES DU GROUPE       ==
+        // ========================================================================
+        // On ignore ce jour si :
+        // 1. C'est un jour globalement verrouillé (férié/vacances).
+        // OU
+        // 2. Le groupe spécifique de cette tâche est en stage ce jour-là.
+        if (lockedDates.has(dateStr) || internshipDatesByGroup.get(task.groupe)?.has(dateStr)) {
+            continue; // On passe au jour suivant.
+        }
+        // ========================================================================
+
         for (const pair of pairs) {
             const [s1, s2] = pair;
 
-            // ... (toutes les vérifications de conflits restent les mêmes) ...
+            // --- Le reste des vérifications de contraintes est inchangé ---
             if (formateurConstraints.unavailable.some(u => u.jour === jour && (u.seance === s1 || u.seance === s2))) continue;
             if (trackers.formateurSlots[`${jour}-${s1}-${formateur}`] || trackers.formateurSlots[`${jour}-${s2}-${formateur}`]) continue;
             if (isGroupBusy(jour, s1, task.groupe, trackers) || isGroupBusy(jour, s2, task.groupe, trackers)) continue;
@@ -5337,11 +5545,11 @@ function findBestSlotsForBlock(task, newTimetableData, trackers, constraints) {
                 }
 
                 if (isSpaceAvailable) {
-                    // MODIFICATION DU CALCUL DE SCORE
-                    let score = 100 + balanceBonus; // On intègre le bonus d'équilibrage
-                    if (Object.values(newTimetableData[formateur][jour]).some(s => s.groupe)) score += 10; // Bonus pour regrouper les jours
+                    let score = 100 + balanceBonus;
+                    if (Object.values(newTimetableData[formateur][jour]).some(s => s.groupe)) score += 10;
                     
                     const newSlot = { jour, pair, salle: space };
+
                     if (score > highestScore) {
                         highestScore = score;
                         bestSlots = [newSlot];
@@ -5355,23 +5563,74 @@ function findBestSlotsForBlock(task, newTimetableData, trackers, constraints) {
     return bestSlots;
 }
 
-function findBestSlotsForSingle(task, newTimetableData, trackers, constraints) {
+/**
+ * Vérifie si un groupe donné est en période de stage à un moment
+ * quelconque durant la semaine spécifiée.
+ * @param {string} groupName - Le nom du groupe à vérifier.
+ * @param {Date} startOfWeek - Le premier jour (lundi) de la semaine à vérifier.
+ * @param {Date} endOfWeek - Le dernier jour (dimanche) de la semaine à vérifier.
+ * @returns {boolean} - True si le groupe est en stage, false sinon.
+ */
+ function isGroupOnInternshipDuringWeek(groupName, startOfWeek, endOfWeek) {
+    if (!appData.stages || !groupName) {
+        return false;
+    }
+
+    // On trouve toutes les périodes de stage pour ce groupe.
+    const groupInternships = appData.stages.filter(s => s.groupe_nom === groupName);
+
+    // Si pas de stage pour ce groupe, on retourne false.
+    if (groupInternships.length === 0) {
+        return false;
+    }
+
+    // On vérifie si L'UNE de ses périodes de stage chevauche la semaine en cours.
+    for (const internship of groupInternships) {
+        const internshipStart = new Date(internship.date_debut);
+        const internshipEnd = new Date(internship.date_fin);
+
+        // La condition de chevauchement de deux plages de dates [A,B] et [C,D] est : A <= D et C <= B
+        if (internshipStart <= endOfWeek && internshipEnd >= startOfWeek) {
+            // Un chevauchement a été trouvé, le groupe est bien en stage cette semaine.
+            return true;
+        }
+    }
+
+    // Aucun chevauchement trouvé après avoir vérifié toutes les périodes.
+    return false;
+}
+
+/**
+ * [AMÉLIORÉ AVEC ÉQUILIBRAGE]
+ * Trouve les meilleurs emplacements pour une séance de 2.5h en privilégiant
+ * les groupes ayant le moins d'heures affectées.
+ */
+ function findBestSlotsForSingle(task, newTimetableData, trackers, constraints) {
     let bestSlots = [];
-    let highestScore = -Infinity; // Utiliser -Infinity pour une comparaison plus sûre
+    let highestScore = -Infinity;
     const formateur = task.formateur;
     const formateurConstraints = constraints[formateur];
     if (!formateurConstraints) return [];
 
     const shuffledJours = [...jours];
     shuffleArray(shuffledJours);
+    const weekInfo = getWeekInfo(selectedDate);
 
-    // NOUVELLE PARTIE : Bonus pour l'équilibrage des groupes
-    const currentHours = trackers.groupHours[task.groupe] || 0;
-    const balanceBonus = (40 - currentHours) * 10;
+    // ========================================================================
+    // ==                 NOUVELLE LOGIQUE D'ÉQUILIBRAGE                     ==
+    // ========================================================================
+    const currentGroupHours = trackers.groupHours[task.groupe] || 0;
+    const balanceBonus = (40 - currentGroupHours) * 10;
+    // ========================================================================
 
     for (const jour of shuffledJours) {
+        const jourIndex = jours.indexOf(jour);
+        const currentDate = new Date(weekInfo.startOfWeek);
+        currentDate.setDate(currentDate.getDate() + jourIndex);
+        const dateStr = currentDate.toISOString().split('T')[0];
+        if (lockedDates.has(dateStr)) continue;
+
         for (const seance of seances) {
-             // ... (toutes les vérifications de conflits restent les mêmes) ...
              if (trackers.formateurSlots[`${jour}-${seance}-${formateur}`]) continue;
              if (isGroupBusy(jour, seance, task.groupe, trackers)) continue;
              if (formateurConstraints.unavailable.some(u => u.jour === jour && u.seance === seance)) continue;
@@ -5393,8 +5652,8 @@ function findBestSlotsForSingle(task, newTimetableData, trackers, constraints) {
                 }
 
                 if(isSpaceAvailable) {
-                    // MODIFICATION DU CALCUL DE SCORE
-                    let score = 1 + balanceBonus; // On intègre le bonus d'équilibrage
+                    // --- MODIFICATION DU CALCUL DE SCORE ---
+                    let score = 1 + balanceBonus;
                     const seanceIndex = seances.indexOf(seance);
                     if (seanceIndex > 0 && newTimetableData[formateur][jour][seances[seanceIndex - 1]].groupe) score += 50;
                     if (seanceIndex < seances.length - 1 && newTimetableData[formateur][jour][seances[seanceIndex + 1]].groupe) score += 50;
@@ -5414,6 +5673,7 @@ function findBestSlotsForSingle(task, newTimetableData, trackers, constraints) {
     return bestSlots;
 }
 
+// Fonction pour placer un bloc de 5h
 function tryPlaceBlock(task, slot, newTimetableData, trackers) {
     const { jour, pair, salle } = slot;
     const [s1, s2] = pair;
@@ -5431,7 +5691,7 @@ function tryPlaceBlock(task, slot, newTimetableData, trackers) {
     subGroups.forEach(g => {
         trackers.groupSlots[`${jour}-${s1}-${g}`] = true;
         trackers.groupSlots[`${jour}-${s2}-${g}`] = true;
-        // AJOUT : Mettre à jour les heures du groupe
+        // LIGNE IMPORTANTE : Mettre à jour les heures du groupe
         trackers.groupHours[g] = (trackers.groupHours[g] || 0) + (SEANCE_DURATION * 2);
     });
     
@@ -5443,6 +5703,7 @@ function tryPlaceBlock(task, slot, newTimetableData, trackers) {
     }
 }
 
+// Fonction pour placer une séance de 2.5h
 function tryPlaceSingle(task, slot, newTimetableData, trackers) {
     const { jour, seance, salle } = slot;
     const formateur = task.formateur;
@@ -5454,7 +5715,7 @@ function tryPlaceSingle(task, slot, newTimetableData, trackers) {
     const subGroups = task.groupe.trim().split(/\s+/).filter(Boolean);
     subGroups.forEach(g => {
         trackers.groupSlots[`${jour}-${seance}-${g}`] = true;
-        // AJOUT : Mettre à jour les heures du groupe
+        // LIGNE IMPORTANTE : Mettre à jour les heures du groupe
         trackers.groupHours[g] = (trackers.groupHours[g] || 0) + SEANCE_DURATION;
     });
     
@@ -5765,25 +6026,42 @@ function getOccupiedGroups(jour, seance, currentSelect) {
     return occupied;
 }
 
+// Remplacez votre fonction styleGroupOptions par celle-ci
 function styleGroupOptions(selectElement) {
     const jour = selectElement.dataset.jour;
     const seance = selectElement.dataset.seance;
     const occupiedGroups = getOccupiedGroups(jour, seance, selectElement);
 
+    // Calculer la date de la cellule
+    const weekInfo = getWeekInfo(selectedDate);
+    const jourIndex = jours.indexOf(jour);
+    const currentDate = new Date(weekInfo.startOfWeek);
+    currentDate.setDate(currentDate.getDate() + jourIndex);
+    const dateStr = currentDate.toISOString().split('T')[0];
+
     for (const option of selectElement.options) {
         if (!option.value) continue;
 
-        const optionSubGroups = option.value.trim().split(/\s+/);
-        const isOccupied = optionSubGroups.some(g => occupiedGroups.has(g));
+        const groupName = option.value;
+        const optionSubGroups = groupName.trim().split(/\s+/);
 
-        if (isOccupied) {
+        // VÉRIFICATION PRIORITAIRE : Le groupe est-il en stage ?
+        const isInternship = internshipDatesByGroup.get(groupName)?.has(dateStr);
+
+        if (isInternship) {
+            option.disabled = true;
+            option.style.color = '#adb5bd'; // Couleur grise
+            option.textContent = `${groupName} (Stage)`;
+        } else if (optionSubGroups.some(g => occupiedGroups.has(g))) {
+            option.disabled = false; // On ne le désactive pas pour laisser la validation se faire
             option.style.color = 'red';
             option.style.fontWeight = 'bold';
-            option.textContent = `${option.value} (Pris)`;
+            option.textContent = `${groupName} (Pris)`;
         } else {
+            option.disabled = false;
             option.style.color = '';
             option.style.fontWeight = '';
-            option.textContent = option.value;
+            option.textContent = groupName;
         }
     }
 }
@@ -5888,42 +6166,124 @@ async function showWeekDropdown() {
     });
 }
     
-    async function importWeekData(sourceWeekValue) {
-        if (sourceWeekValue === currentWeekValue) {
-            showNotification("Vous ne pouvez pas importer la semaine active sur elle-même.", "warning");
-            return;
-        }
-
-        const weekInfo = parseWeekValue(sourceWeekValue);
-        const sourceLabel = `S${weekInfo.weekNumber}`;
-        
-        if (!confirm(`Voulez-vous écraser l'emploi du temps actuel avec celui de la semaine ${sourceLabel} ?`)) return;
-
-        const loader = document.getElementById('weekLoader');
-        loader.style.display = 'flex';
-        
-        try {
-            const response = await fetch(`../api/data/get_timetable.php?semaine=${sourceWeekValue}`);
-            const result = await response.json();
-
-            if (!result.success) throw new Error(result.message || 'Impossible de charger la semaine source.');
-            
-            const importedData = result.data;
-            
-            timetableData = importedData;
-            await saveTimetable();
-            
-            renderTimetableFromData(timetableData);
-            showNotification(`EDT de ${sourceLabel} importé et enregistré pour la semaine actuelle !`, "success");
-
-        } catch (error) {
-            console.error("Erreur lors de l'importation:", error);
-            showNotification(`Erreur d'importation: ${error.message}`, "error");
-        } finally {
-            loader.style.display = 'none';
-            document.getElementById('weekImportMenu').classList.remove('show');
-        }
+   /**
+ * [AMÉLIORÉ AVEC FORÇAGE DES CONTRAINTES]
+ * Importe les données d'une semaine source vers la semaine actuelle, en s'assurant
+ * que chaque séance importée respecte les contraintes de la semaine de destination
+ * (jours verrouillés, conflits de groupe/salle).
+ * @param {string} sourceWeekValue - La semaine à utiliser comme modèle (ex: "2024-W45").
+ */
+async function importWeekData(sourceWeekValue) {
+    if (sourceWeekValue === currentWeekValue) {
+        showNotification("Vous ne pouvez pas importer la semaine active sur elle-même.", "warning");
+        return;
     }
+
+    const weekInfo = parseWeekValue(sourceWeekValue);
+    const sourceLabel = `S${weekInfo.weekNumber}`;
+    
+    if (!confirm(`Voulez-vous importer l'EDT de la semaine ${sourceLabel} ? \n\nAttention : Seules les séances compatibles avec les contraintes (vacances, jours fériés) de la semaine actuelle seront transférées.`)) {
+        return;
+    }
+
+    const loader = document.getElementById('weekLoader');
+    loader.style.display = 'flex';
+    
+    try {
+        // 1. Récupérer les données de la semaine source
+        const response = await fetch(`../api/data/get_timetable.php?semaine=${sourceWeekValue}`);
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message || 'Impossible de charger la semaine source.');
+        const importedData = result.data;
+
+        // 2. Préparer un nouvel emploi du temps vide pour la semaine actuelle
+        initializeTimetableData(); // Réinitialise `timetableData` et `groupHours`
+        let skippedSessionsCount = 0;
+        const weekInfoDestination = getWeekInfo(selectedDate);
+
+        // 3. Itérer sur chaque séance de l'emploi du temps source et tenter de la placer
+        for (const formateur in importedData) {
+            // S'assurer que le formateur existe toujours dans les données actuelles
+            if (!timetableData[formateur]) continue;
+
+            for (const jour in importedData[formateur]) {
+                const jourIndex = jours.indexOf(jour);
+                if (jourIndex === -1) continue;
+
+                // --- VÉRIFICATION DES CONTRAINTES DE LA SEMAINE DE DESTINATION ---
+                const currentDate = new Date(weekInfoDestination.startOfWeek);
+                currentDate.setDate(currentDate.getDate() + jourIndex);
+                const dateStr = currentDate.toISOString().split('T')[0];
+
+                // a) Le jour de destination est-il verrouillé ?
+                if (lockedDates.has(dateStr)) {
+                    // On compte combien de séances sont sautées à cause des jours verrouillés
+                    const sessionsInLockedDay = Object.values(importedData[formateur][jour]).filter(s => s.groupe).length;
+                    skippedSessionsCount += sessionsInLockedDay;
+                    continue; // On saute ce jour entier
+                }
+
+                for (const seance in importedData[formateur][jour]) {
+                    const sessionToImport = importedData[formateur][jour][seance];
+
+                    // On ne traite que les séances qui ont un groupe assigné
+                    if (!sessionToImport.groupe) continue;
+
+                    // b) Vérifier les conflits de groupe et de salle DANS LE NOUVEL EDT en construction
+                    let conflictFound = false;
+                    for (const otherFormateur in timetableData) {
+                        if (otherFormateur === formateur) continue;
+                        
+                        const existingSession = timetableData[otherFormateur][jour][seance];
+                        if (!existingSession.groupe) continue;
+
+                        // Conflit de salle ?
+                        if (sessionToImport.salle && sessionToImport.salle !== "TEAMS" && sessionToImport.salle === existingSession.salle) {
+                            conflictFound = true;
+                            break;
+                        }
+
+                        // Conflit de groupe ?
+                        const importedGroups = sessionToImport.groupe.trim().split(/\s+/);
+                        const existingGroups = existingSession.groupe.trim().split(/\s+/);
+                        if (importedGroups.some(g => existingGroups.includes(g))) {
+                            conflictFound = true;
+                            break;
+                        }
+                    }
+
+                    if (conflictFound) {
+                        skippedSessionsCount++;
+                        continue; // On saute cette séance à cause d'un conflit
+                    }
+                    
+                    // Si tous les tests sont passés, on copie la séance
+                    timetableData[formateur][jour][seance] = sessionToImport;
+                }
+            }
+        }
+
+        // 4. Une fois le nouvel EDT construit, on le sauvegarde et on l'affiche
+        await saveTimetable();
+        renderTimetableFromData(timetableData);
+
+        // 5. Afficher un message de succès informatif
+        let successMessage = `EDT de ${sourceLabel} importé et enregistré !`;
+        if (skippedSessionsCount > 0) {
+            successMessage += `\nAttention : ${skippedSessionsCount} séance(s) n'a/ont pas été importée(s) en raison de conflits.`;
+            showNotification(successMessage, "warning");
+        } else {
+            showNotification(successMessage, "success");
+        }
+
+    } catch (error) {
+        console.error("Erreur lors de l'importation:", error);
+        showNotification(`Erreur d'importation: ${error.message}`, "error");
+    } finally {
+        loader.style.display = 'none';
+        document.getElementById('weekImportMenu').classList.remove('show');
+    }
+}
     
 async function checkSessionAndLoad() {
         try {
@@ -5954,35 +6314,189 @@ async function checkSessionAndLoad() {
             document.getElementById('notification').classList.add('hide');
         });
     });
+
+    let lockedDates = new Set();
+    let holidayNames = new Map();
     
     function loadInitialData() {
+    // Affiche un indicateur de chargement pour l'utilisateur
+    const loader = document.getElementById('weekLoader');
+    loader.style.display = 'flex';
+
     fetch('../api/data/get_base_data.php')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erreur réseau ou serveur: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(result => {
-            console.log("Données de base reçues:", result);
+            console.log("Données de base brutes reçues du serveur:", result);
 
-            appData = { formateurs: [], groupes: [], fusionGroupes: [], espaces: [], affectations: [] };
+            // Réinitialise les données de l'application à chaque chargement pour éviter les conflits
+            appData = {
+                formateurs: [],
+                groupes: [],
+                fusionGroupes: [],
+                espaces: [],
+                affectations: [],
+                jours_feries: [],
+                vacances: [],
+                stages: []
+            };
 
+            // Si la requête a réussi et contient des données
             if (result.success && result.data) {
+                // On assigne les données reçues à notre variable globale
                 appData = result.data;
+
+                // --- Traitement des contraintes de calendrier ---
+                // 1. Traite les jours fériés et les vacances (contraintes globales)
+                processCalendarEvents(appData.jours_feries || [], appData.vacances || []);
+                
+                // 2. Traite les périodes de stage (contraintes par groupe)
+                processInternshipData(appData.stages || []);
+
+                // Message d'avertissement si les données essentielles sont manquantes
                 if (!appData.formateurs || appData.formateurs.length === 0) {
                     showNotification("Fichier traité, mais aucun formateur trouvé. Vérifiez le contenu.", "warning");
                 }
             } else {
-                showNotification(result.message || 'Aucune donnée de base. Veuillez charger un fichier Excel.', "warning");
+                // Si la requête a échoué côté serveur (ex: erreur SQL)
+                showNotification(result.message || 'Aucune donnée de base trouvée. Veuillez charger un fichier Excel.', "warning");
             }
 
+            // Une fois toutes les données de base traitées, on initialise l'affichage
+            // en se basant sur la date actuelle.
             updateWeekSelection(new Date()); 
+            
+            // On s'assure que le tableau est généré même si la semaine n'a pas de données sauvegardées.
             generateTimetable(); 
         })
         .catch(error => {
-            console.error('Erreur critique chargement données:', error);
-            showNotification("Erreur de communication avec le serveur.", "error");
+            // Gère les erreurs critiques (réseau, JSON malformé, etc.)
+            console.error('Erreur critique lors du chargement des données de base:', error);
+            showNotification("Erreur de communication avec le serveur. Impossible de charger les données.", "error");
+
+            // En cas d'erreur grave, on s'assure que l'application reste stable avec des données vides
             appData = { formateurs: [], groupes: [], fusionGroupes: [], espaces: [], affectations: [] };
-            generateTimetable();
+            generateTimetable(); // Affiche un tableau vide avec un message d'erreur
+        })
+        .finally(() => {
+            // S'assure que le loader disparaît, que la requête réussisse ou échoue
+            loader.style.display = 'none';
         });
 }
 
+/**
+ * [CORRIGÉ]
+ * Analyse une chaîne de caractères de date au format "DD/MM/YYYY"
+ * et la convertit en un objet Date JavaScript valide.
+ * @param {string} dateString - La date au format "DD/MM/YYYY".
+ * @returns {Date|null} - Un objet Date valide ou null si le format est incorrect.
+ */
+ function parseCustomDate(dateString) {
+    if (!dateString || typeof dateString !== 'string') return null;
+    
+    const cleanString = dateString.trim();
+
+    // ========================================================================
+    // ==                         CORRECTION PRINCIPALE ICI                    ==
+    // ========================================================================
+    // On remplace le séparateur 'V' par le séparateur '/' qui correspond
+    // aux données réelles affichées dans la console.
+    const parts = cleanString.split('/');
+    // ========================================================================
+
+    if (parts.length !== 3) {
+        // Log d'erreur ajouté pour un meilleur débogage futur
+        console.error(`Format de date inattendu : "${dateString}". Attendu "DD/MM/YYYY".`);
+        return null;
+    }
+
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    const year = parseInt(parts[2], 10);
+
+    if (isNaN(day) || isNaN(month) || isNaN(year)) {
+        console.error(`Partie de date non numérique dans : "${dateString}"`);
+        return null;
+    }
+    
+    // Le constructeur Date utilise les mois de 0 (janvier) à 11 (décembre)
+    const date = new Date(year, month - 1, day);
+    
+    // Vérification de validité : s'assure que la date n'a pas "débordé" (ex: 32/01/2025 devient 01/02/2025)
+    if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
+        return date;
+    }
+    
+    console.error(`Date invalide après construction : "${dateString}"`);
+    return null;
+}
+/**
+ * [VERSION DE DÉBOGAGE]
+ * Traite les jours fériés et les vacances avec des logs détaillés dans la console
+ * pour identifier pourquoi les périodes de vacances ne sont pas verrouillées.
+ */
+ function processCalendarEvents(holidays, vacations) {
+    console.log("--- DÉBUT DU TRAITEMENT DU CALENDRIER ---");
+    
+    // 1. On vérifie les données brutes reçues du serveur
+    console.log("Données 'jours_feries' reçues:", JSON.stringify(holidays));
+    console.log("Données 'vacances' reçues:", JSON.stringify(vacations));
+
+    lockedDates.clear();
+    holidayNames.clear();
+    const formatDate = (date) => date.toISOString().split('T')[0];
+
+    // Traitement des jours fériés (cette partie fonctionne, on la garde)
+    holidays.forEach(holiday => {
+        if (holiday.date) {
+            const dateObj = new Date(holiday.date);
+            if (!isNaN(dateObj)) {
+                const dateStr = formatDate(dateObj);
+                lockedDates.add(dateStr);
+                holidayNames.set(dateStr, holiday.nom);
+            }
+        }
+    });
+
+    // --- 2. Traitement détaillé des périodes de vacances ---
+    if (!vacations || vacations.length === 0) {
+        console.warn("AVERTISSEMENT : Le tableau 'vacances' est vide ou non défini.");
+    } else {
+        vacations.forEach((vacation, index) => {
+            console.log(`[Vacances #${index}] Traitement de l'objet :`, vacation);
+            
+            if (!vacation.debut || !vacation.fin) {
+                console.error(`[Vacances #${index}] ERREUR : Propriété 'debut' ou 'fin' manquante.`);
+                return; // On passe à la suite
+            }
+
+            let start = parseCustomDate(vacation.debut);
+            let end = parseCustomDate(vacation.fin);
+
+            console.log(`[Vacances #${index}] Résultat du parsing -> Début:`, start, `| Fin:`, end);
+
+            if (start && end && start <= end) {
+                console.log(`[Vacances #${index}] Période valide. Ajout des dates...`);
+                let currentDate = new Date(start);
+                while (currentDate <= end) {
+                    const dateStr = formatDate(currentDate);
+                    lockedDates.add(dateStr);
+                    holidayNames.set(dateStr, vacation.nom);
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            } else {
+                console.error(`[Vacances #${index}] ERREUR : Période invalide ou impossible à analyser.`);
+            }
+        });
+    }
+    
+    console.log(`--- FIN DU TRAITEMENT ---`);
+    console.log(`Total final de dates verrouillées : ${lockedDates.size}`, lockedDates);
+}
 
     function getInitials(name) {
         if (!name) return '--';
@@ -6082,13 +6596,21 @@ function isSlotAvailableForSession(jour, seance, sessionToCheck, excludeFormateu
 function calculateAndShowGroupHours(timetableData) {
     // ... (la partie calcul des heures reste identique) ...
     const groupHours = {};
+    const formateurHours = {};
     const SEANCE_DURATION = 2.5;
 
     for (const formateur in timetableData) {
+        // Initialiser les heures du formateur
+        formateurHours[formateur] = 0;
+        
         for (const jour in timetableData[formateur]) {
             for (const seance in timetableData[formateur][jour]) {
                 const session = timetableData[formateur][jour][seance];
                 if (session.groupe) {
+                    // Ajouter les heures au formateur
+                    formateurHours[formateur] += SEANCE_DURATION;
+                    
+                    // Ajouter les heures aux groupes
                     const subGroups = session.groupe.trim().split(/\s+/).filter(Boolean);
                     subGroups.forEach(g => {
                         groupHours[g] = (groupHours[g] || 0) + SEANCE_DURATION;
@@ -6177,6 +6699,81 @@ function calculateAndShowGroupHours(timetableData) {
         }
     });
 
+    // --- PARTIE FORMATEURS ---
+    const sortedFormateurs = Object.entries(formateurHours)
+        .map(([formateur, heures]) => ({ formateur, heures }))
+        .sort((a, b) => b.heures - a.heures);
+
+    // Remplir le tableau des formateurs
+    const formateurTbody = document.getElementById('formateurHoursResultTbody');
+    formateurTbody.innerHTML = '';
+    if (sortedFormateurs.length === 0) {
+        formateurTbody.innerHTML = '<tr><td colspan="2" style="text-align:center;">Aucune heure n\'a été affectée.</td></tr>';
+    } else {
+        const alphabeticallySortedFormateurs = [...sortedFormateurs].sort((a,b) => a.formateur.localeCompare(b.formateur));
+        alphabeticallySortedFormateurs.forEach(({ formateur, heures }) => {
+            formateurTbody.innerHTML += `<tr><td>${formateur}</td><td>${heures.toFixed(1)} h</td></tr>`;
+        });
+    }
+    
+    // --- GRAPHIQUE DES FORMATEURS ---
+    const formateurCtx = document.getElementById('formateurHoursChartCanvas').getContext('2d');
+    const formateurLabels = sortedFormateurs.map(f => f.formateur);
+    const formateurData = sortedFormateurs.map(f => f.heures);
+
+    if (formateurHoursChart) {
+        formateurHoursChart.destroy();
+    }
+
+    formateurHoursChart = new Chart(formateurCtx, {
+        type: 'bar',
+        data: {
+            labels: formateurLabels,
+            datasets: [{
+                label: 'Heures par Formateur',
+                data: formateurData,
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Nombre d\'heures'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: '',
+                    font: { size: 16 }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    offset: 4,
+                    color: '#444',
+                    font: {
+                        weight: 'bold'
+                    },
+                    formatter: (value, context) => {
+                        return value.toFixed(1) + ' h';
+                    }
+                }
+            }
+        }
+    });
+
     const modalTitleElement = document.getElementById('groupHoursModalTitle');
     let weekLabel = '';
 
@@ -6192,8 +6789,90 @@ function calculateAndShowGroupHours(timetableData) {
     // On met à jour le contenu du titre
     modalTitleElement.textContent = `Masse Horaire par Groupe${weekLabel}`;
 
+    // Initialiser les boutons switch
+    setupSwitchButtons();
+    
     // Afficher la modale
     document.getElementById('groupHoursModal').style.display = 'block';
+}
+
+// Fonction pour gérer le switch entre groupes et formateurs
+function setupSwitchButtons() {
+    const switchToGroups = document.getElementById('switchToGroups');
+    const switchToFormateurs = document.getElementById('switchToFormateurs');
+    const groupsSection = document.getElementById('groupsSection');
+    const formateursSection = document.getElementById('formateursSection');
+    const modalTitle = document.getElementById('groupHoursModalTitle');
+
+    switchToGroups.addEventListener('click', () => {
+        // Activer le bouton groupes
+        switchToGroups.classList.add('active');
+        switchToFormateurs.classList.remove('active');
+        
+        // Afficher la section groupes
+        groupsSection.style.display = 'block';
+        formateursSection.style.display = 'none';
+        
+        // Mettre à jour le titre
+        let weekLabel = '';
+        if (currentWeekValue && currentWeekValue.includes('-W')) {
+            const weekNumber = currentWeekValue.split('-W')[1];
+            if (weekNumber) {
+               weekLabel = ` - S${weekNumber}`;
+            }
+        }
+        modalTitle.textContent = `Masse Horaire par Groupe${weekLabel}`;
+    });
+
+    switchToFormateurs.addEventListener('click', () => {
+        // Activer le bouton formateurs
+        switchToFormateurs.classList.add('active');
+        switchToGroups.classList.remove('active');
+        
+        // Afficher la section formateurs
+        formateursSection.style.display = 'block';
+        groupsSection.style.display = 'none';
+        
+        // Mettre à jour le titre
+        let weekLabel = '';
+        if (currentWeekValue && currentWeekValue.includes('-W')) {
+            const weekNumber = currentWeekValue.split('-W')[1];
+            if (weekNumber) {
+               weekLabel = ` - S${weekNumber}`;
+            }
+        }
+        modalTitle.textContent = `Masse Horaire par Formateur${weekLabel}`;
+    });
+}
+
+// Variable globale pour stocker les dates de stage par groupe
+let internshipDatesByGroup = new Map();
+
+// Nouvelle fonction pour traiter les données de stage
+function processInternshipData(stages) {
+    internshipDatesByGroup.clear();
+    if (!stages || stages.length === 0) return;
+
+    const formatDate = (date) => date.toISOString().split('T')[0];
+
+    stages.forEach(stage => {
+        const groupName = stage.groupe_nom;
+        const start = new Date(stage.date_debut);
+        const end = new Date(stage.date_fin);
+
+        if (!isNaN(start) && !isNaN(end)) {
+            if (!internshipDatesByGroup.has(groupName)) {
+                internshipDatesByGroup.set(groupName, new Set());
+            }
+            const groupLockedDates = internshipDatesByGroup.get(groupName);
+            let currentDate = new Date(start);
+            while (currentDate <= end) {
+                groupLockedDates.add(formatDate(currentDate));
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        }
+    });
+    console.log("Données de stage traitées et prêtes:", internshipDatesByGroup);
 }
   </script>
 </body>

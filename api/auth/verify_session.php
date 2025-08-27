@@ -23,6 +23,24 @@ try {
 
     // VÉRIFICATION DU STATUT EN PLUS DE L'EXISTENCE
     if ($user && $user['status'] === 'approved') {
+        // Ensure etablissement_id is set in session for API compatibility
+        if (!isset($_SESSION['etablissement_id'])) {
+            $stmt_etab = $pdo->prepare("SELECT id FROM etablissements WHERE utilisateur_id = ? LIMIT 1");
+            $stmt_etab->execute([$userId]);
+            $etablissement = $stmt_etab->fetch(PDO::FETCH_ASSOC);
+            
+            if ($etablissement) {
+                $_SESSION['etablissement_id'] = $etablissement['id'];
+            } else {
+                // User has no establishment - this shouldn't happen in normal flow
+                session_unset();
+                session_destroy();
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Configuration utilisateur incomplète.']);
+                exit;
+            }
+        }
+        
         // Le statut est bon, on peut continuer
         echo json_encode([
             'success' => true,

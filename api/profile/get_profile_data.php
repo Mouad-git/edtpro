@@ -63,11 +63,19 @@ try {
     $stmtEspaces->execute([$etablissement_id]);
     $data['espaces'] = $stmtEspaces->fetchAll(PDO::FETCH_COLUMN); 
     
-    // --- 4. Récupérer les données du Calendrier (inchangé) ---
-    $stmtCalendar = $pdo->prepare("SELECT donnees_json FROM donnees_de_base WHERE etablissement_id = ? AND type_donnee = 'calendrier'");
+    // --- 4. Récupérer les données du Calendrier (corrigé pour utiliser la table calendrier) ---
+    $stmtCalendar = $pdo->prepare("SELECT jours_feries, vacances FROM calendrier WHERE etablissement_id = ?");
     $stmtCalendar->execute([$etablissement_id]);
-    $calendarJson = $stmtCalendar->fetchColumn();
-    $data['calendar'] = $calendarJson ? json_decode($calendarJson, true) : ['holidays' => '', 'vacations' => ''];
+    $calendarData = $stmtCalendar->fetch(PDO::FETCH_ASSOC);
+    
+    if ($calendarData) {
+        $data['calendar'] = [
+            'holidays' => $calendarData['jours_feries'] ? json_decode($calendarData['jours_feries'], true) : [],
+            'vacations' => $calendarData['vacances'] ? json_decode($calendarData['vacances'], true) : []
+        ];
+    } else {
+        $data['calendar'] = ['holidays' => [], 'vacations' => []];
+    }
     
     // --- 5. Infos des Stages (inchangé) ---
     $stmtStages = $pdo->prepare("SELECT id, groupe_nom, date_debut, date_fin FROM stages WHERE etablissement_id = ? ORDER BY date_debut");

@@ -23,17 +23,11 @@ try {
         }
         
         $pdo->beginTransaction();
-        // Contrôle de chevauchement par groupe
-        $check = $pdo->prepare("SELECT COUNT(*) FROM stages WHERE etablissement_id = ? AND groupe_nom = ? AND NOT (date_fin < ? OR date_debut > ?)");
+        // Permettre plusieurs stages par groupe (suppression du contrôle de chevauchement)
         $insert = $pdo->prepare("INSERT INTO stages (etablissement_id, groupe_nom, date_debut, date_fin) VALUES (?, ?, ?, ?)");
         foreach ($stageData['groupes'] as $groupe) {
             $groupe = trim((string)$groupe);
             if ($groupe === '') continue;
-            $check->execute([$etablissement_id, $groupe, $stageData['date_debut'], $stageData['date_fin']]);
-            $overlaps = (int)$check->fetchColumn();
-            if ($overlaps > 0) {
-                throw new Exception("Chevauchement détecté pour le groupe: {$groupe}.");
-            }
             $insert->execute([$etablissement_id, $groupe, $stageData['date_debut'], $stageData['date_fin']]);
         }
         $pdo->commit();
